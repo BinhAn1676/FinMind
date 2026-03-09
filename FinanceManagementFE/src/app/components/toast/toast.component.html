@@ -1,0 +1,18 @@
+<div class="toast-container" [attr.data-toast-count]="toasts.length">
+  <div 
+    *ngFor="let toast of toasts; trackBy: trackByToastId" 
+    class="toast"
+    [ngClass]="getToastClass(toast.type)"
+    [attr.data-toast-id]="toast.id"
+  >
+    <div class="toast-content">
+      <span class="toast-icon">{{ getToastIcon(toast.type) }}</span>
+      <span class="toast-message">{{ toast.message }}</span>
+      <button class="toast-close" (click)="removeToast(toast.id)">&times;</button>
+    </div>
+    <div class="toast-progress" [style.animation-duration]="(toast.duration || 3000) + 'ms'">
+      <div class="toast-progress-bar" [style.animation-duration]="(toast.duration || 3000) + 'ms'"></div>
+    </div>
+  </div>
+</div>
+

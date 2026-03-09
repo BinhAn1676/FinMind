@@ -1,0 +1,313 @@
+name: Deploy Backend Services
+
+on:
+  push:
+    branches: [master]
+
+# Secrets cần thiết (Settings > Secrets and variables > Actions):
+#   DOCKER_USERNAME    - Docker Hub username
+#   DOCKER_PASSWORD    - Docker Hub access token
+#   VPS_HOST           - IP hoặc hostname của VPS
+#   VPS_USER           - SSH username (vd: ubuntu, root)
+#   VPS_SSH_KEY        - Nội dung private key SSH (-----BEGIN OPENSSH PRIVATE KEY-----)
+#   VPS_PROJECT_PATH   - Đường dẫn tới thư mục environment trên VPS
+#                        (vd: /home/ubuntu/finance/FinanceManagement/environment)
+
+jobs:
+  # ============================================================
+  # Job 1: Phát hiện service nào thay đổi
+  # ============================================================
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      configserver:     ${{ steps.filter.outputs.configserver }}
+      eurekaserver:     ${{ steps.filter.outputs.eurekaserver }}
+      users:            ${{ steps.filter.outputs.users }}
+      finance:          ${{ steps.filter.outputs.finance }}
+      notification:     ${{ steps.filter.outputs.notification }}
+      fileservice:      ${{ steps.filter.outputs.fileservice }}
+      keymanagement:    ${{ steps.filter.outputs.keymanagement }}
+      chat:             ${{ steps.filter.outputs.chat }}
+      gatewayserver:    ${{ steps.filter.outputs.gatewayserver }}
+      aiservice:        ${{ steps.filter.outputs.aiservice }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            configserver:
+              - 'ConfigServer/**'
+            eurekaserver:
+              - 'EurekaServer/**'
+            users:
+              - 'UserService/**'
+            finance:
+              - 'FinanceService/**'
+            notification:
+              - 'NotificationService/**'
+            fileservice:
+              - 'FileService/**'
+            keymanagement:
+              - 'KeyManagementService/**'
+            chat:
+              - 'ChatService/**'
+            gatewayserver:
+              - 'gatewayserver/**'
+            aiservice:
+              - 'AIService/**'
+
+  # ============================================================
+  # Template build & push (dùng lại qua strategy matrix không
+  # hỗ trợ tốt với if conditions, nên tách job riêng cho rõ ràng)
+  # ============================================================
+
+  deploy-configserver:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.configserver == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/configserver:1.0 ./ConfigServer
+          docker push ${{ secrets.DOCKER_USERNAME }}/configserver:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull configserver
+            docker compose -f docker-compose.prod.yml up -d --no-deps configserver
+
+  deploy-eurekaserver:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.eurekaserver == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/eurekaserver:1.0 ./EurekaServer
+          docker push ${{ secrets.DOCKER_USERNAME }}/eurekaserver:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull eurekaserver
+            docker compose -f docker-compose.prod.yml up -d --no-deps eurekaserver
+
+  deploy-users:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.users == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/users:1.0 ./UserService
+          docker push ${{ secrets.DOCKER_USERNAME }}/users:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull users
+            docker compose -f docker-compose.prod.yml up -d --no-deps users
+
+  deploy-finance:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.finance == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/finance:1.0 ./FinanceService
+          docker push ${{ secrets.DOCKER_USERNAME }}/finance:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull finance
+            docker compose -f docker-compose.prod.yml up -d --no-deps finance
+
+  deploy-notification:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.notification == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/notification:1.0 ./NotificationService
+          docker push ${{ secrets.DOCKER_USERNAME }}/notification:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull notification
+            docker compose -f docker-compose.prod.yml up -d --no-deps notification
+
+  deploy-fileservice:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.fileservice == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/fileservice:1.0 ./FileService
+          docker push ${{ secrets.DOCKER_USERNAME }}/fileservice:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull fileservice
+            docker compose -f docker-compose.prod.yml up -d --no-deps fileservice
+
+  deploy-keymanagement:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.keymanagement == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/keymanagement:1.0 ./KeyManagementService
+          docker push ${{ secrets.DOCKER_USERNAME }}/keymanagement:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull keymanagement
+            docker compose -f docker-compose.prod.yml up -d --no-deps keymanagement
+
+  deploy-chat:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.chat == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/chat:1.0 ./ChatService
+          docker push ${{ secrets.DOCKER_USERNAME }}/chat:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull chat
+            docker compose -f docker-compose.prod.yml up -d --no-deps chat
+
+  deploy-gatewayserver:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gatewayserver == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/gatewayserver:1.0 ./gatewayserver
+          docker push ${{ secrets.DOCKER_USERNAME }}/gatewayserver:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull gatewayserver
+            docker compose -f docker-compose.prod.yml up -d --no-deps gatewayserver
+
+  deploy-aiservice:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.aiservice == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build & Push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/aiservice:1.0 ./AIService
+          docker push ${{ secrets.DOCKER_USERNAME }}/aiservice:1.0
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            docker compose -f docker-compose.prod.yml pull aiservice
+            docker compose -f docker-compose.prod.yml up -d --no-deps aiservice

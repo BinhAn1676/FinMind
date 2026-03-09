@@ -1,0 +1,143 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+  background: #0A192F !important;
+  background-size: cover;
+  text-align: left;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  color: #FFFFFF !important;
+}
+
+.container{
+  margin: auto;
+	width: 70%;
+}
+
+/*-- Profile-form --*/
+.top-grids {
+  background: linear-gradient(45deg, #56ab2f, #a8e063);
+}
+
+.input-group>.input-group-prepend {
+  flex: 0 0 40%;
+}
+.input-group .input-group-text {
+  width: 100%;
+}
+
+.text-danger {
+  color: #ff0000!important;
+  font-weight: 300;
+}
+
+.input-group-text {
+  font-weight: 600;
+}
+
+.w3l-main h3, .w3l-main-2 h3, .form h3{
+  padding: 0.5% 0%;
+  background: #fff;
+  color: #000;
+  font-size: 1em;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.w3l-main-2 input[type="reset"], .w3l-main-2 input[type="submit"] {
+  border-radius: 1px;
+  padding: 1% 1%;
+  border: none;
+  outline: none;
+  font-size: 1em;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  color: #000;
+  background: #fff;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin: 1%;
+  transition: 0.5s all;
+  -moz-transition: 0.5s all;
+  -o-transition: 0.5s all;
+  -ms-transition: 0.5s all;
+  font-family: Georgia, serif;
+}
+.w3l-main-2 input[type="reset"]:hover, .w3l-main-2 input[type="submit"]:hover {
+  background: #000;
+  color: #fff;
+transition: 0.5s all;
+-moz-transition: 0.5s all;
+-o-transition: 0.5s all;
+-ms-transition: 0.5s all;
+}
+/*-- //Login-form --*/
+
+/* ===== Global PrimeNG Datepicker (dark theme) ===== */
+.p-datepicker {
+  background: linear-gradient(135deg, rgba(14, 42, 62, 0.98), rgba(20, 58, 78, 0.98)) !important;
+  border: 1px solid rgba(78, 205, 196, 0.5) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+  color: #fff !important;
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+}
+.p-datepicker .p-datepicker-header {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.25), rgba(14, 42, 62, 0.95)) !important;
+  border-bottom: 1px solid rgba(78, 205, 196, 0.4) !important;
+  color: #fff !important;
+  padding: 0.8rem 1rem !important;
+}
+.p-datepicker .p-datepicker-header .p-datepicker-title { color: #fff !important; }
+.p-datepicker .p-datepicker-header .p-datepicker-prev,
+.p-datepicker .p-datepicker-header .p-datepicker-next { color: #4ECDC4 !important; transition: all 0.2s; }
+.p-datepicker .p-datepicker-header .p-datepicker-prev:hover,
+.p-datepicker .p-datepicker-header .p-datepicker-next:hover { color: #fff !important; background: rgba(78, 205, 196, 0.2) !important; }
+.p-datepicker table { color: #fff !important; }
+.p-datepicker table td { padding: 0.2rem !important; }
+.p-datepicker table td > span { width: 2.3rem !important; height: 2.3rem !important; border-radius: 8px !important; color: #fff !important; transition: all 0.2s; }
+.p-datepicker table td > span:hover { background: rgba(78, 205, 196, 0.25) !important; color: #4ECDC4 !important; }
+.p-datepicker table td.p-datepicker-today > span { background: rgba(78, 205, 196, 0.3) !important; color: #4ECDC4 !important; font-weight: 700 !important; border: 1px solid rgba(78, 205, 196, 0.6) !important; }
+.p-datepicker table td > span.p-highlight { background: linear-gradient(135deg, #4ECDC4, #FF6B6B) !important; color: #fff !important; font-weight: 700 !important; }
+.p-datepicker table th { color: #94a3b8 !important; font-size: 0.85rem !important; }
+.p-datepicker .p-datepicker-buttonbar { border-top: 1px solid rgba(78, 205, 196, 0.4) !important; background: rgba(14, 42, 62, 0.9) !important; padding: 0.6rem !important; }
+.p-datepicker .p-datepicker-buttonbar .p-button { background: rgba(78, 205, 196, 0.15) !important; border: 1px solid rgba(78, 205, 196, 0.35) !important; color: #4ECDC4 !important; border-radius: 8px !important; font-family: 'Be Vietnam Pro', sans-serif !important; }
+.p-datepicker .p-datepicker-buttonbar .p-button:hover { background: rgba(78, 205, 196, 0.28) !important; color: #fff !important; }
+.p-datepicker .p-monthpicker .p-monthpicker-month,
+.p-datepicker .p-yearpicker .p-yearpicker-year { color: #fff !important; border-radius: 8px !important; transition: all 0.2s; }
+.p-datepicker .p-monthpicker .p-monthpicker-month:hover,
+.p-datepicker .p-yearpicker .p-yearpicker-year:hover { background: rgba(78, 205, 196, 0.25) !important; color: #4ECDC4 !important; }
+.p-datepicker .p-monthpicker .p-monthpicker-month.p-highlight,
+.p-datepicker .p-yearpicker .p-yearpicker-year.p-highlight { background: linear-gradient(135deg, #4ECDC4, #FF6B6B) !important; color: #fff !important; }
+/* ===== End Global PrimeNG Datepicker ===== */
+
+.w3l-main-2 form {
+  width: 60%;
+  margin: 4% auto;
+}
+.w3l-main-2 select,.w3l-main-2 input[type="text"],.w3l-main-2 select,.w3l-main-2 input[type="radio"],.w3l-main-2 input[type="number"], .w3l-main-2 input[type="password"], .w3l-main-2 input[type="email"] {
+  border: none;
+  outline: none;
+  font-size: 1em;
+  color: #000;
+  font-family: Georgia, serif;
+}
+.w3l-main-2 input[type="submit"]{
+margin:7% 0em 1.4%;
+font-family: Georgia, serif;
+}
+
+.btn-eazybank{
+    color: #fff;
+    background-color: #57b846;
+    border-color: #57b846;
+}
+
+.table-responsive-md{
+  margin: 100px;
+}
+
+.thead-light{
+  background-color: #57b846;
+  color: #ff0000;
+}

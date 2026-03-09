@@ -1,0 +1,111 @@
+spring:
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: "keys"
+  profiles:
+    active: default
+  config:
+    import: "optional:configserver:http://localhost:8071/" #configserver:http://configserver:8071/ #configserver:http://localhost:8071/
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+      enabled: true
+  cloud:
+    bus:
+      enabled: true
+    stream:
+      kafka:
+        binder:
+          brokers: 192.168.0.101:9194
+      bus:
+        trace:
+          enabled: true
+        refresh:
+          enabled: true
+        env:
+          enabled: true
+  kafka:
+    bootstrap-servers: 192.168.0.101:9194
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+      request-timeout-ms: 30000
+      delivery-timeout-ms: 120000
+    consumer:
+      group-id: key-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/ #http://eurekaserver:8070/eureka/ #http://localhost:8070/eureka/
+
+info:
+  app:
+    name: "keys"
+    description: "Key Service for finances"
+    version: "1.0.0"
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    shutdown:
+      access: unrestricted
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+endpoints:
+  shutdown:
+    enabled: true
+
+logging:
+  level:
+    com:
+      finance:
+        userservice: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+# Google Cloud KMS Configuration
+google:
+  cloud:
+    kms:
+      enabled: ${GOOGLE_CLOUD_KMS_ENABLED:true}  # Set to true to enable KMS
+      credentials-file-path: ${GOOGLE_CLOUD_CREDENTIALS_FILE:}  # Optional: path to service account JSON file
+      project-id: ${GOOGLE_CLOUD_PROJECT_ID:your-project-id}
+      location: ${GOOGLE_CLOUD_KMS_LOCATION:global}
+      key-ring: ${GOOGLE_CLOUD_KMS_KEY_RING:finance-key-ring}
+      crypto-key: ${GOOGLE_CLOUD_KMS_CRYPTO_KEY:master-key}
+      timeout-seconds: ${GOOGLE_CLOUD_KMS_TIMEOUT_SECONDS:120}  # Timeout for KMS operations (default: 120 seconds)
+      retry-attempts: ${GOOGLE_CLOUD_KMS_RETRY_ATTEMPTS:3}  # Number of retry attempts
+

@@ -1,0 +1,321 @@
+<div class="analytics-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2>{{ language.translate('aiAnalytics.pageTitle') }}</h2>
+    <p>{{ language.translate('aiAnalytics.pageSubtitle') }}</p>
+
+    <!-- Month Selector -->
+    <div class="month-selector">
+      <label for="month-picker">📅 {{ language.translate('aiAnalytics.monthSelector.label') }}</label>
+      <input
+        type="month"
+        id="month-picker"
+        [(ngModel)]="selectedMonth"
+        (change)="onMonthChange()"
+        [max]="currentMonth"
+        class="month-input">
+      <span class="month-hint">{{ language.translate('aiAnalytics.monthSelector.hint') }}</span>
+    </div>
+
+    <div class="page-actions">
+      <button class="btn ghost export-btn"
+              (click)="exportReport('excel')"
+              [disabled]="exportingExcel || exportingPdf"
+              [class.exporting]="exportingExcel">
+        <span>{{ exportingExcel ? '⏳' : '📊' }}</span>
+        {{ exportingExcel ? 'Đang xuất...' : 'Xuất Excel' }}
+      </button>
+
+      <button class="btn ghost export-btn"
+              (click)="exportReport('pdf')"
+              [disabled]="exportingExcel || exportingPdf"
+              [class.exporting]="exportingPdf">
+        <span>{{ exportingPdf ? '⏳' : '📄' }}</span>
+        {{ exportingPdf ? 'Đang xuất...' : 'Xuất PDF' }}
+      </button>
+
+      <button class="btn ghost" (click)="refreshDashboard()">
+        <span>🔄</span>
+        {{ language.translate('aiAnalytics.refreshButton') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-inline">
+    <div class="spinner"></div>
+    <p>{{ language.translate('common.loading') }}</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-state glass-panel">
+    <p>{{ error }}</p>
+    <button class="btn primary" (click)="refreshDashboard()">{{ language.translate('aiAnalytics.refreshButton') }}</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="dashboard && !loading" class="dashboard-content">
+
+    <!-- Health Score Section -->
+    <div class="health-section glass-panel">
+      <div class="section-header">
+        <h3>{{ language.translate('aiAnalytics.healthScore.title') }}</h3>
+        <span class="timestamp">{{ dashboard.generatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="health-content">
+        <div class="health-score-circle" [style.background]="getHealthScoreGradient(dashboard.healthScore.score)">
+          <div class="score-inner">
+            <div class="score-value">{{ dashboard.healthScore.score }}</div>
+            <div class="score-grade">{{ dashboard.healthScore.grade }}</div>
+            <div class="score-status">{{ dashboard.healthScore.status }}</div>
+          </div>
+        </div>
+
+        <div class="health-details">
+          <div class="health-message">
+            <p>{{ dashboard.healthScore.message }}</p>
+          </div>
+
+          <div class="health-points">
+            <div class="strengths" *ngIf="dashboard.healthScore.strengths.length > 0">
+              <h4>✨ {{ language.translate('aiAnalytics.healthScore.strengths') }}</h4>
+              <ul>
+                <li *ngFor="let strength of dashboard.healthScore.strengths">{{ strength }}</li>
+              </ul>
+            </div>
+
+            <div class="concerns" *ngIf="dashboard.healthScore.concerns.length > 0">
+              <h4>⚠️ {{ language.translate('aiAnalytics.healthScore.concerns') }}</h4>
+              <ul>
+                <li *ngFor="let concern of dashboard.healthScore.concerns">{{ concern }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- AI Narrative (from HybridEngine) -->
+          <div class="ai-narrative" *ngIf="dashboard.healthScore.aiNarrative">
+            <div class="ai-badge">
+              <span class="ai-icon">🤖</span>
+              <span class="ai-label">AI Analysis</span>
+            </div>
+            <p class="ai-narrative-text">{{ dashboard.healthScore.aiNarrative }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spending Structure & Forecast -->
+    <div class="charts-grid">
+      <!-- Spending Structure -->
+      <div class="chart-card glass-panel">
+        <div class="chart-header">
+          <h4>{{ language.translate('aiAnalytics.spendingStructure.title') }}</h4>
+          <span class="status-badge" [ngClass]="dashboard.spendingStructure.overallStatus.toLowerCase()">
+            {{ dashboard.spendingStructure.overallStatus }}
+          </span>
+        </div>
+
+        <div class="spending-chart">
+          <div class="spending-bars">
+            <div class="category-bar" *ngFor="let category of dashboard.spendingStructure.categories; let i = index">
+              <div class="bar-header">
+                <span class="category-name">{{ category.name }}</span>
+                <div class="bar-values">
+                  <span class="actual-value" [ngClass]="category.status.toLowerCase()">
+                    {{ formatPercent(category.actualPercent) }}
+                  </span>
+                  <span class="vs-text">{{ language.translate('aiAnalytics.spendingStructure.vs') }}</span>
+                  <span class="ideal-value">
+                    {{ language.translate('aiAnalytics.spendingStructure.ideal') }}: {{ formatPercent(category.idealPercent) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="bar-container">
+                <div class="bar-background">
+                  <!-- Actual spending bar -->
+                  <div
+                    class="bar-fill"
+                    [style.width.%]="category.actualPercent"
+                    [style.background]="getCategoryColor(i)"
+                    [ngClass]="category.status.toLowerCase()"
+                  ></div>
+
+                  <!-- Ideal percentage marker -->
+                  <div
+                    class="ideal-marker"
+                    [style.left.%]="category.idealPercent"
+                    [title]="language.translate('aiAnalytics.spendingStructure.ideal') + ': ' + formatPercent(category.idealPercent)"
+                  >
+                    <div class="marker-line"></div>
+                    <div class="marker-label">{{ formatPercent(category.idealPercent) }}</div>
+                  </div>
+                </div>
+
+                <div class="bar-amount">
+                  {{ formatCurrency(category.amount) }}
+                  <span class="status-icon" [title]="category.status">
+                    {{ category.status === 'GOOD' ? '✓' : category.status === 'WARNING' ? '⚠' : '!' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="recommendation">
+          <p>💡 {{ dashboard.spendingStructure.recommendation }}</p>
+        </div>
+      </div>
+
+      <!-- Budget Forecast -->
+      <div class="chart-card glass-panel">
+        <div class="chart-header">
+          <h4>{{ language.translate('aiAnalytics.forecast.title') }}</h4>
+          <span class="confidence">
+            {{ formatPercent(dashboard.budgetForecast.confidence) }} độ tin cậy
+          </span>
+        </div>
+
+        <div class="forecast-summary">
+          <div class="forecast-item">
+            <span class="label">Kỳ dự báo</span>
+            <span class="value">{{ dashboard.budgetForecast.forecastPeriod }}</span>
+          </div>
+          <div class="forecast-item">
+            <span class="label">Số dư dự kiến</span>
+            <span class="value positive">{{ formatCurrency(dashboard.budgetForecast.projectedBalance) }}</span>
+          </div>
+          <div class="forecast-item">
+            <span class="label">Chi tiêu dự kiến</span>
+            <span class="value negative">{{ formatCurrency(dashboard.budgetForecast.projectedExpense) }}</span>
+          </div>
+          <div class="forecast-item">
+            <span class="label">Xu hướng</span>
+            <span class="value" [style.color]="getTrendColor(dashboard.budgetForecast.trend)">
+              {{ getTrendIcon(dashboard.budgetForecast.trend) }} {{ dashboard.budgetForecast.trend }}
+            </span>
+          </div>
+        </div>
+
+        <div class="timeline-chart" *ngIf="dashboard.budgetForecast.timeline.length > 0">
+          <div class="timeline-bars">
+            <div *ngFor="let point of dashboard.budgetForecast.timeline" class="timeline-bar">
+              <div class="bar-wrapper">
+                <div class="bar balance"
+                     [style.height.%]="(point.balance / getMaxBalance()) * 100"
+                     [title]="formatCurrency(point.balance)">
+                </div>
+              </div>
+              <span class="bar-label">{{ point.period }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="warning-box" *ngIf="dashboard.budgetForecast.warning"
+             [ngClass]="dashboard.budgetForecast.warning.severity.toLowerCase()">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-content">
+            <div class="warning-message">{{ dashboard.budgetForecast.warning.message }}</div>
+            <div class="warning-recommendation">💡 {{ dashboard.budgetForecast.warning.recommendation }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Anomalies & Patterns -->
+    <div class="insights-grid">
+      <!-- Anomalies -->
+      <div class="insight-card glass-panel">
+        <div class="card-header">
+          <h4>🚨 {{ language.translate('aiAnalytics.anomalies.title') }}</h4>
+          <span class="badge">{{ dashboard.anomalies.length }}</span>
+        </div>
+
+        <div class="anomaly-list" *ngIf="dashboard.anomalies.length > 0; else noAnomalies">
+          <div *ngFor="let anomaly of dashboard.anomalies" class="anomaly-item">
+            <div class="anomaly-header">
+              <span class="severity-badge" [style.background]="getSeverityColor(anomaly.severity)">
+                {{ anomaly.severity }}
+              </span>
+              <span class="anomaly-date">{{ anomaly.date }}</span>
+            </div>
+            <div class="anomaly-description">{{ anomaly.description }}</div>
+            <div class="anomaly-amount">{{ formatCurrency(anomaly.amount) }}</div>
+            <div class="anomaly-reason">{{ anomaly.reason }}</div>
+            <div class="anomaly-recommendation">💡 {{ anomaly.recommendation }}</div>
+          </div>
+        </div>
+
+        <ng-template #noAnomalies>
+          <div class="empty-state">
+            <p>✓ {{ language.translate('aiAnalytics.anomalies.noAnomalies') }}</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Spending Patterns -->
+      <div class="insight-card glass-panel">
+        <div class="card-header">
+          <h4>📊 {{ language.translate('aiAnalytics.patterns.title') }}</h4>
+          <span class="badge">{{ dashboard.patterns.length }}</span>
+        </div>
+
+        <div class="pattern-list" *ngIf="dashboard.patterns.length > 0; else noPatterns">
+          <div *ngFor="let pattern of dashboard.patterns" class="pattern-item">
+            <div class="pattern-header">
+              <span class="pattern-type">{{ pattern.type }}</span>
+              <span class="pattern-value">{{ pattern.pattern }}</span>
+            </div>
+            <div class="pattern-description">{{ pattern.description }}</div>
+            <div class="pattern-recommendations">
+              <div *ngFor="let rec of pattern.recommendations" class="pattern-rec">
+                💡 {{ rec }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noPatterns>
+          <div class="empty-state">
+            <p>{{ language.translate('aiAnalytics.forecast.noData') }}</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="recommendations-section glass-panel" *ngIf="dashboard.recommendations.length > 0">
+      <div class="section-header">
+        <h3>💎 {{ language.translate('aiAnalytics.recommendations.title') }}</h3>
+        <span class="subtitle">{{ language.translate('aiAnalytics.recommendations.impact') }}</span>
+      </div>
+
+      <div class="recommendations-list">
+        <div *ngFor="let rec of dashboard.recommendations" class="recommendation-item">
+          <div class="rec-priority">{{ rec.priority }}</div>
+          <div class="rec-content">
+            <div class="rec-category">{{ rec.category }}</div>
+            <div class="rec-amounts">
+              <div class="amount-pair">
+                <span class="label">Hiện tại:</span>
+                <span class="value current">{{ formatCurrency(rec.currentAmount) }}</span>
+              </div>
+              <span class="arrow">→</span>
+              <div class="amount-pair">
+                <span class="label">Mục tiêu:</span>
+                <span class="value target">{{ formatCurrency(rec.targetAmount) }}</span>
+              </div>
+            </div>
+            <div class="rec-savings">
+              <span class="savings-label">Tiết kiệm tiềm năng:</span>
+              <span class="savings-amount">{{ formatCurrency(rec.savingsPotential) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

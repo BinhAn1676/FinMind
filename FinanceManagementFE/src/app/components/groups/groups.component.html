@@ -1,0 +1,82 @@
+<div class="groups-page" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <div class="groups-shell">
+    <aside class="groups-filter">
+      <div class="groups-filter__header">
+        <h2>{{ translate('groups.title') }}</h2>
+        <button class="ghost-icon" (click)="fetchGroups()" title="{{ translate('groups.refresh') }}">⟳</button>
+      </div>
+      <button class="create-btn" (click)="openCreateModal()">
+        + {{ translate('groups.create.button') }}
+      </button>
+      <div class="search-box">
+        <input
+          type="text"
+          [(ngModel)]="query"
+          (keyup.enter)="executeSearch()"
+          [placeholder]="translate('groups.searchPlaceholder')"
+        />
+        <button class="search-btn" (click)="executeSearch()" title="{{ translate('groups.searchAction') }}">
+          🔍
+        </button>
+      </div>
+
+      <div class="group-list" *ngIf="groups.length; else emptyState">
+        <div
+          class="group-item"
+          *ngFor="let group of groups"
+          [class.active]="group.id === selectedGroupId"
+          (click)="selectGroup(group)"
+        >
+          <div class="avatar">
+            <ng-container *ngIf="group.avatarFileId && avatarUrls[group.avatarFileId]; else initials">
+              <img [src]="avatarUrls[group.avatarFileId]" [alt]="group.name" />
+            </ng-container>
+            <ng-template #initials>
+              <span>{{ group.name | slice:0:2 }}</span>
+            </ng-template>
+          </div>
+          <div class="group-meta">
+            <div class="name">{{ group.name }}</div>
+            <div class="members">
+              {{ translate('groups.memberLabel') }}: {{ group.memberCount || 0 }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="groups-content">
+      <div class="content-backdrop"></div>
+      <div class="content-card">
+        <ng-container *ngIf="selectedGroupId; else welcome">
+          <app-group-detail
+            [groupId]="selectedGroupId"
+            [initialTab]="initialTab"
+            (deleted)="handleGroupDeleted()"
+          ></app-group-detail>
+        </ng-container>
+        <ng-template #welcome>
+          <div class="empty-state-card">
+            <div class="state-icon">👋</div>
+            <h3>{{ translate('groups.welcomeTitle') }}</h3>
+            <p>{{ translate('groups.welcomeHint') }}</p>
+          </div>
+        </ng-template>
+      </div>
+    </section>
+  </div>
+
+  <app-group-create-modal
+    *ngIf="showCreateModal"
+    (created)="handleCreated($event)"
+    (closed)="handleModalClosed()"
+  ></app-group-create-modal>
+</div>
+
+<ng-template #emptyState>
+  <div class="empty">
+    {{ translate('groups.emptyState') }}
+  </div>
+</ng-template>
+
+

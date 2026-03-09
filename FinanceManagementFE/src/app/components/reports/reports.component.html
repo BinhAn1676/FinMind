@@ -1,0 +1,1214 @@
+<div class="reports-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2>
+      <i class="fa fa-file-text-o"></i>
+      {{ language.translate('menuReports') }}
+    </h2>
+    <p class="subtitle">{{ language.translate('reports.subtitle') }}</p>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+
+    <!-- LEFT: Filters Card -->
+    <div class="filters-panel glass-panel">
+      <div class="panel-header">
+        <div class="header-icon">
+          <i class="fa fa-filter"></i>
+        </div>
+        <h3>{{ language.translate('reports.filtersPanel') }}</h3>
+      </div>
+
+      <div class="panel-body">
+        <form class="report-form">
+
+          <!-- Saved Templates Section (Phase 3) -->
+          <div class="form-section templates-section" *ngIf="savedTemplates.length > 0 || loadingTemplates">
+            <label class="section-label">
+              <i class="fa fa-bookmark"></i>
+              {{ language.translate('reports.templates.title') }}
+            </label>
+
+            <div class="templates-list" *ngIf="!loadingTemplates">
+              <div class="template-item" *ngFor="let template of savedTemplates">
+                <button
+                  type="button"
+                  class="btn-template-load"
+                  (click)="loadTemplate(template)"
+                  [title]="'Load template: ' + template.name">
+                  <i class="fa fa-file-text-o"></i>
+                  {{ template.name }}
+                </button>
+                <button
+                  type="button"
+                  class="btn-template-delete"
+                  (click)="deleteTemplate(template)"
+                  title="Delete template">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="loading-templates" *ngIf="loadingTemplates">
+              <i class="fa fa-spinner fa-spin"></i>
+              {{ language.translate('reports.templates.loading') }}
+            </div>
+          </div>
+
+          <!-- Save Template Button -->
+          <div class="save-template-action">
+            <button
+              type="button"
+              class="btn btn-save-template"
+              (click)="openSaveTemplateDialog()">
+              <i class="fa fa-bookmark-o"></i>
+              {{ language.translate('reports.templates.saveButton') }}
+            </button>
+          </div>
+
+          <!-- Scheduled Reports Section (Phase 3) -->
+          <div class="form-section schedules-section" *ngIf="savedSchedules.length > 0 || loadingSchedules">
+            <label class="section-label">
+              <i class="fa fa-clock-o"></i>
+              {{ language.translate('reports.schedule.savedSchedules') }}
+            </label>
+
+            <div class="schedules-list" *ngIf="!loadingSchedules">
+              <div class="schedule-item" *ngFor="let schedule of savedSchedules">
+                <div class="schedule-info" (click)="viewScheduleDetails(schedule)">
+                  <div class="schedule-main">
+                    <i class="fa fa-envelope-o"></i>
+                    <span class="schedule-email">{{ schedule.email }}</span>
+                  </div>
+                  <div class="schedule-meta">
+                    <span class="schedule-time">
+                      <i class="fa fa-clock-o"></i>
+                      {{ getScheduleTimeDisplay(schedule) }}
+                    </span>
+                    <span class="schedule-frequency">{{ getScheduleFrequencyLabel(schedule) }}</span>
+                    <span class="schedule-status" [class.active]="schedule.active" [class.paused]="!schedule.active">
+                      {{ schedule.active ? language.translate('reports.scheduleDetails.active') : language.translate('reports.scheduleDetails.paused') }}
+                    </span>
+                  </div>
+                </div>
+                <div class="schedule-actions">
+                  <button
+                    type="button"
+                    class="btn-schedule-view"
+                    (click)="viewScheduleDetails(schedule)"
+                    [title]="language.translate('reports.scheduleDetails.viewDetails')">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-schedule-toggle"
+                    (click)="toggleScheduleStatus(schedule)"
+                    [title]="schedule.active ? language.translate('reports.scheduleDetails.pauseSchedule') : language.translate('reports.scheduleDetails.activateSchedule')">
+                    <i class="fa" [class.fa-pause]="schedule.active" [class.fa-play]="!schedule.active"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-schedule-delete"
+                    (click)="deleteSchedule(schedule)"
+                    [title]="language.translate('reports.scheduleDetails.deleteSchedule')">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="loading-schedules" *ngIf="loadingSchedules">
+              <i class="fa fa-spinner fa-spin"></i>
+              {{ language.translate('common.loading') }}
+            </div>
+          </div>
+
+          <!-- Schedule Report Button -->
+          <div class="schedule-action">
+            <button
+              type="button"
+              class="btn btn-schedule"
+              (click)="openScheduleDialog()">
+              <i class="fa fa-clock-o"></i>
+              {{ language.translate('reports.schedule.openButton') }}
+            </button>
+          </div>
+
+          <!-- Report History Section (Phase 5) -->
+          <div class="form-section history-section">
+            <div class="section-header-toggle" (click)="toggleHistorySection()">
+              <label class="section-label">
+                <i class="fa fa-history"></i>
+                {{ language.translate('reports.history.title') }}
+              </label>
+              <i class="fa toggle-icon" [class.fa-chevron-down]="!showHistorySection" [class.fa-chevron-up]="showHistorySection"></i>
+            </div>
+
+            <div class="history-content" *ngIf="showHistorySection">
+              <!-- Loading State -->
+              <div class="loading-history" *ngIf="loadingHistory">
+                <i class="fa fa-spinner fa-spin"></i>
+                {{ language.translate('reports.history.loading') }}
+              </div>
+
+              <!-- Empty State -->
+              <div class="empty-history" *ngIf="!loadingHistory && reportHistory.length === 0">
+                <i class="fa fa-inbox"></i>
+                <p>{{ language.translate('reports.history.empty') }}</p>
+              </div>
+
+              <!-- Bulk Actions Toolbar -->
+              <div class="bulk-actions-toolbar" *ngIf="!loadingHistory && reportHistory.length > 0">
+                <span class="selected-count" *ngIf="selectedHistoryIds.size > 0">
+                  {{ selectedHistoryIds.size }} {{ language.translate('reports.history.selectedCount') }}
+                </span>
+                <button
+                  type="button"
+                  class="btn-bulk-delete"
+                  *ngIf="selectedHistoryIds.size > 0"
+                  (click)="deleteSelectedHistory()">
+                  <i class="fa fa-trash"></i> {{ language.translate('reports.history.deleteSelected') }}
+                </button>
+              </div>
+
+              <!-- History Table -->
+              <div class="history-table-container" *ngIf="!loadingHistory && reportHistory.length > 0">
+                <table class="history-table">
+                  <thead>
+                    <tr>
+                      <th class="checkbox-cell">
+                        <input
+                          type="checkbox"
+                          [checked]="selectAllHistory"
+                          (change)="toggleSelectAllHistory()">
+                      </th>
+                      <th>{{ language.translate('reports.history.executedAt') }}</th>
+                      <th>{{ language.translate('reports.history.reportType') }}</th>
+                      <th>{{ language.translate('reports.history.format') }}</th>
+                      <th>{{ language.translate('reports.history.transactions') }}</th>
+                      <th>{{ language.translate('reports.history.amount') }}</th>
+                      <th>{{ language.translate('reports.history.status') }}</th>
+                      <th>{{ language.translate('reports.history.notifications') }}</th>
+                      <th>{{ language.translate('reports.history.actions') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let history of reportHistory">
+                      <td class="checkbox-cell">
+                        <input
+                          type="checkbox"
+                          [checked]="isHistorySelected(history.id)"
+                          (change)="toggleHistorySelection(history.id)">
+                      </td>
+                      <td class="date-cell">{{ formatDateTime(history.executedAt) }}</td>
+                      <td class="type-cell">
+                        <span class="report-type-badge">{{ history.reportType }}</span>
+                      </td>
+                      <td class="format-cell">{{ history.exportFormat?.toUpperCase() }}</td>
+                      <td class="count-cell">{{ history.transactionCount }}</td>
+                      <td class="amount-cell">{{ formatCurrency(history.totalAmount) }}</td>
+                      <td class="status-cell">
+                        <span class="status-badge" [ngClass]="getStatusBadgeClass(history.status)">
+                          <i class="fa" [ngClass]="getStatusIcon(history.status)"></i>
+                          {{ history.status }}
+                        </span>
+                      </td>
+                      <td class="notifications-cell">
+                        <span class="notification-icon" [class.sent]="history.emailSent" title="Email">
+                          <i class="fa fa-envelope"></i>
+                        </span>
+                        <span class="notification-icon" [class.sent]="history.notificationSent" title="Web Notification">
+                          <i class="fa fa-bell"></i>
+                        </span>
+                      </td>
+                      <td class="actions-cell">
+                        <button
+                          type="button"
+                          class="btn-history-delete"
+                          (click)="deleteReportHistory(history)"
+                          title="{{ language.translate('reports.history.delete') }}">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="pagination-controls" *ngIf="historyTotalPages > 1">
+                  <button
+                    type="button"
+                    class="pagination-btn"
+                    [disabled]="historyPage === 0"
+                    (click)="changeHistoryPage(historyPage - 1)">
+                    <i class="fa fa-chevron-left"></i>
+                  </button>
+                  <span class="pagination-info">
+                    {{ language.translate('reports.history.page') }} {{ historyPage + 1 }} / {{ historyTotalPages }}
+                    ({{ historyTotalElements }} {{ language.translate('reports.history.total') }})
+                  </span>
+                  <button
+                    type="button"
+                    class="pagination-btn"
+                    [disabled]="historyPage >= historyTotalPages - 1"
+                    (click)="changeHistoryPage(historyPage + 1)">
+                    <i class="fa fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date Range Section -->
+          <div class="form-section">
+            <label class="section-label">{{ language.translate('reports.dateRange.label') }}</label>
+
+            <!-- Quick Select Presets -->
+            <div class="preset-buttons">
+              <button
+                type="button"
+                *ngFor="let preset of dateRangePresets"
+                class="preset-btn"
+                [class.active]="selectedDatePreset === preset.value"
+                (click)="selectedDatePreset = preset.value; onDatePresetChange()">
+                {{ language.translate('reports.dateRange.presets.' + preset.value) }}
+              </button>
+            </div>
+
+            <!-- Date Inputs -->
+            <div class="date-inputs-row">
+              <div class="input-group filter-date">
+                <span class="p-float-label">
+                  <p-calendar inputId="startDate"
+                              [(ngModel)]="startDateObj"
+                              (onSelect)="onDateChange()"
+                              (onClearClick)="onDateChange()"
+                              [showIcon]="true"
+                              dateFormat="dd/mm/yy"
+                              [showButtonBar]="true"
+                              [disabled]="selectedDatePreset !== 'custom'"
+                              styleClass="w-full">
+                  </p-calendar>
+                  <label for="startDate">{{ language.translate('reports.dateRange.startDate') }}</label>
+                </span>
+              </div>
+
+              <div class="input-group filter-date">
+                <span class="p-float-label">
+                  <p-calendar inputId="endDate"
+                              [(ngModel)]="endDateObj"
+                              (onSelect)="onDateChange()"
+                              (onClearClick)="onDateChange()"
+                              [showIcon]="true"
+                              dateFormat="dd/mm/yy"
+                              [showButtonBar]="true"
+                              [disabled]="selectedDatePreset !== 'custom'"
+                              styleClass="w-full">
+                  </p-calendar>
+                  <label for="endDate">{{ language.translate('reports.dateRange.endDate') }}</label>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filters Section -->
+          <div class="form-section">
+            <label class="section-label">
+              {{ language.translate('reports.filters.label') }}
+              <span class="optional-badge">{{ language.translate('reports.filters.optional') }}</span>
+            </label>
+
+            <div class="filters-grid">
+              <!-- Transaction Type -->
+              <div class="input-group">
+                <label for="transactionType">{{ language.translate('reports.filters.transactionType') }}</label>
+                <select
+                  id="transactionType"
+                  class="form-input"
+                  [(ngModel)]="reportFilters.transactionType"
+                  name="transactionType">
+                  <option [value]="undefined">{{ language.translate('reports.filters.allTransactions') }}</option>
+                  <option value="IN">{{ language.translate('reports.filters.income') }}</option>
+                  <option value="OUT">{{ language.translate('reports.filters.expense') }}</option>
+                </select>
+              </div>
+
+              <!-- Category -->
+              <div class="input-group">
+                <label for="category">{{ language.translate('reports.filters.category') }}</label>
+                <select
+                  id="category"
+                  class="form-input"
+                  [(ngModel)]="selectedCategory"
+                  name="category"
+                  [disabled]="loadingCategories">
+                  <option [value]="undefined">{{ language.translate('reports.filters.allCategories') }}</option>
+                  <option *ngFor="let cat of categories" [value]="cat.name">
+                    {{ cat.name }}
+                  </option>
+                </select>
+                <small class="input-hint" *ngIf="loadingCategories">
+                  <i class="fa fa-spinner fa-spin"></i> {{ language.translate('reports.loading.categories') }}
+                </small>
+              </div>
+            </div>
+
+            <!-- Bank Accounts (Full Width) -->
+            <div class="input-group">
+              <label for="bankAccounts">
+                {{ language.translate('reports.filters.bankAccounts') }}
+                <span class="label-hint">{{ language.translate('reports.filters.bankAccountsHint') }}</span>
+              </label>
+              <select
+                id="bankAccounts"
+                class="form-input multiselect"
+                [(ngModel)]="reportFilters.bankAccountIds"
+                name="bankAccounts"
+                [disabled]="loadingAccounts"
+                multiple>
+                <option *ngFor="let account of bankAccounts" [value]="account.bankAccountId">
+                  {{ account.accountLabel || account.accountNumber }} ({{ account.bankBrandName }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Advanced Filters Section (Phase 2) -->
+          <div class="form-section">
+            <label class="section-label">
+              {{ language.translate('reports.advancedFilters.label') }}
+            </label>
+
+            <!-- Text Search -->
+            <div class="input-group">
+              <label for="textSearch">{{ language.translate('reports.advancedFilters.textSearch') }}</label>
+              <div class="input-with-icon">
+                <i class="fa fa-search"></i>
+                <input
+                  type="text"
+                  id="textSearch"
+                  class="form-input"
+                  [(ngModel)]="reportFilters.textSearch"
+                  name="textSearch"
+                  [placeholder]="language.translate('reports.advancedFilters.textSearchPlaceholder')">
+              </div>
+            </div>
+
+            <!-- Amount Range -->
+            <div class="filters-grid">
+              <div class="input-group">
+                <label for="minAmount">{{ language.translate('reports.advancedFilters.minAmount') }}</label>
+                <div class="input-with-icon">
+                  <i class="fa fa-money"></i>
+                  <input
+                    type="number"
+                    id="minAmount"
+                    class="form-input"
+                    [(ngModel)]="reportFilters.minAmount"
+                    name="minAmount"
+                    placeholder="0"
+                    min="0">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="maxAmount">{{ language.translate('reports.advancedFilters.maxAmount') }}</label>
+                <div class="input-with-icon">
+                  <i class="fa fa-money"></i>
+                  <input
+                    type="number"
+                    id="maxAmount"
+                    class="form-input"
+                    [(ngModel)]="reportFilters.maxAmount"
+                    name="maxAmount"
+                    [placeholder]="language.translate('reports.advancedFilters.noLimit')"
+                    min="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export Options Section (Phase 2 & 3) -->
+          <div class="form-section">
+            <label class="section-label">
+              {{ language.translate('reports.exportOptions.label') }}
+            </label>
+
+            <!-- Sort Order -->
+            <div class="input-group">
+              <label for="sortOrder">{{ language.translate('reports.exportOptions.sortBy') }}</label>
+              <select
+                id="sortOrder"
+                class="form-input"
+                [(ngModel)]="sortOrder"
+                name="sortOrder">
+                <option value="dateDesc">{{ language.translate('reports.exportOptions.sortOptions.dateDesc') }}</option>
+                <option value="dateAsc">{{ language.translate('reports.exportOptions.sortOptions.dateAsc') }}</option>
+                <option value="amountDesc">{{ language.translate('reports.exportOptions.sortOptions.amountDesc') }}</option>
+                <option value="amountAsc">{{ language.translate('reports.exportOptions.sortOptions.amountAsc') }}</option>
+              </select>
+            </div>
+
+            <!-- Export Format (Phase 3) -->
+            <div class="input-group">
+              <label for="exportFormat">{{ language.translate('reports.exportOptions.format') }}</label>
+              <select
+                id="exportFormat"
+                class="form-input"
+                [(ngModel)]="exportFormat"
+                name="exportFormat">
+                <option value="excel">{{ language.translate('reports.exportOptions.formats.excel') }}</option>
+                <option value="pdf">{{ language.translate('reports.exportOptions.formats.pdf') }}</option>
+                <option value="csv">{{ language.translate('reports.exportOptions.formats.csv') }}</option>
+              </select>
+            </div>
+
+            <!-- Include Summary Sheet -->
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="includeSummarySheet"
+                  name="includeSummarySheet">
+                <span>{{ language.translate('reports.exportOptions.includeSummary') }}</span>
+              </label>
+            </div>
+
+            <!-- Column Selection (Phase 3) -->
+            <div class="input-group">
+              <label class="section-sublabel">
+                {{ language.translate('reports.exportOptions.selectColumns') }}
+              </label>
+              <div class="column-checkboxes">
+                <label class="checkbox-label" *ngFor="let col of availableColumns">
+                  <input
+                    type="checkbox"
+                    [value]="col.value"
+                    [checked]="selectedColumns.includes(col.value)"
+                    (change)="toggleColumn(col.value)">
+                  <span>{{ language.translate('reports.exportOptions.columns.' + col.value) }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Button -->
+          <div class="preview-actions">
+            <button
+              type="button"
+              class="btn btn-preview"
+              (click)="loadPreview()"
+              [disabled]="isLoadingPreview">
+              <i class="fa" [class.fa-spinner]="isLoadingPreview" [class.fa-spin]="isLoadingPreview" [class.fa-eye]="!isLoadingPreview"></i>
+              <span>{{ isLoadingPreview ? language.translate('reports.actions.previewing') : language.translate('reports.actions.preview') }}</span>
+            </button>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="resetFilters()"
+              [disabled]="isGenerating">
+              {{ language.translate('reports.actions.reset') }}
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-email"
+              (click)="openEmailDialog()"
+              [disabled]="isGenerating || isSendingEmail">
+              <i class="fa fa-envelope"></i>
+              <span>Email Report</span>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="generateReport()"
+              [disabled]="isGenerating">
+              <i class="fa" [class.fa-spinner]="isGenerating" [class.fa-spin]="isGenerating" [class.fa-download]="!isGenerating"></i>
+              <span>{{ isGenerating ? language.translate('reports.actions.generating') : language.translate('reports.actions.generate') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT: Preview Panel (Phase 2) or Info Card -->
+    <div class="info-panel glass-panel">
+      <!-- Preview Mode -->
+      <div *ngIf="showPreview && previewData" class="preview-content">
+        <div class="preview-header">
+          <div class="preview-icon">
+            <i class="fa fa-bar-chart"></i>
+          </div>
+          <h3>{{ language.translate('reports.preview.title') }}</h3>
+          <button class="btn-close-preview" (click)="showPreview = false; previewData = null" [title]="language.translate('common.close')">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+
+        <div class="preview-stats">
+          <!-- Transaction Count -->
+          <div class="preview-stat-card">
+            <div class="stat-icon transactions-icon">
+              <i class="fa fa-list"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">{{ language.translate('reports.preview.transactionCount') }}</span>
+              <span class="stat-value">{{ previewData.transactionCount || 0 }}</span>
+            </div>
+          </div>
+
+          <!-- Total Income -->
+          <div class="preview-stat-card income-card">
+            <div class="stat-icon income-icon">
+              <i class="fa fa-arrow-down"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">{{ language.translate('reports.preview.totalIncome') }}</span>
+              <span class="stat-value income">{{ formatCurrency(previewData.totalIncome || 0) }}</span>
+            </div>
+          </div>
+
+          <!-- Total Expense -->
+          <div class="preview-stat-card expense-card">
+            <div class="stat-icon expense-icon">
+              <i class="fa fa-arrow-up"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">{{ language.translate('reports.preview.totalExpense') }}</span>
+              <span class="stat-value expense">{{ formatCurrency(previewData.totalExpense || 0) }}</span>
+            </div>
+          </div>
+
+          <!-- Net Balance -->
+          <div class="preview-stat-card balance-card">
+            <div class="stat-icon balance-icon">
+              <i class="fa fa-balance-scale"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">{{ language.translate('reports.preview.netBalance') }}</span>
+              <span class="stat-value" [class.positive]="previewData.netAmount >= 0" [class.negative]="previewData.netAmount < 0">
+                {{ formatCurrency(previewData.netAmount || 0) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Average Amount -->
+          <div class="preview-stat-card average-card" *ngIf="previewData.averageAmount">
+            <div class="stat-icon average-icon">
+              <i class="fa fa-calculator"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">{{ language.translate('reports.preview.averageAmount') }}</span>
+              <span class="stat-value">{{ formatCurrency(previewData.averageAmount || 0) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section (Phase 3) -->
+        <div class="charts-section" *ngIf="showCharts">
+          <div class="chart-card">
+            <h4 class="chart-title">
+              <i class="fa fa-pie-chart"></i>
+              {{ language.translate('reports.charts.spendingByCategory') }}
+            </h4>
+            <apx-chart
+              [series]="categoryChartOptions.series"
+              [chart]="categoryChartOptions.chart"
+              [labels]="categoryChartOptions.labels"
+              [colors]="categoryChartOptions.colors"
+              [plotOptions]="categoryChartOptions.plotOptions"
+              [legend]="categoryChartOptions.legend"
+              [dataLabels]="categoryChartOptions.dataLabels"
+              [tooltip]="categoryChartOptions.tooltip">
+            </apx-chart>
+          </div>
+
+          <div class="chart-card">
+            <h4 class="chart-title">
+              <i class="fa fa-line-chart"></i>
+              {{ language.translate('reports.charts.incomeVsExpense') }}
+            </h4>
+            <apx-chart
+              [series]="trendChartOptions.series"
+              [chart]="trendChartOptions.chart"
+              [colors]="trendChartOptions.colors"
+              [dataLabels]="trendChartOptions.dataLabels"
+              [stroke]="trendChartOptions.stroke"
+              [xaxis]="trendChartOptions.xaxis"
+              [yaxis]="trendChartOptions.yaxis"
+              [legend]="trendChartOptions.legend"
+              [tooltip]="trendChartOptions.tooltip"
+              [fill]="trendChartOptions.fill">
+            </apx-chart>
+          </div>
+        </div>
+
+        <div class="preview-info">
+          <i class="fa fa-info-circle"></i>
+          <span>{{ language.translate('reports.preview.info') }}</span>
+        </div>
+      </div>
+
+      <!-- Info Mode (Default) -->
+      <div *ngIf="!showPreview || !previewData" class="info-content">
+        <div class="info-icon">
+          <i class="fa fa-file-excel-o"></i>
+        </div>
+        <h3>{{ language.translate('reports.info.title') }}</h3>
+        <p class="info-description" [innerHTML]="language.translate('reports.info.description')">
+        </p>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <i class="fa fa-check-circle"></i>
+            <span>{{ language.translate('reports.info.features.feature1') }}</span>
+          </div>
+          <div class="feature-item">
+            <i class="fa fa-check-circle"></i>
+            <span>{{ language.translate('reports.info.features.feature2') }}</span>
+          </div>
+          <div class="feature-item">
+            <i class="fa fa-check-circle"></i>
+            <span>{{ language.translate('reports.info.features.feature3') }}</span>
+          </div>
+          <div class="feature-item phase2-badge">
+            <i class="fa fa-star"></i>
+            <span [innerHTML]="language.translate('reports.info.features.feature4')"></span>
+          </div>
+        </div>
+
+        <div class="helper-box">
+          <p>{{ language.translate('reports.info.helperText') }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Save Template Dialog (Phase 3) -->
+  <div class="modal-overlay" *ngIf="showSaveTemplateDialog" (mousedown)="onOverlayMouseDown($event, 'saveTemplate')">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-bookmark"></i>
+          {{ language.translate('reports.templates.saveModal.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="cancelSaveTemplate()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">
+          {{ language.translate('reports.templates.saveModal.description') }}
+        </p>
+
+        <div class="input-group">
+          <label for="templateName">{{ language.translate('reports.templates.saveModal.nameLabel') }}</label>
+          <input
+            type="text"
+            id="templateName"
+            class="form-input"
+            [(ngModel)]="newTemplateName"
+            [ngModelOptions]="{standalone: true}"
+            [placeholder]="language.translate('reports.templates.saveModal.namePlaceholder')"
+            maxlength="50"
+            (keyup.enter)="saveTemplate()">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelSaveTemplate()">
+          {{ language.translate('reports.templates.saveModal.cancel') }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveTemplate()">
+          <i class="fa fa-save"></i>
+          {{ language.translate('reports.templates.saveModal.save') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Report Dialog (Phase 3) -->
+  <div class="modal-overlay" *ngIf="showEmailDialog" (mousedown)="onOverlayMouseDown($event, 'email')">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-envelope"></i>
+          {{ language.translate('reports.email.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="cancelEmailDialog()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">
+          Enter the recipient's email address to send the generated report.
+        </p>
+
+        <div class="input-group">
+          <label for="recipientEmail">Recipient Email</label>
+          <div class="input-with-icon">
+            <i class="fa fa-envelope-o"></i>
+            <input
+              type="email"
+              id="recipientEmail"
+              class="form-input"
+              [(ngModel)]="recipientEmail"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="recipient@example.com"
+              (keyup.enter)="sendReportByEmail()">
+          </div>
+        </div>
+
+        <div class="email-info-box">
+          <i class="fa fa-info-circle"></i>
+          <span>The report will be generated in <strong>{{ exportFormat.toUpperCase() }}</strong> format and sent as an email attachment.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelEmailDialog()" [disabled]="isSendingEmail">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="sendReportByEmail()" [disabled]="isSendingEmail">
+          <i class="fa" [class.fa-spinner]="isSendingEmail" [class.fa-spin]="isSendingEmail" [class.fa-paper-plane]="!isSendingEmail"></i>
+          {{ isSendingEmail ? 'Sending...' : 'Send Report' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Report Dialog (Phase 3) -->
+  <div class="modal-overlay" *ngIf="showScheduleDialog" (mousedown)="onOverlayMouseDown($event, 'schedule')">
+    <div class="modal-dialog" [class.modal-dialog-wide]="scheduleUseCron">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-clock-o"></i>
+          {{ language.translate('reports.schedule.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="cancelScheduleDialog()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">
+          {{ language.translate('reports.schedule.description') }}
+        </p>
+
+        <div class="input-group">
+          <label for="scheduleEmail">{{ language.translate('reports.schedule.emailLabel') }}</label>
+          <div class="input-with-icon">
+            <i class="fa fa-envelope-o"></i>
+            <input
+              type="email"
+              id="scheduleEmail"
+              class="form-input"
+              [(ngModel)]="scheduleEmail"
+              [ngModelOptions]="{standalone: true}"
+              [placeholder]="language.translate('reports.schedule.emailPlaceholder')">
+          </div>
+        </div>
+
+        <!-- Phase 4: Schedule Type Selection -->
+        <div class="schedule-type-toggle">
+          <label class="type-option">
+            <input
+              type="radio"
+              [(ngModel)]="scheduleUseCron"
+              [value]="false"
+              [ngModelOptions]="{standalone: true}">
+            <span><i class="fa fa-calendar"></i> {{ language.translate('reports.schedule.basicSchedule') }}</span>
+          </label>
+          <label class="type-option">
+            <input
+              type="radio"
+              [(ngModel)]="scheduleUseCron"
+              [value]="true"
+              [ngModelOptions]="{standalone: true}">
+            <span><i class="fa fa-cog"></i> {{ language.translate('reports.schedule.customCron') }}</span>
+          </label>
+        </div>
+
+        <!-- Simple Mode (Phase 3 - Legacy) -->
+        <div *ngIf="!scheduleUseCron" class="legacy-schedule-mode">
+          <div class="input-group">
+            <label for="scheduleFrequency">{{ language.translate('reports.schedule.frequencyLabel') }}</label>
+            <select
+              id="scheduleFrequency"
+              class="form-input"
+              [(ngModel)]="scheduleFrequency"
+              [ngModelOptions]="{standalone: true}">
+              <option value="daily">{{ language.translate('reports.schedule.frequencies.daily') }}</option>
+              <option value="weekly">{{ language.translate('reports.schedule.frequencies.weekly') }}</option>
+              <option value="monthly">{{ language.translate('reports.schedule.frequencies.monthly') }}</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="scheduleHour">{{ language.translate('reports.schedule.hourLabel') }}</label>
+            <select
+              id="scheduleHour"
+              class="form-input"
+              [(ngModel)]="scheduleHour"
+              [ngModelOptions]="{standalone: true}">
+              <option [value]="0">00:00 (Midnight)</option>
+              <option [value]="1">01:00</option>
+              <option [value]="2">02:00</option>
+              <option [value]="3">03:00</option>
+              <option [value]="4">04:00</option>
+              <option [value]="5">05:00</option>
+              <option [value]="6">06:00</option>
+              <option [value]="7">07:00</option>
+              <option [value]="8">08:00</option>
+              <option [value]="9">09:00</option>
+              <option [value]="10">10:00</option>
+              <option [value]="11">11:00</option>
+              <option [value]="12">12:00 (Noon)</option>
+              <option [value]="13">13:00</option>
+              <option [value]="14">14:00</option>
+              <option [value]="15">15:00</option>
+              <option [value]="16">16:00</option>
+              <option [value]="17">17:00</option>
+              <option [value]="18">18:00</option>
+              <option [value]="19">19:00</option>
+              <option [value]="20">20:00</option>
+              <option [value]="21">21:00</option>
+              <option [value]="22">22:00</option>
+              <option [value]="23">23:00</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cron Mode (Phase 4) -->
+        <div *ngIf="scheduleUseCron" class="cron-schedule-mode">
+          <app-cron-builder
+            [initialExpression]="scheduleCronExpression"
+            (cronChange)="onCronChange($event)"
+            (validChange)="onCronValidChange($event)">
+          </app-cron-builder>
+        </div>
+
+        <!-- Web Notifications (Phase 5) -->
+        <div class="web-notification-section">
+          <div class="notification-toggle-header">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [(ngModel)]="scheduleWebNotificationEnabled"
+                [ngModelOptions]="{standalone: true}">
+              <span><i class="fa fa-bell"></i> {{ language.translate('reports.webNotifications.enableLabel') }}</span>
+            </label>
+          </div>
+
+          <div *ngIf="scheduleWebNotificationEnabled" class="notification-settings">
+            <div class="notification-options">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="scheduleNotifyOnSuccess"
+                  [ngModelOptions]="{standalone: true}">
+                <span><i class="fa fa-check-circle"></i> {{ language.translate('reports.webNotifications.notifyOnSuccess') }}</span>
+              </label>
+
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="scheduleNotifyOnFailure"
+                  [ngModelOptions]="{standalone: true}">
+                <span><i class="fa fa-exclamation-triangle"></i> {{ language.translate('reports.webNotifications.notifyOnFailure') }}</span>
+              </label>
+            </div>
+            <small class="help-text">
+              <i class="fa fa-info-circle"></i> {{ language.translate('reports.webNotifications.hint') }}
+            </small>
+          </div>
+        </div>
+
+        <div class="schedule-info-box">
+          <i class="fa fa-info-circle"></i>
+          <div>
+            <strong>{{ language.translate('reports.schedule.filtersInfo') }}</strong>
+            <ul>
+              <li>{{ language.translate('reports.schedule.filtersDateRange') }}</li>
+              <li>{{ language.translate('reports.schedule.filtersFormat').replace('{{format}}', exportFormat.toUpperCase()) }}</li>
+              <li>{{ language.translate('reports.schedule.filtersColumns').replace('{{count}}', selectedColumns.length.toString()) }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelScheduleDialog()" [disabled]="isSavingSchedule">
+          {{ language.translate('reports.schedule.cancel') }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveSchedule()" [disabled]="isSavingSchedule">
+          <i class="fa" [class.fa-spinner]="isSavingSchedule" [class.fa-spin]="isSavingSchedule" [class.fa-calendar-check-o]="!isSavingSchedule"></i>
+          {{ isSavingSchedule ? language.translate('reports.schedule.creating') : language.translate('reports.schedule.create') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Template Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirmDialog" (mousedown)="onOverlayMouseDown($event, 'deleteConfirm')">
+    <div class="modal-dialog delete-confirm-dialog">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-exclamation-triangle"></i>
+          {{ language.translate('reports.templates.deleteConfirm.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="cancelDeleteTemplate()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">
+          {{ language.translate('reports.templates.deleteConfirm.message') }} <strong>"{{ templateToDelete?.name }}"</strong>?
+        </p>
+        <p class="warning-text">
+          <i class="fa fa-info-circle"></i>
+          {{ language.translate('reports.templates.deleteConfirm.warning') }}
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelDeleteTemplate()">
+          <i class="fa fa-times"></i>
+          {{ language.translate('common.cancel') }}
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDeleteTemplate()">
+          <i class="fa fa-trash"></i>
+          {{ language.translate('common.delete') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Schedule Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteScheduleDialog" (mousedown)="onOverlayMouseDown($event, 'deleteSchedule')">
+    <div class="modal-dialog delete-confirm-dialog">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-exclamation-triangle"></i>
+          {{ language.translate('reports.schedule.deleteConfirm.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="cancelDeleteSchedule()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description" [innerHTML]="language.translate('reports.schedule.deleteConfirm.message').replace('{{email}}', scheduleToDelete?.email || '')">
+        </p>
+        <p class="warning-text">
+          <i class="fa fa-info-circle"></i>
+          {{ language.translate('reports.schedule.deleteConfirm.warning') }}
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelDeleteSchedule()">
+          <i class="fa fa-times"></i>
+          {{ language.translate('reports.schedule.deleteConfirm.cancel') }}
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDeleteSchedule()">
+          <i class="fa fa-trash"></i>
+          {{ language.translate('reports.schedule.deleteConfirm.confirm') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Report History Confirmation Modal (Phase 5) -->
+  <div class="modal-overlay" *ngIf="showDeleteHistoryDialog" (mousedown)="onOverlayMouseDown($event, 'deleteHistory')">
+    <div class="modal-dialog delete-confirm-dialog">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-exclamation-triangle"></i>
+          {{ language.translate('reports.history.deleteConfirm.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="cancelDeleteHistory()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">
+          {{ language.translate('reports.history.deleteConfirm.message') }}
+          <strong>"{{ formatDateTime(historyToDelete?.executedAt) }}"</strong>?
+        </p>
+        <p class="warning-text">
+          <i class="fa fa-info-circle"></i>
+          {{ language.translate('reports.history.deleteConfirm.warning') }}
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelDeleteHistory()">
+          <i class="fa fa-times"></i>
+          {{ language.translate('common.cancel') }}
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDeleteHistory()">
+          <i class="fa fa-trash"></i>
+          {{ language.translate('common.delete') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Delete Confirmation Dialog -->
+  <div class="modal-overlay" *ngIf="showBulkDeleteDialog" (mousedown)="onOverlayMouseDown($event, 'bulkDelete')">
+    <div class="modal-dialog delete-confirm-dialog">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-exclamation-triangle"></i>
+          {{ language.translate('reports.history.bulkDeleteConfirm.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="cancelBulkDelete()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description" [innerHTML]="language.translate('reports.history.bulkDeleteConfirm.message').replace('{{count}}', selectedHistoryIds.size.toString())">
+        </p>
+        <p class="warning-text">
+          <i class="fa fa-info-circle"></i>
+          {{ language.translate('reports.history.bulkDeleteConfirm.warning') }}
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelBulkDelete()">
+          <i class="fa fa-times"></i>
+          {{ language.translate('reports.history.bulkDeleteConfirm.cancel') }}
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmBulkDelete()">
+          <i class="fa fa-trash"></i>
+          {{ language.translate('reports.history.bulkDeleteConfirm.confirm').replace('{{count}}', selectedHistoryIds.size.toString()) }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Details Dialog -->
+  <div class="modal-overlay" *ngIf="showScheduleDetailsDialog" (mousedown)="onOverlayMouseDown($event, 'scheduleDetails')">
+    <div class="modal-dialog schedule-details-dialog">
+      <div class="modal-header">
+        <h3>
+          <i class="fa fa-info-circle"></i>
+          {{ language.translate('reports.scheduleDetails.title') }}
+        </h3>
+        <button class="btn-close-modal" (click)="closeScheduleDetails()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" *ngIf="selectedSchedule">
+        <div class="details-section">
+          <h4><i class="fa fa-envelope"></i> {{ language.translate('reports.scheduleDetails.emailStatus') }}</h4>
+          <div class="detail-row">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.email') }}:</span>
+            <span class="detail-value">{{ selectedSchedule.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.status') }}:</span>
+            <span class="detail-value">
+              <span class="status-badge" [class.active]="selectedSchedule.active" [class.paused]="!selectedSchedule.active">
+                {{ selectedSchedule.active ? language.translate('reports.scheduleDetails.active') : language.translate('reports.scheduleDetails.paused') }}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <h4><i class="fa fa-clock-o"></i> {{ language.translate('reports.scheduleDetails.configuration') }}</h4>
+          <div class="detail-row" *ngIf="!selectedSchedule.cronExpression">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.frequency') }}:</span>
+            <span class="detail-value">{{ getScheduleFrequencyLabel(selectedSchedule) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="!selectedSchedule.cronExpression">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.time') }}:</span>
+            <span class="detail-value">{{ getScheduleTimeDisplay(selectedSchedule) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedSchedule.cronExpression">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.type') }}:</span>
+            <span class="detail-value">{{ language.translate('reports.scheduleDetails.customCron') }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedSchedule.cronExpression">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.expression') }}:</span>
+            <span class="detail-value cron-expression">{{ selectedSchedule.cronExpression }}</span>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <h4><i class="fa fa-bell"></i> {{ language.translate('reports.scheduleDetails.notifications') }}</h4>
+          <div class="detail-row">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.webNotifications') }}:</span>
+            <span class="detail-value">
+              <i class="fa" [class.fa-check-circle]="selectedSchedule.webNotificationEnabled"
+                 [class.fa-times-circle]="!selectedSchedule.webNotificationEnabled"
+                 [style.color]="selectedSchedule.webNotificationEnabled ? '#4CAF50' : '#FF6B6B'"></i>
+              {{ selectedSchedule.webNotificationEnabled ? language.translate('reports.scheduleDetails.enabled') : language.translate('reports.scheduleDetails.disabled') }}
+            </span>
+          </div>
+          <div class="detail-row" *ngIf="selectedSchedule.webNotificationEnabled">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.notifyOnSuccess') }}:</span>
+            <span class="detail-value">
+              <i class="fa" [class.fa-check]="selectedSchedule.notifyOnSuccess" [class.fa-times]="!selectedSchedule.notifyOnSuccess"></i>
+              {{ selectedSchedule.notifyOnSuccess ? language.translate('reports.scheduleDetails.yes') : language.translate('reports.scheduleDetails.no') }}
+            </span>
+          </div>
+          <div class="detail-row" *ngIf="selectedSchedule.webNotificationEnabled">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.notifyOnFailure') }}:</span>
+            <span class="detail-value">
+              <i class="fa" [class.fa-check]="selectedSchedule.notifyOnFailure" [class.fa-times]="!selectedSchedule.notifyOnFailure"></i>
+              {{ selectedSchedule.notifyOnFailure ? language.translate('reports.scheduleDetails.yes') : language.translate('reports.scheduleDetails.no') }}
+            </span>
+          </div>
+        </div>
+
+        <div class="details-section" *ngIf="selectedSchedule.filters">
+          <h4><i class="fa fa-filter"></i> {{ language.translate('reports.scheduleDetails.reportFilters') }}</h4>
+          <div class="detail-row">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.exportFormat') }}:</span>
+            <span class="detail-value">{{ selectedSchedule.filters?.exportFormat?.toUpperCase() || 'EXCEL' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedSchedule.filters?.selectedColumns">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.columns') }}:</span>
+            <span class="detail-value">{{ selectedSchedule.filters.selectedColumns.length }} {{ language.translate('reports.scheduleDetails.columnsSelected') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.includeSummary') }}:</span>
+            <span class="detail-value">{{ selectedSchedule.filters?.includeSummarySheet ? language.translate('reports.scheduleDetails.yes') : language.translate('reports.scheduleDetails.no') }}</span>
+          </div>
+        </div>
+
+        <div class="details-section" *ngIf="selectedSchedule.lastExecuted">
+          <h4><i class="fa fa-history"></i> {{ language.translate('reports.scheduleDetails.executionHistory') }}</h4>
+          <div class="detail-row">
+            <span class="detail-label">{{ language.translate('reports.scheduleDetails.lastExecuted') }}:</span>
+            <span class="detail-value">{{ formatDateTime(selectedSchedule.lastExecuted) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeScheduleDetails()">
+          <i class="fa fa-times"></i>
+          {{ language.translate('reports.scheduleDetails.close') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

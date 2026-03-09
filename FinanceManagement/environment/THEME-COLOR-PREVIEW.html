@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinAI Theme - Color Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: hsl(217, 30%, 14%);
+            color: white;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(20, 184, 166, 0.9) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .color-card {
+            padding: 2rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .color-primary {
+            background: hsl(199, 89%, 48%);
+        }
+
+        .color-teal {
+            background: hsl(174, 72%, 56%);
+        }
+
+        .color-cyan {
+            background: hsl(211, 85%, 60%);
+        }
+
+        .tabs-demo {
+            display: inline-flex;
+            gap: 0;
+            background: rgba(20, 184, 166, 0.08);
+            border: 1px solid rgba(20, 184, 166, 0.15);
+            border-radius: 0.625rem;
+            padding: 0.375rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 0.625rem 2rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab.active {
+            color: white;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+            box-shadow: 0 2px 8px rgba(20, 184, 166, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .cards-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .ai-card {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+
+        .ai-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-icon {
+            padding: 0.75rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-icon-1 {
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%);
+            color: #14b8a6;
+            box-shadow: 0 0 24px rgba(20, 184, 166, 0.3);
+        }
+
+        .ai-icon-2 {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(20, 184, 166, 0.2) 100%);
+            color: #3b82f6;
+            box-shadow: 0 0 24px rgba(59, 130, 246, 0.3);
+        }
+
+        .ai-icon-3 {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(20, 184, 166, 0.2) 100%);
+            color: #06b6d4;
+            box-shadow: 0 0 24px rgba(6, 182, 212, 0.3);
+        }
+
+        .progress-bar {
+            height: 0.5rem;
+            background: rgba(20, 184, 166, 0.2);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 75%;
+            background: linear-gradient(90deg, #14b8a6 0%, #3b82f6 100%);
+        }
+
+        .button-demo {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: hsl(199, 89%, 48%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: hsl(199, 89%, 42%);
+            box-shadow: 0 0 40px -10px rgba(20, 184, 166, 0.6);
+        }
+
+        .btn-teal {
+            background: hsl(174, 72%, 56%);
+            color: white;
+        }
+
+        .btn-teal:hover {
+            background: hsl(174, 72%, 50%);
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 FinAI Theme - Teal Enhancements Preview</h1>
+
+        <div class="section">
+            <h2 class="section-title">Color Palette</h2>
+            <div class="color-grid">
+                <div class="color-card color-primary">
+                    <h3>Primary Cyan-Blue</h3>
+                    <code>hsl(199, 89%, 48%)</code>
+                    <p style="margin-top: 0.5rem;">#0BACBC</p>
+                </div>
+                <div class="color-card color-teal">
+                    <h3>Accent Teal</h3>
+                    <code>hsl(174, 72%, 56%)</code>
+                    <p style="margin-top: 0.5rem;">#14B8A6</p>
+                </div>
+                <div class="color-card color-cyan">
+                    <h3>Secondary Cyan</h3>
+                    <code>hsl(211, 85%, 60%)</code>
+                    <p style="margin-top: 0.5rem;">#3B82F6</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Tab Navigation (Enhanced)</h2>
+            <div class="tabs-demo">
+                <div class="tab active">Login</div>
+                <div class="tab">Register</div>
+            </div>
+            <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">
+                ✨ New features: Teal gradient on active, subtle glow, larger padding
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">AI Feature Cards</h2>
+            <div class="cards-demo">
+                <div class="ai-card">
+                    <div class="ai-card-header">
+                        <div class="ai-icon ai-icon-1">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Smart Analysis</h3>
+                            <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">AI-driven insights</p>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-header">
+                        <div class="ai-icon ai-icon-2">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Secure Access</h3>
+                            <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">Bank-grade encryption</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-header">
+                        <div class="ai-icon ai-icon-3">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3>Wealth Growth</h3>
+                            <p style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.6);">+12.4% increase</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Buttons</h2>
+            <div class="button-demo">
+                <button class="btn btn-primary">Primary Button</button>
+                <button class="btn btn-teal">Teal Accent</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">📊 What Changed</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    ✅ Added teal accent color <code>hsl(174, 72%, 56%)</code>
+                </li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    ✅ Increased form box width from <code>800px</code> to <code>900px</code>
+                </li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    ✅ Enhanced tabs with gradient background + glow effect
+                </li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    ✅ Added white-to-teal gradient on "Welcome to FinAI" title
+                </li>
+                <li style="padding: 0.5rem 0;">
+                    ✅ Updated AI cards with teal-cyan color scheme
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<div 
+  class="chat-box" 
+  [class.minimized]="isMinimized"
+  [class.expanded]="isExpanded"
+  [style.right.px]="getPositionRight()"
+  [style.bottom.px]="getPositionBottom()">
+  
+  <!-- Minimized View -->
+  <div class="minimized-header" *ngIf="isMinimized" (click)="onMaximize()">
+    <div class="mini-avatar">
+      <img [src]="getRoomAvatar()" [alt]="room.name">
+    </div>
+    <span class="mini-name">{{ room.name }}</span>
+    <button class="close-mini-btn" (click)="onClose(); $event.stopPropagation()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Full Chat Box -->
+  <div 
+    class="chat-content" 
+    *ngIf="!isMinimized"
+    [class.drag-over]="isDragOver"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)">
+    
+    <!-- Drag & Drop Overlay -->
+    <div class="drop-overlay" *ngIf="isDragOver">
+      <div class="drop-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <span class="drop-text">Thả file vào đây</span>
+    </div>
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="header-info" (click)="onToggleExpand()">
+        <div class="header-avatar">
+          <img [src]="getRoomAvatar()" [alt]="room.name">
+        </div>
+        <div class="header-text">
+          <span class="header-name">{{ room.name }}</span>
+          <span class="header-status">Hoạt động</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Open in Group Detail -->
+        <button class="header-btn open-full-btn" (click)="navigateToGroupChat()" title="Mở chat toàn màn hình">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>
+        <button class="header-btn" title="Gọi video">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="23 7 16 12 23 17 23 7"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+        </button>
+        <button class="header-btn" title="Gọi thoại">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </button>
+        <button class="header-btn" (click)="onMinimize()" title="Thu nhỏ">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button class="header-btn" (click)="onToggleExpand()" title="Mở rộng">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path *ngIf="!isExpanded" d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            <path *ngIf="isExpanded" d="M4 14h6v6M14 4h6v6M20 10l-6 6M4 14l6-6"/>
+          </svg>
+        </button>
+        <button class="header-btn close-btn" (click)="onClose()" title="Đóng">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div 
+      class="messages-container" 
+      #messagesContainer
+      (scroll)="onScroll($event)">
+      
+      <!-- Loading More -->
+      <div class="loading-more" *ngIf="loadingMore">
+        <div class="loading-spinner small"></div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="loading">
+        <div class="loading-spinner"></div>
+        <span>Đang tải tin nhắn...</span>
+      </div>
+
+      <!-- Messages -->
+      <ng-container *ngIf="!loading">
+        <ng-container *ngFor="let message of messages; let i = index">
+          <!-- Date Divider -->
+          <div class="date-divider" *ngIf="shouldShowDateDivider(i)">
+            <span>{{ formatDate(message.createdAt) }}</span>
+          </div>
+
+          <!-- Message -->
+          <div 
+            class="message" 
+            [class.own]="isMyMessage(message)"
+            [class.deleted]="message.isDeleted">
+            
+            <!-- Avatar (only for others' messages) -->
+            <div class="message-avatar" *ngIf="!isMyMessage(message)">
+              <img [src]="getSenderAvatar(message)" [alt]="message.senderName">
+            </div>
+
+            <div class="message-content">
+              <!-- Sender name (for group chat) -->
+              <span class="sender-name" *ngIf="!isMyMessage(message)">
+                {{ message.senderName }}
+              </span>
+
+              <!-- Reply Preview -->
+              <div class="reply-preview" *ngIf="message.replyToContent">
+                <span class="reply-label">Trả lời</span>
+                <span class="reply-text">{{ message.replyToContent }}</span>
+              </div>
+
+              <!-- Deleted Message -->
+              <div class="message-bubble deleted-bubble" *ngIf="message.isDeleted">
+                <span class="deleted-text">Tin nhắn đã bị xóa</span>
+              </div>
+
+              <!-- Image Message -->
+              <div class="message-bubble image-bubble" *ngIf="!message.isDeleted && message.messageType === 'IMAGE'">
+                <img 
+                  *ngIf="getFileUrl(message)"
+                  [src]="getFileUrl(message)" 
+                  [alt]="message.fileName"
+                  class="message-image"
+                  (click)="downloadFile(message)">
+                <div class="image-loading" *ngIf="!getFileUrl(message)">
+                  <div class="loading-spinner small"></div>
+                  <span>Đang tải ảnh...</span>
+                </div>
+                <span class="image-caption" *ngIf="message.content && message.content !== '📷 Hình ảnh'">
+                  {{ message.content }}
+                </span>
+              </div>
+
+              <!-- File Message -->
+              <div class="message-bubble file-bubble" *ngIf="!message.isDeleted && message.messageType === 'FILE'">
+                <div class="file-info" (click)="downloadFile(message)">
+                  <span class="file-icon">{{ getFileIcon(message.fileType) }}</span>
+                  <div class="file-details">
+                    <span class="file-name">{{ message.fileName }}</span>
+                    <span class="file-size">{{ formatFileSize(message.fileSize) }}</span>
+                  </div>
+                  <button class="download-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Text Message -->
+              <div 
+                class="message-bubble text-bubble" 
+                *ngIf="!message.isDeleted && message.messageType === 'TEXT'"
+                [class.ai-mention]="message.mentionsAI">
+                <span class="ai-badge" *ngIf="message.mentionsAI">🤖 AI</span>
+                <span class="message-text">{{ message.content }}</span>
+              </div>
+
+              <!-- Sticker Message -->
+              <div 
+                class="message-bubble sticker-bubble" 
+                *ngIf="!message.isDeleted && message.messageType === 'STICKER'">
+                <span class="sticker-content">{{ message.content }}</span>
+              </div>
+
+              <!-- Message Meta -->
+              <div class="message-meta">
+                <span class="message-time">{{ formatTime(message.createdAt) }}</span>
+                <span class="edited-badge" *ngIf="message.isEdited">đã chỉnh sửa</span>
+              </div>
+            </div>
+
+            <!-- Message Actions -->
+            <div class="message-actions" *ngIf="!message.isDeleted">
+              <button class="action-btn" (click)="replyTo(message)" title="Trả lời">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 17 4 12 9 7"/>
+                  <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <!-- AI Typing Indicator (Larger and more prominent) -->
+      <div class="ai-typing-indicator" *ngIf="aiTyping">
+        <div class="ai-typing-content">
+          <img src="/assets/avatar/finbot.png" alt="FinBot" class="ai-avatar" />
+          <div class="ai-typing-bubble">
+            <span class="ai-typing-dots">
+              <span></span><span></span><span></span>
+            </span>
+            <span class="ai-typing-text">{{ aiTypingMessage }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regular User Typing Indicator -->
+      <div class="typing-indicator" *ngIf="typingUsers.size > 0 && !aiTyping">
+        <span class="typing-dots">
+          <span></span><span></span><span></span>
+        </span>
+        <span class="typing-text">{{ getTypingText() }}</span>
+      </div>
+    </div>
+
+    <!-- Reply Bar -->
+    <div class="reply-bar" *ngIf="replyingTo">
+      <div class="reply-info">
+        <span class="reply-label">Đang trả lời {{ replyingTo.senderName }}</span>
+        <span class="reply-content">{{ replyingTo.content }}</span>
+      </div>
+      <button class="cancel-reply-btn" (click)="cancelReply()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Multiple Files Preview -->
+    <div class="files-preview" *ngIf="selectedFiles.length > 0">
+      <div class="files-header">
+        <span class="files-count">{{ selectedFiles.length }} file đã chọn</span>
+        <button class="clear-all-btn" (click)="clearSelectedFile()" title="Xóa tất cả">
+          Xóa tất cả
+        </button>
+      </div>
+      <div class="files-list">
+        <div class="file-preview-item" *ngFor="let preview of filePreviews; let i = index">
+          <div class="preview-content">
+            <img *ngIf="preview.previewUrl" [src]="preview.previewUrl" class="preview-image">
+            <div *ngIf="!preview.previewUrl" class="preview-file">
+              <span class="file-icon">{{ getFileIcon(preview.file.type) }}</span>
+            </div>
+          </div>
+          <span class="preview-name">{{ preview.file.name }}</span>
+          <button class="remove-file-btn" (click)="clearSelectedFile(i)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Suggestions -->
+    <div class="ai-suggestions" *ngIf="showAISuggestions">
+      <button 
+        class="suggestion-btn" 
+        *ngFor="let suggestion of aiSuggestions"
+        (click)="selectAISuggestion(suggestion)">
+        <span class="suggestion-icon">{{ suggestion.icon }}</span>
+        <span class="suggestion-label">{{ suggestion.label }}</span>
+      </button>
+    </div>
+
+    <!-- Sticker Picker -->
+    <div class="sticker-picker" *ngIf="showStickerPicker">
+      <div class="sticker-header">
+        <span class="sticker-title">Stickers</span>
+        <button class="sticker-close-btn" (click)="closeStickerPicker()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="sticker-categories">
+        <button 
+          class="category-btn"
+          *ngFor="let category of stickerCategories; let i = index"
+          [class.active]="selectedStickerCategory === i"
+          (click)="selectStickerCategory(i)"
+          [title]="category.name">
+          {{ category.icon }}
+        </button>
+      </div>
+      <div class="sticker-grid">
+        <button 
+          class="sticker-item"
+          *ngFor="let sticker of stickerCategories[selectedStickerCategory].stickers"
+          (click)="sendSticker(sticker)">
+          {{ sticker }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="input-actions left">
+        <button class="input-btn" (click)="triggerFileInput()" title="Đính kèm file">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+        <button class="input-btn" [class.active]="showStickerPicker" (click)="toggleStickerPicker()" title="Sticker">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="input-wrapper">
+        <textarea
+          #messageInput
+          class="message-input"
+          placeholder="Aa"
+          [(ngModel)]="newMessage"
+          (input)="onMessageInput($event)"
+          (keydown)="onKeyDown($event)"
+          [disabled]="sendingMessage || uploadingFile"
+          rows="1"></textarea>
+        <span class="input-hint">Alt+Enter để xuống dòng</span>
+      </div>
+
+      <div class="input-actions right">
+        <button 
+          class="send-btn" 
+          [class.active]="newMessage.trim() || selectedFiles.length > 0"
+          [disabled]="(!newMessage.trim() && selectedFiles.length === 0) || sendingMessage || uploadingFile"
+          (click)="sendMessage()">
+          <svg *ngIf="!sendingMessage && !uploadingFile" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+          <div *ngIf="sendingMessage || uploadingFile" class="loading-spinner small"></div>
+        </button>
+      </div>
+
+      <input 
+        type="file" 
+        #fileInput 
+        hidden 
+        multiple
+        (change)="onFileSelected($event)"
+        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+    </div>
+  </div>
+</div>

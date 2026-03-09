@@ -1,0 +1,99 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: "finances"
+  profiles:
+    active: default
+  config:
+    import: "optional:configserver:http://localhost:8071/" #configserver:http://configserver:8071/ #configserver:http://localhost:8071/
+  cloud:
+    bus:
+      enabled: true
+    stream:
+      kafka:
+        binder:
+          brokers: 192.168.0.101:9194
+      bus:
+        trace:
+          enabled: true
+        refresh:
+          enabled: true
+        env:
+          enabled: true
+  kafka:
+    bootstrap-servers: 192.168.0.101:9194
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: user-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/ #http://eurekaserver:8070/eureka/ #http://localhost:8070/eureka/
+
+sepay:
+  api:
+    accounts-cron: "0 0 * * * ?"
+    transactions-cron: "0 * * * * ?"
+    accounts-url: ""
+    transactions-url: ""
+    oauth2-accounts-url: ""
+    oauth2-transactions-url: ""
+    oauth2-webhooks-url: ""
+  oauth2:
+    enabled: false
+
+info:
+  app:
+    name: "finances"
+    description: "Finance Service for money stuff"
+    version: "1.0.0"
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    shutdown:
+      access: unrestricted
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+endpoints:
+  shutdown:
+    enabled: true
+
+logging:
+  level:
+    com:
+      finance:
+        financeservice: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

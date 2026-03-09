@@ -1,0 +1,239 @@
+spring:
+  application:
+    name: "ai"
+  threads:
+    virtual:
+      enabled: true
+
+  # ============================================
+  # Redis Configuration
+  # ============================================
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: # Leave empty if no password
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 2
+    timeout: 3000ms
+
+  # ============================================
+  # PostgreSQL Database Configuration
+  # ============================================
+  datasource:
+    url: jdbc:postgresql://localhost:5432/finance_ai?useSSL=false&serverTimezone=UTC
+    driver-class-name: org.postgresql.Driver
+    username: "postgres"
+    password: "postgres"
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Use Flyway for migrations
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # Flyway Migration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # ============================================
+  # MongoDB Configuration (Chat History)
+  # ============================================
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/finance_ai_chat?authSource=admin&directConnection=true
+      auto-index-creation: true
+
+  # ============================================
+  # Security - OAuth2 Resource Server
+  # ============================================
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:7080/realms/finance/protocol/openid-connect/certs"
+
+  # ============================================
+  # Spring AI Configuration (Google Gemini)
+  # ============================================
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            model: gemini-2.0-flash
+            temperature: 0.5
+            top-p: 0.9
+        embedding:
+          options:
+            model: text-embedding-004
+
+    # Redis Vector Store for RAG
+    vectorstore:
+      redis:
+        uri: redis://localhost:6379
+        index: financial-insights-index
+        prefix: "ai:vector:"
+
+# ============================================
+# Server Configuration
+# ============================================
+server:
+  port: 8087
+
+# ============================================
+# Management & Monitoring
+# ============================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,info,metrics,flyway
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+# ============================================
+# Info Endpoint
+# ============================================
+info:
+  app:
+    name: "aiservice"
+    description: "AI Service for Intelligent Financial Insights"
+    version: "1.0.0"
+
+# ============================================
+# Security Configuration
+# ============================================
+app:
+  security:
+    sepay:
+      # SePay webhook HMAC secret for signature validation
+      webhook-secret: ${SEPAY_WEBHOOK_SECRET:}
+
+  # ============================================
+  # AI Feature Configuration
+  # ============================================
+  ai:
+    # Insight Generation
+    insights:
+      enabled: true
+      daily-generation-cron: "0 0 6 * * *"  # 6 AM daily
+      cache-ttl-hours: 24
+      max-cards-per-user: 5
+
+    # Anomaly Detection
+    anomaly-detection:
+      enabled: true
+      confidence-threshold: 0.7  # Only trigger alerts above 70% confidence
+      batch-size: 100  # Max transactions per AI request
+      real-time-enabled: true
+      high-amount-threshold: 10000000  # 10M VND
+
+    # Chat Configuration
+    chat:
+      enabled: true
+      max-history-messages: 50  # Keep last 50 messages for context
+      rag-enabled: true
+      function-calling-enabled: true
+
+    # Forecasting
+    forecasting:
+      enabled: true
+      forecast-days: 30  # Generate 30-day forecasts
+      model-type: LINEAR_REGRESSION
+      update-frequency-hours: 24
+
+    # Hybrid Engine (Rule-Based + AI Reasoning)
+    hybrid-engine:
+      ai-enhancement-enabled: true          # Enable AI reasoning to enhance rule-based results
+      ai-timeout-seconds: 30                # Timeout for AI reasoning (falls back to rules if exceeded)
+      fallback-to-rules-on-failure: true    # If AI fails, return rule-based results instead of error
+
+# ============================================
+# Resilience4j Circuit Breaker (for Feign)
+# ============================================
+resilience4j:
+  circuitbreaker:
+    instances:
+      financeService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+        permitted-number-of-calls-in-half-open-state: 3
+
+      keyManagementService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+
+# ============================================
+# Development Profile Overrides
+# ============================================
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    com:
+      finance:
+        aiservice: DEBUG
+    org:
+      springframework:
+        ai: DEBUG
+
+app:
+  ai:
+    anomaly-detection:
+      confidence-threshold: 0.5  # Lower threshold for testing
+    hybrid-engine:
+      ai-timeout-seconds: 45     # More time in dev for debugging
+
+# ============================================
+# Production Profile
+# ============================================
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com:
+      finance:
+        aiservice: INFO
+
+app:
+  ai:
+    anomaly-detection:
+      confidence-threshold: 0.8  # Higher threshold in production
+    hybrid-engine:
+      ai-timeout-seconds: 20     # Tighter timeout in production for responsiveness

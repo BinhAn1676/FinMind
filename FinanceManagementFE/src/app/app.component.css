@@ -1,0 +1,54 @@
+/* Global Background */
+.background-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+  z-index: -1;
+  opacity: 0.05;
+}
+
+/* Ensure body has dark background */
+body {
+  background-color: #0A192F !important;
+  color: #FFFFFF !important;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.2s ease;
+}
+
+.page-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.with-sidebar .content {
+  margin-left: 260px;
+}
+
+.with-sidebar-collapsed .content {
+  margin-left: 72px;
+}
+
+@media (max-width: 992px) {
+  .with-sidebar .content {
+    margin-left: 220px;
+  }
+}

@@ -1,0 +1,102 @@
+<div class="modal-backdrop" (click)="close()"></div>
+<div class="modal-shell">
+  <div class="modal-header">
+    <h3>{{ translate('groups.create.title') }}</h3>
+    <button type="button" class="close-btn" (click)="close()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <input #avatarInput type="file" accept="image/*" (change)="onFileChange($event)" hidden />
+    <div class="group-column">
+      <div class="avatar-circle"
+           [class.uploading]="avatarUploading"
+           [class.disabled]="groupCreated"
+           (click)="triggerAvatarUpload()">
+        <ng-container *ngIf="avatarPreview; else avatarPlaceholder">
+          <img [src]="avatarPreview" alt="Group avatar preview" />
+        </ng-container>
+        <ng-template #avatarPlaceholder>
+          <div class="avatar-placeholder">
+            <span class="icon">📸</span>
+            <span class="text">{{ translate('groups.create.avatarAction') }}</span>
+          </div>
+        </ng-template>
+        <div class="spinner" *ngIf="avatarUploading"></div>
+      </div>
+      <div class="section-title">{{ translate('groups.create.infoTitle') }}</div>
+      <div class="field">
+        <label>{{ translate('groups.create.nameLabel') }}</label>
+        <input [(ngModel)]="name"
+               [placeholder]="translate('groups.create.namePlaceholder')"
+               [disabled]="groupCreated" />
+      </div>
+      <div class="field">
+        <label>{{ translate('groups.create.descriptionLabel') }}</label>
+        <textarea rows="4"
+                  [(ngModel)]="description"
+                  [placeholder]="translate('groups.create.descriptionPlaceholder')"
+                  [disabled]="groupCreated"></textarea>
+      </div>
+      <small class="hint">{{ translate('groups.create.avatarHint') }}</small>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="invite-column">
+      <div class="section-title">{{ translate('groups.create.inviteTitle') }}</div>
+      <div class="field">
+        <div class="input-with-icon">
+          <input
+            [(ngModel)]="inviteQuery"
+            [placeholder]="translate('groups.create.invitePlaceholder')"
+            [disabled]="inviteDisabled"
+            (keyup.enter)="triggerInviteSearch()"
+          />
+          <button type="button" class="invite-search-btn" [disabled]="inviteDisabled" (click)="triggerInviteSearch()">
+            🔍
+          </button>
+        </div>
+      </div>
+      <div class="invite-guard" *ngIf="inviteDisabled">
+        {{ translate('groups.create.inviteDisabledHint') }}
+      </div>
+      <div class="suggestions" *ngIf="!inviteDisabled && suggestions.length">
+        <div class="suggestion" *ngFor="let s of suggestions" (click)="addInvite(s)">
+          <div class="main">{{ s.display }}</div>
+          <div class="meta">
+            <span *ngIf="s.email">{{ s.email }}</span>
+            <span *ngIf="s.phone">{{ s.phone }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="empty-suggestion" *ngIf="!inviteDisabled && inviteQuery.trim().length < 2">
+        {{ translate('groups.create.inviteEmpty') }}
+      </div>
+      <div class="empty-suggestion" *ngIf="!inviteDisabled && inviteSearchExecuted && !inviteLoading && !suggestions.length">
+        {{ translate('groups.create.inviteNoResult') }}
+      </div>
+      <div class="empty-suggestion" *ngIf="inviteLoading">
+        {{ translate('groups.create.inviteSearching') }}
+      </div>
+      <div class="chips" *ngIf="invitedUsers.length">
+        <span class="chip" *ngFor="let user of invitedUsers">
+          {{ user.display }} — {{ translate('groups.create.invitePending') }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="secondary" (click)="close()">
+      {{ translate('planning.modal.cancel') }}
+    </button>
+    <button type="button" class="primary" [disabled]="loading" (click)="submit()">
+      {{ loading ? translate('groups.create.creating') : primaryButtonLabel }}
+    </button>
+  </div>
+
+  <div class="glow green"></div>
+  <div class="glow blue"></div>
+</div>
+
+

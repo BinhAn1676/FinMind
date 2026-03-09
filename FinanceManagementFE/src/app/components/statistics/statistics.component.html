@@ -1,0 +1,335 @@
+<div class="statistics-page">
+  <div class="page-header">
+    <div>
+      <h2>{{ translate('statistics.title') }}</h2>
+      <p>{{ translate('statistics.subtitle') }}</p>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <div class="inline-filter">
+      <label>{{ translate('statistics.selectPeriod') }}</label>
+      <div class="inline-controls">
+        <select [(ngModel)]="selectedTimeFilter" (ngModelChange)="applyTimeFilter()">
+          <option *ngFor="let f of timeFilters" [value]="f">{{ f }}</option>
+        </select>
+        <div class="custom-range" *ngIf="selectedTimeFilter === 'Tùy chọn'">
+          <input type="date" [(ngModel)]="customStartDate" (change)="applyTimeFilter()">
+          <span>→</span>
+          <input type="date" [(ngModel)]="customEndDate" (change)="applyTimeFilter()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!loadingSummary; else summaryLoading">
+    <div class="summary-grid">
+      <div class="summary-card" *ngFor="let card of summaries">
+        <div class="card-header">
+          <p>{{ card.title }}</p>
+          <i class="fa" [ngClass]="{
+            'fa-arrow-up': card.trendDirection === 'up',
+            'fa-arrow-down': card.trendDirection === 'down',
+            'fa-minus': card.trendDirection === 'flat'
+          }"></i>
+        </div>
+        <h3>{{ card.value }}</h3>
+        <div class="trend" [class.up]="card.trendDirection === 'up'" [class.down]="card.trendDirection === 'down'">
+          <span>{{ card.trend || '—' }}</span>
+          <small>{{ card.subLabel }}</small>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #summaryLoading>
+    <div class="summary-grid">
+      <div class="summary-card skeleton" *ngFor="let _ of [1,2,3,4]">
+        <div class="skeleton-bar title"></div>
+        <div class="skeleton-bar value"></div>
+        <div class="skeleton-bar small"></div>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="charts-grid">
+    <div class="chart-card glass-panel cashflow-card">
+      <div class="chart-header">
+        <div>
+          <h4>{{ translate('statistics.cashflow.title') }}</h4>
+          <span>{{ translate('statistics.cashflow.subtitle') }}</span>
+        </div>
+        <div class="legend">
+          <span class="dot income"></span> {{ translate('statistics.cashflow.income') }}
+          <span class="dot expense"></span> {{ translate('statistics.cashflow.expense') }}
+          <span class="dot balance"></span> {{ translate('statistics.cashflow.balance') }}
+        </div>
+      </div>
+      <div class="chart-body">
+        <div *ngIf="loadingCashflow" class="loading-inline"><i class="fa fa-spinner fa-spin"></i></div>
+        <div id="cashflow-statistics" class="hc-container" *ngIf="!loadingCashflow"></div>
+      </div>
+    </div>
+
+    <div class="chart-card glass-panel">
+      <div class="chart-header">
+        <div class="chart-title-with-toggle">
+          <h4>{{ translate('statistics.breakdown.title') }}</h4>
+          <div class="pill-toggle">
+            <button [class.active]="breakdownMode==='expense'" (click)="onToggleBreakdown('expense')">{{ translate('statistics.breakdown.expenseButton') }}</button>
+            <button [class.active]="breakdownMode==='income'" (click)="onToggleBreakdown('income')">{{ translate('statistics.breakdown.incomeButton') }}</button>
+          </div>
+        </div>
+        <span>{{ breakdownMode === 'expense' ? translate('statistics.breakdown.expense') : translate('statistics.breakdown.income') }}</span>
+      </div>
+      <div class="category-chart-content" (mouseleave)="clearActiveCategory()">
+        <div class="category-chart-wrapper">
+          <div class="category-chart-info">
+            <div class="chart-label">{{ breakdownMode === 'expense' ? translate('statistics.breakdown.totalExpense') : translate('statistics.breakdown.totalIncome') }}</div>
+            <div class="chart-value">{{ getCategoryTotalFormatted() }}</div>
+            <div class="chart-hover-info">
+              <ng-container *ngIf="activeCategoryIndex !== null; else hintTpl">
+                <span class="hover-name">{{ getActiveCategoryLabel() }}</span>
+                <span class="hover-percent">{{ getActiveCategoryPercent() | number:'1.1-1' }}%</span>
+              </ng-container>
+              <ng-template #hintTpl>
+                <span class="hover-name muted">{{ translate('statistics.breakdown.hoverHint') }}</span>
+              </ng-template>
+            </div>
+          </div>
+          <div class="category-chart" [class.empty]="getCategoryTotal() === 0">
+            <div *ngIf="loadingBreakdown" class="loading-inline">
+              <i class="fa fa-spinner fa-spin"></i>
+            </div>
+            <apx-chart
+              #categoryChart
+              *ngIf="!loadingBreakdown && pieChartOptions.series && pieChartOptions.series.length > 0 && pieChartOptions.chart && pieChartOptions.labels && pieChartOptions.colors"
+              [series]="pieChartOptions.series!"
+              [chart]="pieChartOptions.chart!"
+              [labels]="pieChartOptions.labels!"
+              [colors]="pieChartOptions.colors!"
+              [responsive]="pieChartOptions.responsive!"
+              [theme]="pieChartOptions.theme!"
+              [legend]="pieChartOptions.legend!"
+              [dataLabels]="pieChartOptions.dataLabels!"
+              [tooltip]="pieChartOptions.tooltip!"
+            ></apx-chart>
+            <div *ngIf="!loadingBreakdown && (!pieChartOptions.series || pieChartOptions.series.length === 0)" class="no-data-chart">
+              <p>{{ translate('statistics.breakdown.noData') }}</p>
+            </div>
+          </div>
+        </div>
+        <ul class="legend-list category-legend">
+          <li *ngFor="let item of getCurrentBreakdown(); index as i"
+              (mouseenter)="setActiveCategory(i)">
+            <span class="dot" [style.background]="getCategoryColor(i)"></span>
+            <span>{{ item.label }}</span>
+            <strong>{{ item.amount }}</strong>
+            <span class="percent">{{ (item.percentage ?? getCategoryPercentage(item.amount, i)) | number:'1.1-1' }}%</span>
+          </li>
+        </ul>
+        <div *ngIf="loadingBreakdown" class="loading-inline">
+          <i class="fa fa-spinner fa-spin"></i> {{ translate('statistics.breakdown.loading') }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="mini-card glass-panel">
+      <div class="card-header spaced">
+        <div class="title">
+          <h5>{{ translate('statistics.expenseDensity.title') }}</h5>
+        </div>
+        <div class="heatmap-controls">
+          <select class="month-select" [(ngModel)]="selectedHeatmapMonth" (change)="onHeatmapDateChange()">
+            <option [value]="1">{{ translate('statistics.months.january') }}</option>
+            <option [value]="2">{{ translate('statistics.months.february') }}</option>
+            <option [value]="3">{{ translate('statistics.months.march') }}</option>
+            <option [value]="4">{{ translate('statistics.months.april') }}</option>
+            <option [value]="5">{{ translate('statistics.months.may') }}</option>
+            <option [value]="6">{{ translate('statistics.months.june') }}</option>
+            <option [value]="7">{{ translate('statistics.months.july') }}</option>
+            <option [value]="8">{{ translate('statistics.months.august') }}</option>
+            <option [value]="9">{{ translate('statistics.months.september') }}</option>
+            <option [value]="10">{{ translate('statistics.months.october') }}</option>
+            <option [value]="11">{{ translate('statistics.months.november') }}</option>
+            <option [value]="12">{{ translate('statistics.months.december') }}</option>
+          </select>
+          <select class="year-select" [(ngModel)]="selectedHeatmapYear" (change)="onHeatmapDateChange()">
+            <option *ngFor="let y of availableYears" [value]="y">{{ y }}</option>
+          </select>
+          <button class="settings-btn" (click)="openHeatmapSettings()" [title]="translate('statistics.expenseDensity.settings')">
+            ⚙️
+          </button>
+        </div>
+      </div>
+      <div class="heatmap-calendar">
+        <div class="calendar-header">
+          <div class="week-day" *ngFor="let day of weekDays">{{ day }}</div>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day" 
+               *ngFor="let item of calendarDays"
+               [class.level-0]="item.level === 0"
+               [class.level-1]="item.level === 1"
+               [class.level-2]="item.level === 2"
+               [class.level-3]="item.level === 3"
+               [class.level-4]="item.level === 4"
+               [class.empty]="item.day === null">
+            <span *ngIf="item.day !== null">{{ item.day }}</span>
+          </div>
+        </div>
+        <div class="calendar-legend">
+          <span class="legend-label">{{ translate('statistics.expenseDensity.low') }}</span>
+          <div class="legend-gradient"></div>
+          <span class="legend-label">{{ translate('statistics.expenseDensity.high') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mini-card glass-panel">
+      <div class="card-header spaced">
+        <div class="title">
+          <span class="dot info"></span>
+          <h5>{{ translate('statistics.biggestExpenses.title') }}</h5>
+        </div>
+        <small>{{ translate('statistics.biggestExpenses.recent') }}</small>
+      </div>
+      <ul class="list">
+        <li *ngFor="let item of bigSpends">
+          <div class="list-label">
+            <span class="icon">{{ item.icon }}</span>
+            <div>
+              <p>{{ item.label }}</p>
+              <small>{{ item.date }} • {{ item.category }}</small>
+            </div>
+          </div>
+          <strong class="negative">{{ item.amount }}</strong>
+        </li>
+      </ul>
+      <div *ngIf="loadingBigSpends" class="loading-state">
+        <p>{{ translate('common.loading') }}</p>
+      </div>
+      <div *ngIf="!loadingBigSpends && bigSpends.length === 0" class="no-data-state">
+        <p>{{ translate('statistics.biggestExpenses.noData') }}</p>
+      </div>
+    </div>
+
+    <div class="mini-card glass-panel spending-variance">
+      <div class="card-header spaced">
+        <div class="title">
+          <span class="dot info">📈</span>
+          <h5>{{ translate('statistics.spendingVariance.title') }}</h5>
+        </div>
+        <div class="pill-toggle">
+          <button 
+            [class.active]="varianceMode === 'expense'"
+            (click)="onToggleVariance('expense')">
+            {{ translate('statistics.spendingStructure.spending') }}
+          </button>
+          <button 
+            [class.active]="varianceMode === 'income'"
+            (click)="onToggleVariance('income')">
+            {{ translate('statistics.spendingStructure.income') }}
+          </button>
+        </div>
+      </div>
+      <ul class="variance-list">
+        <li *ngFor="let item of spendingChanges">
+          <div class="left">
+            <div class="icon-badge">{{ item.icon }}</div>
+            <div class="text">
+              <div class="label-row">
+                <p class="label">{{ item.label }}</p>
+                <span class="amount-inline">{{ translate('statistics.spendingVariance.actualSpend') }}: {{ item.actual }}</span>
+              </div>
+              <small>{{ translate('statistics.spendingVariance.vsLastMonth') }}</small>
+            </div>
+          </div>
+          <div class="right" [class.up]="item.trend==='up'" [class.down]="item.trend==='down'" [class.flat]="item.trend==='flat'">
+            <div class="delta">{{ item.trend === 'up' ? '+' : item.trend === 'down' ? '-' : '' }}{{ item.delta }}</div>
+            <div class="delta-pct">{{ item.deltaPct }}</div>
+          </div>
+        </li>
+      </ul>
+      <div *ngIf="loadingVariance" class="loading-state">
+        <p>{{ translate('common.loading') }}</p>
+      </div>
+      <div *ngIf="!loadingVariance && spendingChanges.length === 0" class="no-data-state">
+        <p>{{ translate('statistics.spendingVariance.noData') }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Heatmap Settings Modal -->
+<div class="modal-overlay" *ngIf="showHeatmapSettings" (click)="closeHeatmapSettings()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ translate('statistics.heatmapSettings.title') }}</h3>
+      <button class="modal-close" (click)="closeHeatmapSettings()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-group">
+        <label>{{ translate('statistics.heatmapSettings.limitMode') }}</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="limitMode" value="historical" [(ngModel)]="heatmapSettings.mode" (change)="onHeatmapModeChange()">
+            <span>{{ translate('statistics.heatmapSettings.historical') }}</span>
+            <small>{{ translate('statistics.heatmapSettings.historicalDesc') }}</small>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="limitMode" value="manual" [(ngModel)]="heatmapSettings.mode" (change)="onHeatmapModeChange()">
+            <span>{{ translate('statistics.heatmapSettings.manual') }}</span>
+            <small>{{ translate('statistics.heatmapSettings.manualDesc') }}</small>
+          </label>
+        </div>
+      </div>
+      
+      <div class="setting-group" *ngIf="heatmapSettings.mode === 'historical' && calculatedDailyLimit > 0">
+        <label>{{ translate('statistics.heatmapSettings.calculatedLimit') }}</label>
+        <div class="calculated-limit-display">
+          <span class="limit-amount">{{ formatCurrencyVND(calculatedDailyLimit) }}</span>
+          <small>{{ translate('statistics.heatmapSettings.calculatedLimitHint') }}</small>
+        </div>
+      </div>
+      
+      <div class="setting-group" *ngIf="heatmapSettings.mode === 'manual'">
+        <label>{{ translate('statistics.heatmapSettings.dailyLimit') }}</label>
+        <input type="number" class="form-control" [(ngModel)]="heatmapSettings.manualLimit" 
+               [placeholder]="translate('statistics.heatmapSettings.dailyLimitPlaceholder')">
+        <small>{{ translate('statistics.heatmapSettings.dailyLimitHint') }}</small>
+      </div>
+      
+      <div class="color-guide">
+        <h4>{{ translate('statistics.heatmapSettings.colorGuide') }}</h4>
+        <div class="color-item">
+          <span class="color-box level-0"></span>
+          <span>{{ translate('statistics.heatmapSettings.noExpense') }}</span>
+        </div>
+        <div class="color-item">
+          <span class="color-box level-1"></span>
+          <span>{{ translate('statistics.heatmapSettings.lowExpense') }}</span>
+        </div>
+        <div class="color-item">
+          <span class="color-box level-2"></span>
+          <span>{{ translate('statistics.heatmapSettings.mediumExpense') }}</span>
+        </div>
+        <div class="color-item">
+          <span class="color-box level-3"></span>
+          <span>{{ translate('statistics.heatmapSettings.highExpense') }}</span>
+        </div>
+        <div class="color-item">
+          <span class="color-box level-4"></span>
+          <span>{{ translate('statistics.heatmapSettings.criticalExpense') }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeHeatmapSettings()">{{ translate('common.cancel') }}</button>
+      <button class="btn-primary" (click)="saveHeatmapSettings()">{{ translate('common.save') }}</button>
+    </div>
+  </div>
+</div>
+

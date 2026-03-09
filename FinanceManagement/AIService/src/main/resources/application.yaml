@@ -1,0 +1,104 @@
+spring:
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: "ai"
+  profiles:
+    active: default
+  config:
+    import:
+      - "optional:classpath:.env[.properties]"
+      - "optional:configserver:http://localhost:8071/"
+  cloud:
+    bus:
+      enabled: true
+    stream:
+      kafka:
+        binder:
+          brokers: 192.168.0.101:9194
+      bus:
+        trace:
+          enabled: true
+        refresh:
+          enabled: true
+        env:
+          enabled: true
+  kafka:
+    bootstrap-servers: 192.168.0.101:9194
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: aiservice-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.finance.*"
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            model: gemini-2.5-flash
+        embedding:
+          api-key: ${GEMINI_API_KEY:}
+          text:
+            options:
+              model: text-embedding-004
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+
+info:
+  app:
+    name: "aiservice"
+    description: "AI Service for intelligent financial insights and chat"
+    version: "1.0.0"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    shutdown:
+      access: unrestricted
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+endpoints:
+  shutdown:
+    enabled: true
+
+logging:
+  level:
+    com:
+      finance:
+        aiservice: DEBUG
+    org:
+      springframework:
+        ai: INFO
+        kafka: WARN
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

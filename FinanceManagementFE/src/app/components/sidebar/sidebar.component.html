@@ -1,0 +1,58 @@
+<aside class="sidebar" [class.collapsed]="layout.isSidebarCollapsed" (mouseenter)="layout.setSidebarCollapsed(false)" (mouseleave)="layout.setSidebarCollapsed(true)">
+  <div class="sidebar-header">
+    <span class="app-name">{{ layout.isSidebarCollapsed ? 'FT' : 'FinanceTracker' }}</span>
+  </div>
+  <nav class="menu">
+
+    <!-- Tổng quan -->
+    <a href="#" class="menu-item" [class.active]="isActive('/overview')" (click)="navigate('/overview', $event)">
+      <i class="fa fa-th-large"></i>
+      <span data-key="menuOverview">{{ language.translate('menuOverview') }}</span>
+    </a>
+
+    <!-- Quản lý tài chính -->
+    <div class="menu-section-label">{{ layout.isSidebarCollapsed ? '' : 'Quản lý' }}</div>
+    <a href="#" class="menu-item" [class.active]="isActive('/myAccount')" (click)="navigate('/myAccount', $event)">
+      <i class="fa fa-address-card"></i>
+      <span data-key="menuAccount">{{ language.translate('menuAccount') }}</span>
+    </a>
+    <a href="#" class="menu-item" [class.active]="isActive('/transactions')" (click)="navigate('/transactions', $event)">
+      <i class="fa fa-exchange"></i>
+      <span data-key="menuTransactions">{{ language.translate('menuTransactions') }}</span>
+    </a>
+    <a href="#" class="menu-item" [class.active]="isActive('/myLoans')" (click)="navigate('/myLoans', $event)">
+      <i class="fa fa-balance-scale"></i>
+      <span data-key="menuLoans">{{ language.translate('menuLoans') }}</span>
+    </a>
+    <a href="#" class="menu-item" [class.active]="isActive('/groups')" (click)="navigate('/groups', $event)">
+      <i class="fa fa-users"></i>
+      <span data-key="menuGroups">{{ language.translate('menuGroups') }}</span>
+    </a>
+
+    <!-- Báo cáo & Phân tích -->
+    <div class="menu-section-label">{{ layout.isSidebarCollapsed ? '' : 'Báo cáo' }}</div>
+    <a href="#" class="menu-item" [class.active]="isActive('/planning')" (click)="navigate('/planning', $event)">
+      <i class="fa fa-tasks"></i>
+      <span data-key="menuPlanning">{{ language.translate('menuPlanning') }}</span>
+    </a>
+    <a href="#" class="menu-item" [class.active]="isActive('/reports')" (click)="navigate('/reports', $event)">
+      <i class="fa fa-file-text-o"></i>
+      <span data-key="menuReports">{{ language.translate('menuReports') }}</span>
+    </a>
+    <a href="#" class="menu-item" [class.active]="isActive('/statistics')" (click)="navigate('/statistics', $event)">
+      <i class="fa fa-bar-chart"></i>
+      <span data-key="menuStatistics">{{ language.translate('menuStatistics') }}</span>
+    </a>
+    <a href="#" class="menu-item" [class.active]="isActive('/analytics')" (click)="navigate('/analytics', $event)">
+      <i class="fa fa-line-chart"></i>
+      <span data-key="menuAnalysis">{{ language.translate('menuAnalysis') }}</span>
+    </a>
+
+    <!-- Đầu tư -->
+    <a href="#" class="menu-item investment-item" [class.active]="isActive('/investment')" (click)="navigate('/investment', $event)">
+      <i class="fa fa-bitcoin"></i>
+      <span data-key="menuInvestment">{{ language.translate('menuInvestment') }}</span>
+    </a>
+
+  </nav>
+</aside>

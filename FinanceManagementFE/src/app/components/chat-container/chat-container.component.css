@@ -1,0 +1,11 @@
+.chat-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 998;
+  pointer-events: none;
+}
+
+.chat-container > * {
+  pointer-events: auto;
+}

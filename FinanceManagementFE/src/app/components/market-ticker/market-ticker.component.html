@@ -1,0 +1,155 @@
+<div class="ticker-wrapper" [class.open]="isOpen">
+
+  <!-- Trigger Button -->
+  <button class="ticker-trigger-btn" (click)="toggleDropdown()" [title]="isOpen ? 'Đóng thị trường' : 'Xem thị trường'">
+    <span class="live-dot" [class.active]="topCoins.length > 0"></span>
+    <i class="fa fa-line-chart"></i>
+    <span class="btn-label">Thị trường</span>
+    <span class="btc-mini" *ngIf="topCoins.length > 0" [class.positive]="getBtcChange() >= 0"
+                                                         [class.negative]="getBtcChange() < 0">
+      ₿ {{ getBtcPrice() }}
+    </span>
+    <i class="fa fa-chevron-down chevron" [class.rotated]="isOpen"></i>
+  </button>
+
+  <!-- Dropdown Panel -->
+  <div class="ticker-dropdown" *ngIf="isOpen" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="dropdown-header">
+      <div class="dropdown-title">
+        <span class="title-icon">
+          {{ activeSection === 'crypto' ? '🪙' : activeSection === 'gold' ? '🥇' : '🇻🇳' }}
+        </span>
+        <span>{{ activeSection === 'crypto' ? 'Crypto Live' : activeSection === 'gold' ? 'Giá Vàng' : 'CP Việt Nam' }}</span>
+        <span class="live-badge">LIVE</span>
+      </div>
+      <button class="view-all-btn" (click)="goToInvestment()">
+        Xem tất cả <i class="fa fa-external-link"></i>
+      </button>
+    </div>
+
+    <!-- Section Tabs -->
+    <div class="section-tabs">
+      <button class="section-tab" [class.active]="activeSection === 'crypto'" (click)="setSection('crypto')">
+        🪙 Crypto
+      </button>
+      <button class="section-tab" [class.active]="activeSection === 'gold'" (click)="setSection('gold')">
+        🥇 Vàng
+      </button>
+      <button class="section-tab" [class.active]="activeSection === 'vn'" (click)="setSection('vn')">
+        🇻🇳 CP Việt Nam
+      </button>
+    </div>
+
+    <!-- ── CRYPTO SECTION ── -->
+    <ng-container *ngIf="activeSection === 'crypto'">
+      <div class="ticker-loading" *ngIf="loading && topCoins.length === 0">
+        <div class="mini-spinner"></div>
+        <span>Đang tải...</span>
+      </div>
+      <div class="coin-list">
+        <div class="coin-row" *ngFor="let coin of topCoins">
+          <div class="coin-left">
+            <img [src]="coin.image" [alt]="coin.symbol" class="coin-img" loading="lazy">
+            <div class="coin-info">
+              <span class="coin-sym">{{ coin.symbol.toUpperCase() }}</span>
+              <span class="coin-nm">{{ coin.name }}</span>
+            </div>
+          </div>
+          <div class="coin-right">
+            <span class="coin-price">${{ formatPrice(coin.current_price) }}</span>
+            <span class="coin-pct" [class.up]="coin.price_change_percentage_24h >= 0"
+                                    [class.dn]="coin.price_change_percentage_24h < 0">
+              {{ coin.price_change_percentage_24h >= 0 ? '▲' : '▼' }}
+              {{ abs(coin.price_change_percentage_24h) | number:'1.2-2' }}%
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── GOLD SECTION ── -->
+    <ng-container *ngIf="activeSection === 'gold'">
+      <div class="ticker-loading" *ngIf="goldLoading && !gold">
+        <div class="mini-spinner"></div>
+        <span>Đang tải...</span>
+      </div>
+      <div class="ticker-loading" *ngIf="!goldLoading && !gold">
+        <span style="color:#8a9aa9;font-size:0.85rem">Chưa có dữ liệu</span>
+      </div>
+      <ng-container *ngIf="gold">
+        <!-- XAU/USD spot row -->
+        <div class="coin-list">
+          <div class="coin-row gold-spot-row">
+            <div class="coin-left">
+              <div class="ticker-gold-circle">Au</div>
+              <div class="coin-info">
+                <span class="coin-sym">XAU/USD</span>
+                <span class="coin-nm">Vàng quốc tế</span>
+              </div>
+            </div>
+            <div class="coin-right">
+              <span class="coin-price">${{ gold.xauPrice | number:'1.2-2' }}</span>
+              <span class="coin-pct" [class.up]="gold.xauChangePct >= 0" [class.dn]="gold.xauChangePct < 0">
+                {{ gold.xauChangePct >= 0 ? '▲' : '▼' }} {{ abs(gold.xauChangePct) | number:'1.2-2' }}%
+              </span>
+            </div>
+          </div>
+          <!-- VN gold providers -->
+          <div class="coin-row" *ngFor="let g of gold.vnGoldPrices | slice:0:5">
+            <div class="coin-left">
+              <div class="ticker-gold-circle small">Au</div>
+              <div class="coin-info">
+                <span class="coin-sym" style="font-size:0.82rem">{{ g.name }}</span>
+                <span class="coin-nm">{{ g.code }}</span>
+              </div>
+            </div>
+            <div class="coin-right">
+              <span class="coin-price" style="color:#FFD93D;font-size:0.88rem">{{ g.sell | number:'1.0-0' }} ₫</span>
+              <span class="coin-pct" [class.up]="g.changeBuy >= 0" [class.dn]="g.changeBuy < 0">
+                {{ g.changeBuy >= 0 ? '▲' : '▼' }} {{ abs(g.changeBuy) | number:'1.0-0' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <!-- ── VN STOCKS SECTION ── -->
+    <ng-container *ngIf="activeSection === 'vn'">
+      <div class="ticker-loading" *ngIf="vnLoading && vnStocks.length === 0">
+        <div class="mini-spinner"></div>
+        <span>Đang tải...</span>
+      </div>
+      <div class="ticker-loading" *ngIf="!vnLoading && vnStocks.length === 0">
+        <span style="color:#8a9aa9;font-size:0.85rem">Chưa có dữ liệu</span>
+      </div>
+      <div class="coin-list">
+        <div class="coin-row" *ngFor="let s of vnStocks">
+          <div class="coin-left">
+            <div class="ticker-vn-circle">{{ s.ticker }}</div>
+            <div class="coin-info">
+              <span class="coin-sym">{{ s.ticker }}</span>
+              <span class="coin-nm">{{ s.exchange }}</span>
+            </div>
+          </div>
+          <div class="coin-right">
+            <span class="coin-price" style="font-size:0.88rem">{{ s.price | number:'1.0-0' }} ₫</span>
+            <span class="coin-pct" [class.up]="s.pctChange >= 0" [class.dn]="s.pctChange < 0">
+              {{ s.pctChange >= 0 ? '▲' : '▼' }} {{ abs(s.pctChange) | number:'1.2-2' }}%
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Footer -->
+    <div class="dropdown-footer" (click)="goToInvestment()">
+      <i class="fa fa-bar-chart"></i>
+      <span>Mở trang Đầu tư đầy đủ</span>
+      <i class="fa fa-arrow-right"></i>
+    </div>
+
+  </div>
+</div>

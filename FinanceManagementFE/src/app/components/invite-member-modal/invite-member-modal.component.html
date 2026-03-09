@@ -1,0 +1,60 @@
+<div class="modal-backdrop" (click)="close()"></div>
+<div class="modal-shell">
+  <div class="modal-header">
+    <h3>{{ translate('groups.invite.title') }}</h3>
+    <button type="button" class="close-btn" (click)="close()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <div class="invite-column">
+      <div class="field">
+        <div class="input-with-icon">
+          <input
+            [(ngModel)]="inviteQuery"
+            [placeholder]="translate('groups.create.invitePlaceholder')"
+            (keyup.enter)="triggerInviteSearch()"
+          />
+          <button type="button" class="invite-search-btn" (click)="triggerInviteSearch()">
+            🔍
+          </button>
+        </div>
+      </div>
+      <div class="suggestions" *ngIf="suggestions.length">
+        <div class="suggestion" *ngFor="let s of suggestions" (click)="addInvite(s)">
+          <div class="main">{{ s.display }}</div>
+          <div class="meta">
+            <span *ngIf="s.email">{{ s.email }}</span>
+            <span *ngIf="s.phone">{{ s.phone }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="empty-suggestion" *ngIf="inviteQuery.trim().length < 2">
+        {{ translate('groups.create.inviteEmpty') }}
+      </div>
+      <div class="empty-suggestion" *ngIf="inviteSearchExecuted && !inviteLoading && !suggestions.length">
+        {{ translate('groups.create.inviteNoResult') }}
+      </div>
+      <div class="empty-suggestion" *ngIf="inviteLoading">
+        {{ translate('groups.create.inviteSearching') }}
+      </div>
+      <div class="chips" *ngIf="invitedUsers.length">
+        <span class="chip" *ngFor="let user of invitedUsers">
+          {{ user.display }} — {{ translate('groups.create.invitePending') }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="secondary" (click)="close()">
+      {{ translate('planning.modal.cancel') }}
+    </button>
+    <button type="button" class="primary" (click)="close()">
+      {{ translate('groups.invite.doneButton') }}
+    </button>
+  </div>
+
+  <div class="glow green"></div>
+  <div class="glow blue"></div>
+</div>
+

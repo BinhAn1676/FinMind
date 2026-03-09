@@ -1,0 +1,357 @@
+/* ═══════════════════════════════════════════
+   MARKET TICKER COMPONENT
+   Sits in the header next to the chat dropdown
+   ═══════════════════════════════════════════ */
+
+.ticker-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Trigger Button ── */
+.ticker-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(78, 205, 196, 0.1);
+  border: 1px solid rgba(78, 205, 196, 0.25);
+  border-radius: 12px;
+  color: #4ECDC4;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  height: 40px;
+}
+
+.ticker-trigger-btn:hover,
+.ticker-wrapper.open .ticker-trigger-btn {
+  background: rgba(78, 205, 196, 0.18);
+  border-color: rgba(78, 205, 196, 0.45);
+  box-shadow: 0 0 12px rgba(78,205,196,0.15);
+}
+
+.ticker-trigger-btn .fa-line-chart {
+  font-size: 1rem;
+}
+
+.btn-label {
+  font-size: 0.88rem;
+}
+
+/* Live dot indicator */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #555;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.live-dot.active {
+  background: #00C17C;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,193,124,0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(0,193,124,0); }
+}
+
+/* BTC mini price */
+.btc-mini {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.btc-mini.positive { color: #00C17C; background: rgba(0,193,124,0.1); }
+.btc-mini.negative { color: #FF6B6B; background: rgba(255,107,107,0.1); }
+
+/* Chevron rotate */
+.chevron {
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+  color: #8a9aa9;
+}
+.chevron.rotated { transform: rotate(180deg); }
+
+/* ── Dropdown Panel ── */
+.ticker-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 340px;
+  background: linear-gradient(160deg, #1a3a4a 0%, #0f2535 100%);
+  border: 1px solid rgba(78, 205, 196, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(78,205,196,0.08);
+  z-index: 1100;
+  overflow: hidden;
+  animation: dropIn 0.2s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header */
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.dropdown-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.title-icon { font-size: 1.2rem; }
+
+.live-badge {
+  background: #00C17C;
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.view-all-btn {
+  background: rgba(78,205,196,0.1);
+  border: 1px solid rgba(78,205,196,0.25);
+  color: #4ECDC4;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.view-all-btn:hover { background: rgba(78,205,196,0.2); }
+.view-all-btn .fa { margin-left: 4px; font-size: 0.72rem; }
+
+/* Loading */
+.ticker-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px;
+  color: #8a9aa9;
+  font-size: 0.9rem;
+}
+
+.mini-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(78,205,196,0.2);
+  border-top-color: #4ECDC4;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Coin List */
+.coin-list {
+  padding: 6px 0;
+}
+
+.coin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 18px;
+  transition: background 0.15s;
+  cursor: default;
+}
+
+.coin-row:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.coin-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.coin-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.coin-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.coin-sym {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.coin-nm {
+  font-size: 0.75rem;
+  color: #8a9aa9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.coin-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.coin-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.coin-pct {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+.coin-pct.up { color: #00C17C; background: rgba(0,193,124,0.1); }
+.coin-pct.dn { color: #FF6B6B; background: rgba(255,107,107,0.1); }
+
+/* Footer */
+.dropdown-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  color: #4ECDC4;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dropdown-footer:hover {
+  background: rgba(78,205,196,0.06);
+}
+
+.dropdown-footer .fa-arrow-right {
+  margin-left: auto;
+  font-size: 0.78rem;
+}
+
+/* ── Section Tabs ── */
+.section-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 12px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.section-tab {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: #8a9aa9;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.section-tab:hover {
+  background: rgba(255,255,255,0.05);
+  color: #cdd6e0;
+}
+
+.section-tab.active {
+  background: rgba(78,205,196,0.12);
+  border-color: rgba(78,205,196,0.35);
+  color: #4ECDC4;
+}
+
+/* ── Gold circle avatar ── */
+.ticker-gold-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD700, #FFA000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: #1a1200;
+  flex-shrink: 0;
+}
+
+.ticker-gold-circle.small {
+  width: 28px;
+  height: 28px;
+  font-size: 0.7rem;
+}
+
+.gold-spot-row {
+  background: rgba(255,215,0,0.04);
+}
+
+/* ── VN stock circle avatar ── */
+.ticker-vn-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1a6b4a, #0d4a33);
+  border: 1px solid rgba(0,193,124,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #00C17C;
+  flex-shrink: 0;
+  letter-spacing: -0.5px;
+}
+
+/* Responsive: hide label on small screens */
+@media (max-width: 900px) {
+  .btn-label { display: none; }
+  .btc-mini { display: none; }
+  .ticker-trigger-btn { padding: 8px 10px; }
+}

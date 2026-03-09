@@ -1,0 +1,128 @@
+spring:
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: "files"
+  profiles:
+    active: default
+  config:
+    import: "optional:configserver:http://localhost:8071/" #configserver:http://configserver:8071/ #configserver:http://localhost:8071/
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+      enabled: true
+  cloud:
+    bus:
+      enabled: true
+    stream:
+      kafka:
+        binder:
+          brokers: 192.168.0.101:9194
+      bus:
+        trace:
+          enabled: true
+        refresh:
+          enabled: true
+        env:
+          enabled: true
+  kafka:
+    bootstrap-servers: 192.168.0.101:9194
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+      request-timeout-ms: 30000
+      delivery-timeout-ms: 120000
+    consumer:
+      group-id: file-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          jwk-set-uri: "http://localhost:7080/realms/finance/protocol/openid-connect/certs"
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/ #http://eurekaserver:8070/eureka/ #http://localhost:8070/eureka/
+
+info:
+  app:
+    name: "files"
+    description: "File Service for finances"
+    version: "1.0.0"
+
+#minio:
+#  url: http://localhost:9000
+#  access-key: ${MINIO_ACCESS_KEY}
+#  secret-key: ${MINIO_SECRET_KEY}
+#  bucket-name: userFiles
+
+file-service:
+  max-file-size: 500
+  allowed-content-types:
+    - "image/jpeg"
+    - "image/png"
+    - "image/gif"
+    - "image/webp"
+    - "application/pdf"
+    - "application/msword"
+    - "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    - "application/vnd.ms-excel"
+    - "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    - "text/plain"
+    - "text/csv"
+    - "application/json"
+    - "application/xml"
+  presigned-url-expiry-minutes: 60
+  enable-duplicate-check: true
+  enable-file-cleanup: true
+  cleanup-interval-hours: 24
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+  endpoint:
+    shutdown:
+      access: unrestricted
+    health:
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+endpoints:
+  shutdown:
+    enabled: true
+
+logging:
+  level:
+    com:
+      finance:
+        fileservice: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

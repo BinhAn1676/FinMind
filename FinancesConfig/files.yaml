@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: "files"
+  threads:
+    virtual:
+      enabled: true
+  redis:
+    host: 127.0.0.1
+    port: 6379
+  data:
+    mongodb:
+      host: localhost
+      port: 27017  # Consolidated MongoDB instance
+      database: files
+      username: root
+      password: root
+      authentication-database: admin
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:7080/realms/finance/protocol/openid-connect/certs"
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+server:
+  port: 8085
+
+
+info:
+  app:
+    name: "File-service"
+    description: "File Service Application"
+    version: "1.0.0"
+
+
+minio:
+  url: http://localhost:9000
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: finance-files
+
+file-service:
+  max-file-size: 500
+  allowed-content-types:
+    - "image/jpeg"
+    - "image/png"
+    - "image/gif"
+    - "image/webp"
+    - "application/pdf"
+    - "application/msword"
+    - "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    - "application/vnd.ms-excel"
+    - "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    - "text/plain"
+    - "text/csv"
+    - "application/json"
+    - "application/xml"
+  presigned-url-expiry-minutes: 60
+  enable-duplicate-check: true
+  enable-file-cleanup: true
+  cleanup-interval-hours: 24
+
+users:
+  message: "Welcome to Finance finances related APIs "
+  contactDetails:
+    name: "Nguyen Binh An - Developer"
+    email: "nguyenbinhankma@gmail.com"
+  onCallSupport:
+    - 099781056
+
+

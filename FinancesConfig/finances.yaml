@@ -1,0 +1,126 @@
+spring:
+  application:
+    name: "finances"
+  threads:
+    virtual:
+      enabled: true
+  redis:
+    host: 127.0.0.1
+    port: 6379
+  datasource:
+    url: jdbc:mysql://localhost:3306/finance?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: "{cipher}f34a736fbc13b15d3061fa1c417170b0a66990a978af7fe98cc16a2a8b5c072f"
+    password: "{cipher}f34a736fbc13b15d3061fa1c417170b0a66990a978af7fe98cc16a2a8b5c072f"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect  # Updated to newer dialect
+        format_sql: true
+  data:
+    mongodb:
+      host: localhost
+      port: 27017  # Consolidated MongoDB instance
+      database: finance
+      username: root
+      password: root
+      authentication-database: admin
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:7080/realms/finance/protocol/openid-connect/certs"
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+server:
+  port: 8082
+
+
+info:
+  app:
+    name: "finance-service"
+    description: "Finance Service Application"
+    version: "1.0.0"
+
+
+minio:
+  url: http://localhost:9000
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: finance-files
+
+sepay:
+  api:
+    # Legacy API URLs (used when oauth2.enabled=false)
+    accounts-url: "https://my.sepay.vn/userapi/bankaccounts/list"
+    transactions-url: "https://my.sepay.vn/userapi/transactions/list"
+    # OAuth2 API URLs (used when oauth2.enabled=true)
+    oauth2-accounts-url: "https://my.sepay.vn/api/v1/bank-accounts"
+    oauth2-transactions-url: "https://my.sepay.vn/api/v1/transactions"
+    oauth2-webhooks-url: "https://my.sepay.vn/api/v1/webhooks"
+    # Quartz cron expressions
+    accounts-cron: "0 0 * * * ?"           # every hour at minute 0
+    transactions-cron: "0 5 * * * ?"       # every hour at minute 5
+  oauth2:
+    enabled: true                          # Set to true in production to enable OAuth2 flow
+    client-id: "{cipher}8abaf9748a2d40ebc87b3b1e7235f9b3fed5546f915bf2764f18cf36cc875924"
+    client-secret: "{cipher}cf3b8764943b0609f3efbe763696883b03ab060b2d95eda86f945f718494219d783a33c97e3c726f213cd9614a3b439f4c455c096f6c51d94b1f80557f7d219c023425c10ea7030a1f0902516456b23e12c88ad5a246b60811e02cbef78f8b0a"
+    authorize-url: "https://my.sepay.vn/oauth/authorize"
+    token-url: "https://my.sepay.vn/oauth/token"
+    redirect-uri: "https://finmind.pro.vn/sepay/callback"
+    scopes: "bank-account:read transaction:read webhook:read webhook:write webhook:delete"
+    # Webhook configuration
+    webhook-callback-url: "https://api.finmind.pro.vn/finances/api/v1/sepay/webhooks/receive"
+    webhook-event-type: "All"               # All, In_only, Out_only
+    webhook-auth-type: "No_Authen"          # No_Authen, Api_Key, OAuth2.0
+    webhook-api-key: ""                     # Used when webhook-auth-type=Api_Key
+
+users:
+  message: "Welcome to Finance finances related APIs "
+  contactDetails:
+    name: "Nguyen Binh An - Developer"
+    email: "nguyenbinhankma@gmail.com"
+  onCallSupport:
+    - 099781056
+
+
+# Twilio SMS Configuration (Phase 5)
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID}
+  auth-token: ${TWILIO_AUTH_TOKEN}
+  from-number: ${TWILIO_FROM_NUMBER}

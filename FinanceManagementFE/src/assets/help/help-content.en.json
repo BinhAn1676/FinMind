@@ -1,0 +1,128 @@
+{
+  "overview": {
+    "title": "Financial Overview",
+    "description": "The overview page displays your complete financial picture in a single screen.",
+    "tips": [
+      { "icon": "fa-eye", "text": "Check total balance, income, and expenses for the current month in the stats cards at the top." },
+      { "icon": "fa-bar-chart", "text": "Pie/bar charts show spending distribution by category — hover to see details." },
+      { "icon": "fa-list", "text": "Recent transactions list shows your 5–10 latest entries. Click to view all." },
+      { "icon": "fa-refresh", "text": "Data updates automatically when you add new transactions." }
+    ]
+  },
+  "transactions": {
+    "title": "Transaction Management",
+    "description": "Record and track all your income and expenses.",
+    "tips": [
+      { "icon": "fa-bank", "text": "Click 'Sync Sepay Transactions' to automatically import your full bank transaction history — no manual entry needed." },
+      { "icon": "fa-plus", "text": "Click '+' or 'Add Transaction' to record a new income or expense." },
+      { "icon": "fa-filter", "text": "Use filters (type, category, date range) to find specific transactions." },
+      { "icon": "fa-tags", "text": "Assign a category to each transaction — this improves the accuracy of your reports." },
+      { "icon": "fa-paperclip", "text": "Attach receipts or images to a transaction using the upload button." },
+      { "icon": "fa-pencil", "text": "Click on any transaction to edit or delete it at any time." },
+      { "icon": "fa-download", "text": "Export your transaction list using the Export button (if supported)." }
+    ]
+  },
+  "planning": {
+    "title": "Budget Planning",
+    "description": "Set spending limits per category to better control your finances.",
+    "tips": [
+      { "icon": "fa-plus-circle", "text": "Create a plan by selecting a category, entering a target amount, and choosing a repeat cycle (Daily / Weekly / Monthly / Yearly)." },
+      { "icon": "fa-repeat", "text": "Use 'NO_REPEAT' for one-time goals, e.g., buying a car or a vacation fund." },
+      { "icon": "fa-tachometer", "text": "The green/yellow/red progress bar shows how much of your budget you've used." },
+      { "icon": "fa-bell", "text": "You'll receive a notification when you're close to or have exceeded your limit." },
+      { "icon": "fa-users", "text": "The 'Group Plans' tab lets you share budgets with group members." }
+    ]
+  },
+  "groups": {
+    "title": "Financial Groups",
+    "description": "Manage shared finances with family, friends, or colleagues.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Create a new group using the '+' button — give it a name and description." },
+      { "icon": "fa-user-plus", "text": "Invite members by email or username — they'll receive an invitation notification." },
+      { "icon": "fa-money", "text": "In the group detail page, you can view shared transactions and group budgets." },
+      { "icon": "fa-comments", "text": "Click the chat icon to open the group chat — discuss finances directly in the app." },
+      { "icon": "fa-sign-out", "text": "You can leave a group at any time from the group detail page." }
+    ]
+  },
+  "statistics": {
+    "title": "Statistics",
+    "description": "Analyze income and spending trends with visual charts.",
+    "tips": [
+      { "icon": "fa-calendar", "text": "Select a time range (week / month / quarter / year) to view the corresponding statistics." },
+      { "icon": "fa-pie-chart", "text": "The pie chart shows the proportion of spending by category." },
+      { "icon": "fa-line-chart", "text": "The line chart shows income/expense trends over time." },
+      { "icon": "fa-exchange", "text": "Switch between 'Income' and 'Expense' views using the tabs." }
+    ]
+  },
+  "analytics": {
+    "title": "Advanced Analytics",
+    "description": "Deep-dive into your spending behavior with AI-powered insights and forecasts.",
+    "tips": [
+      { "icon": "fa-magic", "text": "AI automatically analyzes your spending patterns and provides personalized insights." },
+      { "icon": "fa-forward", "text": "View a spending forecast for next month based on your history." },
+      { "icon": "fa-exclamation-triangle", "text": "Spending anomalies (sudden spikes) are highlighted in red." },
+      { "icon": "fa-lightbulb-o", "text": "The 'Saving Tips' section suggests ways to optimize spending based on your data." }
+    ]
+  },
+  "reports": {
+    "title": "Reports",
+    "description": "Generate and automatically send periodic financial reports.",
+    "tips": [
+      { "icon": "fa-file-text", "text": "Choose a report type (income/expense, budget, group) and date range to export." },
+      { "icon": "fa-clock-o", "text": "Set up automatic delivery (daily/weekly/monthly) — reports will be emailed to you." },
+      { "icon": "fa-cog", "text": "Use the Cron Builder to set a custom schedule if you need a non-standard frequency." }
+    ]
+  },
+  "myAccount": {
+    "title": "Bank Accounts",
+    "description": "Manage your bank accounts and wallets.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Add a new account by entering the bank name, account number, and initial balance." },
+      { "icon": "fa-exchange", "text": "When creating a transaction, select the correct account so the balance updates accurately." },
+      { "icon": "fa-pencil", "text": "Edit or delete an account from the list — deleting an account does not delete related transactions." }
+    ]
+  },
+  "myLoans": {
+    "title": "Loan Management",
+    "description": "Track personal lending and borrowing.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Add a new loan — specify the borrower/lender, amount, interest rate, and due date." },
+      { "icon": "fa-check-circle", "text": "Mark a loan as 'Paid' once the debt is settled." },
+      { "icon": "fa-sort", "text": "Filter loans by status: active / paid / overdue." }
+    ]
+  },
+  "myBalance": {
+    "title": "Balance & Net Worth",
+    "description": "View a summary of balances across all your accounts.",
+    "tips": [
+      { "icon": "fa-bank", "text": "Total balance is calculated as the sum of all active accounts." },
+      { "icon": "fa-history", "text": "The balance history chart shows how your net worth has grown or declined over time." }
+    ]
+  },
+  "myCards": {
+    "title": "Card Management",
+    "description": "Manage your credit and debit cards.",
+    "tips": [
+      { "icon": "fa-credit-card", "text": "Add a card with its credit limit, statement date, and payment cycle." },
+      { "icon": "fa-warning", "text": "You'll be alerted when a payment due date is approaching or when you're near your credit limit." }
+    ]
+  },
+  "investment": {
+    "title": "Investment & Market",
+    "description": "Track your investment portfolio and market prices.",
+    "tips": [
+      { "icon": "fa-line-chart", "text": "View real-time price movements for stocks and crypto." },
+      { "icon": "fa-briefcase", "text": "Add investment assets to track your total portfolio value." },
+      { "icon": "fa-info-circle", "text": "The ticker at the top shows prices for popular symbols — click for details." }
+    ]
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "description": "Update your personal information and account settings.",
+    "tips": [
+      { "icon": "fa-user", "text": "Update your avatar by clicking on your current profile picture and selecting a new one." },
+      { "icon": "fa-globe", "text": "Switch the display language (Vietnamese / English) in the Language section." },
+      { "icon": "fa-lock", "text": "Change your password via Keycloak — click 'Change Password' to be redirected to the security page." }
+    ]
+  }
+}

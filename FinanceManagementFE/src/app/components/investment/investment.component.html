@@ -1,0 +1,596 @@
+<div class="investment-page">
+
+  <!-- ═══════════════════ PAGE HEADER ═══════════════════ -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="page-title">
+        <span class="title-icon">📈</span>
+        <div>
+          <h1>{{ language.translate('invest.title') }}</h1>
+          <p class="subtitle">{{ language.translate('invest.subtitle') }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" *ngIf="lastUpdated">
+        <i class="fa fa-clock-o"></i>
+        {{ language.translate('invest.updatedAt') }} {{ formatTime(lastUpdated) }}
+      </span>
+      <button class="refresh-btn" (click)="onRefresh()" [class.spinning]="isRefreshing"
+              [title]="language.translate('invest.refresh')">
+        <i class="fa fa-refresh"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ CONTEXT STATS BAR ═══════════════════ -->
+
+  <!-- Crypto stats -->
+  <div class="market-stats-bar" *ngIf="activeTab === 'crypto' && globalData">
+    <div class="stat-item">
+      <i class="fa fa-globe stat-icon teal"></i>
+      <div>
+        <span class="stat-label">{{ language.translate('invest.totalMarketCap') }}</span>
+        <span class="stat-value">${{ formatLarge(globalData.total_market_cap_usd) }}</span>
+      </div>
+      <span class="stat-change" [class.positive]="globalData.market_cap_change_percentage_24h >= 0"
+                                [class.negative]="globalData.market_cap_change_percentage_24h < 0">
+        {{ globalData.market_cap_change_percentage_24h >= 0 ? '▲' : '▼' }}
+        {{ abs(globalData.market_cap_change_percentage_24h) | number:'1.2-2' }}%
+      </span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-exchange stat-icon coral"></i>
+      <div>
+        <span class="stat-label">{{ language.translate('invest.volume24h') }}</span>
+        <span class="stat-value">${{ formatLarge(globalData.total_volume_usd) }}</span>
+      </div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="btc-icon">₿</span>
+      <div>
+        <span class="stat-label">{{ language.translate('invest.btcDominance') }}</span>
+        <span class="stat-value">{{ globalData.btc_dominance | number:'1.1-1' }}%</span>
+      </div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-bitcoin stat-icon yellow"></i>
+      <div>
+        <span class="stat-label">{{ language.translate('invest.tracking') }}</span>
+        <span class="stat-value">{{ coins.length }} coins</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gold stats -->
+  <div class="market-stats-bar" *ngIf="activeTab === 'gold' && gold">
+    <div class="stat-item">
+      <div class="gold-provider-circle" style="width:32px;height:32px;font-size:0.75rem">Au</div>
+      <div>
+        <span class="stat-label">Vàng quốc tế (XAU/USD)</span>
+        <span class="stat-value" style="color:#FFD93D">${{ gold.xauPrice | number:'1.2-2' }}</span>
+      </div>
+      <span class="stat-change" [class.positive]="gold.xauChangePct >= 0" [class.negative]="gold.xauChangePct < 0">
+        {{ gold.xauChangePct >= 0 ? '▲' : '▼' }} {{ abs(gold.xauChangePct) | number:'1.2-2' }}%
+      </span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-home stat-icon yellow"></i>
+      <div>
+        <span class="stat-label">SJC bán ra</span>
+        <span class="stat-value" style="color:#FFD93D">{{ gold.vnGoldPrices[0]?.sell | number:'1.0-0' }} ₫</span>
+      </div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-exchange stat-icon teal"></i>
+      <div>
+        <span class="stat-label">Spot / lượng (quy đổi)</span>
+        <span class="stat-value">{{ gold.pricePerLuongVnd | number:'1.0-0' }} ₫</span>
+      </div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-list stat-icon coral"></i>
+      <div>
+        <span class="stat-label">Nhà cung cấp</span>
+        <span class="stat-value">{{ gold.vnGoldPrices.length }} loại</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VN Stocks stats -->
+  <div class="market-stats-bar" *ngIf="activeTab === 'vn' && vnStocks.length > 0">
+    <div class="stat-item">
+      <i class="fa fa-arrow-up stat-icon teal"></i>
+      <div>
+        <span class="stat-label">Top tăng</span>
+        <span class="stat-value">{{ getVNTopGainers(1)[0]?.ticker }}</span>
+      </div>
+      <span class="stat-change positive">▲ {{ getVNTopGainers(1)[0]?.pctChange | number:'1.2-2' }}%</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-arrow-down stat-icon coral"></i>
+      <div>
+        <span class="stat-label">Top giảm</span>
+        <span class="stat-value">{{ getVNTopLosers(1)[0]?.ticker }}</span>
+      </div>
+      <span class="stat-change negative">▼ {{ abs(getVNTopLosers(1)[0]?.pctChange ?? 0) | number:'1.2-2' }}%</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-bar-chart stat-icon yellow"></i>
+      <div>
+        <span class="stat-label">Trung bình thay đổi</span>
+        <span class="stat-value" [class.positive]="getVNAvgChange() >= 0" [class.negative]="getVNAvgChange() < 0">
+          {{ getVNAvgChange() >= 0 ? '+' : '' }}{{ getVNAvgChange() | number:'1.2-2' }}%
+        </span>
+      </div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <i class="fa fa-flag stat-icon teal"></i>
+      <div>
+        <span class="stat-label">Cổ phiếu theo dõi</span>
+        <span class="stat-value">{{ vnStocks.length }} CP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TABS ═══════════════════ -->
+  <div class="tab-nav">
+    <button class="tab-btn" [class.active]="activeTab === 'crypto'" (click)="setTab('crypto')">
+      <span class="tab-icon">🪙</span>
+      <span>{{ language.translate('invest.crypto') }}</span>
+      <span class="tab-badge" *ngIf="activeTab === 'crypto'">LIVE</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'gold'" (click)="setTab('gold')">
+      <span class="tab-icon">🥇</span>
+      <span>{{ language.translate('invest.gold') }}</span>
+      <span class="tab-badge live-badge" *ngIf="activeTab === 'gold'">LIVE</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'vn'" (click)="setTab('vn')">
+      <span class="tab-icon">🇻🇳</span>
+      <span>{{ language.translate('invest.vnStocks') }}</span>
+      <span class="tab-badge live-badge" *ngIf="activeTab === 'vn'">LIVE</span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════ CRYPTO TAB ═══════════════════ -->
+  <div class="content-layout" *ngIf="activeTab === 'crypto'">
+
+    <div class="main-content-card">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="fa fa-search search-icon"></i>
+          <input type="text" class="search-input"
+                 [placeholder]="language.translate('invest.searchPlaceholder')"
+                 [value]="searchQuery" (input)="onSearch($any($event.target).value)">
+        </div>
+        <div class="sort-controls">
+          <span class="sort-label">{{ language.translate('invest.sortBy') }}</span>
+          <button class="sort-btn" [class.active]="sortField === 'rank'" (click)="setSort('rank')">
+            # Rank
+            <i class="fa" [class.fa-sort-asc]="sortField==='rank' && sortDir==='asc'"
+                          [class.fa-sort-desc]="sortField==='rank' && sortDir==='desc'"></i>
+          </button>
+          <button class="sort-btn" [class.active]="sortField === 'change24h'" (click)="setSort('change24h')">
+            % 24h
+            <i class="fa" [class.fa-sort-asc]="sortField==='change24h' && sortDir==='asc'"
+                          [class.fa-sort-desc]="sortField==='change24h' && sortDir==='desc'"></i>
+          </button>
+          <button class="sort-btn" [class.active]="sortField === 'marketCap'" (click)="setSort('marketCap')">
+            {{ language.translate('invest.marketCapShort') }}
+            <i class="fa" [class.fa-sort-asc]="sortField==='marketCap' && sortDir==='asc'"
+                          [class.fa-sort-desc]="sortField==='marketCap' && sortDir==='desc'"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="loading-state" *ngIf="loading && filteredCoins.length === 0">
+        <div class="loading-spinner"></div>
+        <p>{{ language.translate('invest.loadingData') }}</p>
+      </div>
+
+      <div class="error-state" *ngIf="error && !loading">
+        <i class="fa fa-exclamation-triangle"></i>
+        <p>{{ error }}</p>
+        <button class="retry-btn" (click)="onRefresh()">{{ language.translate('invest.retry') }}</button>
+      </div>
+
+      <div class="coins-grid" *ngIf="!loading || filteredCoins.length > 0">
+        <div class="coin-card" *ngFor="let coin of filteredCoins; trackBy: trackById">
+          <div class="coin-card-header">
+            <span class="coin-rank">#{{ coin.market_cap_rank }}</span>
+            <img [src]="coin.image" [alt]="coin.name" class="coin-logo" loading="lazy">
+            <div class="coin-identity">
+              <span class="coin-name">{{ coin.name }}</span>
+              <span class="coin-symbol">{{ coin.symbol.toUpperCase() }}</span>
+            </div>
+            <div class="coin-change-badge"
+                 [class.positive]="coin.price_change_percentage_24h >= 0"
+                 [class.negative]="coin.price_change_percentage_24h < 0">
+              {{ coin.price_change_percentage_24h >= 0 ? '▲' : '▼' }}
+              {{ abs(coin.price_change_percentage_24h) | number:'1.2-2' }}%
+            </div>
+          </div>
+
+          <div class="coin-price">${{ formatPrice(coin.current_price) }}</div>
+
+          <div class="sparkline-container" *ngIf="coin.sparkline_in_7d?.price?.length">
+            <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="sparkline">
+              <polyline
+                [attr.points]="getSparklinePoints(coin.sparkline_in_7d.price)"
+                fill="none"
+                [attr.stroke]="getSparklineColor(coin)"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+              </polyline>
+            </svg>
+            <span class="sparkline-label">7 {{ language.translate('invest.days') }}</span>
+          </div>
+
+          <div class="coin-stats">
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-arrow-up coral-text"></i> {{ language.translate('invest.high24h') }}</span>
+              <span class="stat-val">${{ formatPrice(coin.high_24h) }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-arrow-down teal-text"></i> {{ language.translate('invest.low24h') }}</span>
+              <span class="stat-val">${{ formatPrice(coin.low_24h) }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-bar-chart yellow-text"></i> {{ language.translate('invest.marketCapShort') }}</span>
+              <span class="stat-val">${{ formatLarge(coin.market_cap) }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-exchange teal-text"></i> {{ language.translate('invest.volumeShort') }}</span>
+              <span class="stat-val">${{ formatLarge(coin.total_volume) }}</span>
+            </div>
+          </div>
+
+          <div class="coin-footer">
+            <span class="footer-label">1{{ language.translate('invest.hourShort') }}:</span>
+            <span [class.positive]="coin.price_change_percentage_1h_in_currency >= 0"
+                  [class.negative]="coin.price_change_percentage_1h_in_currency < 0">
+              {{ coin.price_change_percentage_1h_in_currency >= 0 ? '+' : '' }}{{ coin.price_change_percentage_1h_in_currency | number:'1.2-2' }}%
+            </span>
+            <span class="footer-sep">|</span>
+            <span class="footer-label">7{{ language.translate('invest.dayShort') }}:</span>
+            <span [class.positive]="coin.price_change_percentage_7d_in_currency >= 0"
+                  [class.negative]="coin.price_change_percentage_7d_in_currency < 0">
+              {{ coin.price_change_percentage_7d_in_currency >= 0 ? '+' : '' }}{{ coin.price_change_percentage_7d_in_currency | number:'1.2-2' }}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && filteredCoins.length === 0 && searchQuery">
+        <i class="fa fa-search"></i>
+        <p>{{ language.translate('invest.noResults') }} "{{ searchQuery }}"</p>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <div class="side-card gainers-card">
+        <div class="side-card-header">
+          <span class="side-card-icon">🚀</span>
+          <span class="side-card-title">{{ language.translate('invest.topGainers') }}</span>
+          <span class="side-card-badge green">24h</span>
+        </div>
+        <div class="side-coin-list">
+          <div class="side-coin-row" *ngFor="let coin of getTopGainers()">
+            <img [src]="coin.image" [alt]="coin.symbol" class="side-coin-img" loading="lazy">
+            <div class="side-coin-info">
+              <span class="side-coin-sym">{{ coin.symbol.toUpperCase() }}</span>
+              <span class="side-coin-price">${{ formatPrice(coin.current_price) }}</span>
+            </div>
+            <span class="side-coin-pct positive">
+              ▲ {{ abs(coin.price_change_percentage_24h) | number:'1.2-2' }}%
+            </span>
+          </div>
+          <div class="side-loading" *ngIf="loading && getTopGainers().length === 0">
+            <div class="mini-dot-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card losers-card">
+        <div class="side-card-header">
+          <span class="side-card-icon">📉</span>
+          <span class="side-card-title">{{ language.translate('invest.topLosers') }}</span>
+          <span class="side-card-badge red">24h</span>
+        </div>
+        <div class="side-coin-list">
+          <div class="side-coin-row" *ngFor="let coin of getTopLosers()">
+            <img [src]="coin.image" [alt]="coin.symbol" class="side-coin-img" loading="lazy">
+            <div class="side-coin-info">
+              <span class="side-coin-sym">{{ coin.symbol.toUpperCase() }}</span>
+              <span class="side-coin-price">${{ formatPrice(coin.current_price) }}</span>
+            </div>
+            <span class="side-coin-pct negative">
+              ▼ {{ abs(coin.price_change_percentage_24h) | number:'1.2-2' }}%
+            </span>
+          </div>
+          <div class="side-loading" *ngIf="loading && getTopLosers().length === 0">
+            <div class="mini-dot-spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card tip-card">
+        <div class="side-card-header">
+          <span class="side-card-icon">💡</span>
+          <span class="side-card-title">{{ language.translate('invest.tipTitle') }}</span>
+        </div>
+        <p class="tip-text">{{ language.translate('invest.tipText') }}</p>
+      </div>
+    </aside>
+
+  </div><!-- end crypto content-layout -->
+
+  <!-- ═══════════════════ GOLD TAB ═══════════════════ -->
+  <div class="content-layout" *ngIf="activeTab === 'gold'">
+
+    <div class="main-content-card">
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="goldLoading && !gold">
+        <div class="loading-spinner"></div>
+        <p>{{ language.translate('invest.loadingGold') }}</p>
+      </div>
+      <!-- Error -->
+      <div class="error-state" *ngIf="goldError && !goldLoading">
+        <i class="fa fa-exclamation-triangle"></i>
+        <p>{{ goldError }}</p>
+        <button class="retry-btn" (click)="marketService.fetchGoldData()">{{ language.translate('invest.retry') }}</button>
+      </div>
+
+      <ng-container *ngIf="gold">
+        <div class="gold-tab-header">
+          <div class="gold-section-title" style="margin-bottom:0">
+            <span>🇻🇳</span>
+            Giá vàng trong nước
+            <div class="sjc-tag" style="margin-bottom:0">🏅 {{ gold.source }}</div>
+          </div>
+          <span class="gold-rate-note">1 USD ≈ {{ gold.usdVndRate | number:'1.0-0' }} ₫</span>
+        </div>
+
+        <div class="stocks-grid" *ngIf="gold.vnGoldPrices?.length">
+          <div class="stock-card gold-provider-card" *ngFor="let g of gold.vnGoldPrices">
+            <div class="stock-card-header">
+              <div class="gold-provider-circle">Au</div>
+              <div class="stock-identity">
+                <span class="stock-symbol" style="font-size:0.88rem">{{ g.name }}</span>
+                <span class="stock-name">{{ g.code }}</span>
+              </div>
+              <div class="stock-change-badge"
+                   [class.positive]="g.changeBuy >= 0"
+                   [class.negative]="g.changeBuy < 0">
+                {{ g.changeBuy >= 0 ? '▲' : '▼' }}
+                {{ abs(g.changeBuy) | number:'1.0-0' }}
+              </div>
+            </div>
+            <div class="gold-sell-price">{{ g.sell | number:'1.0-0' }} ₫</div>
+            <div class="coin-stats">
+              <div class="stat-row">
+                <span class="stat-key">Mua vào</span>
+                <span class="stat-val positive">{{ g.buy | number:'1.0-0' }} ₫</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-key">Bán ra</span>
+                <span class="stat-val" style="color:#FFD93D">{{ g.sell | number:'1.0-0' }} ₫</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-key">Spread</span>
+                <span class="stat-val negative">{{ (g.sell - g.buy) | number:'1.0-0' }} ₫</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <aside class="side-panel">
+      <ng-container *ngIf="gold">
+      <!-- XAU/USD card -->
+      <div class="side-card gold-xau-card" *ngIf="gold.xauPrice > 0">
+        <div class="gold-xau-header">
+          <div class="gold-provider-circle" style="width:36px;height:36px;font-size:0.8rem;flex-shrink:0">Au</div>
+          <div style="flex:1">
+            <div class="stat-label">Vàng quốc tế</div>
+            <div style="font-size:0.78rem;color:#a09060">XAU / USD</div>
+          </div>
+          <div class="stock-change-badge"
+               [class.positive]="gold.xauChangePct >= 0"
+               [class.negative]="gold.xauChangePct < 0">
+            {{ gold.xauChangePct >= 0 ? '▲' : '▼' }}{{ abs(gold.xauChangePct) | number:'1.2-2' }}%
+          </div>
+        </div>
+        <div style="font-size:1.6rem;font-weight:900;color:#FFD93D;letter-spacing:-0.5px;margin:10px 0 2px">
+          ${{ gold.xauPrice | number:'1.2-2' }}
+        </div>
+        <div style="font-size:0.78rem;color:#a09060;margin-bottom:12px">/ troy oz &nbsp;
+          <span [class.positive]="gold.xauChange >= 0" [class.negative]="gold.xauChange < 0">
+            ({{ gold.xauChange >= 0 ? '+' : '' }}${{ gold.xauChange | number:'1.2-2' }})
+          </span>
+        </div>
+        <div class="silver-detail-row">
+          <span class="prev-label">Đóng cửa hôm qua</span>
+          <span class="prev-val">${{ gold.xauClose | number:'1.2-2' }}</span>
+        </div>
+        <div class="silver-detail-row">
+          <span class="prev-label">Giá / gram</span>
+          <span class="prev-val">${{ gold.pricePerGramUsd | number:'1.2-2' }}</span>
+        </div>
+        <div class="gold-updated-note">
+          <i class="fa fa-clock-o"></i> {{ formatTime(gold.updatedAt) }}
+        </div>
+      </div>
+
+      <!-- Spot VND conversion -->
+      <div class="side-card" *ngIf="gold.xauPrice > 0">
+        <div class="side-card-header">
+          <span class="side-card-icon">💱</span>
+          <span class="side-card-title">Quy đổi theo Spot</span>
+        </div>
+        <div class="side-coin-list">
+          <div class="side-coin-row">
+            <div class="side-coin-info"><span class="side-coin-sym">1 gram</span></div>
+            <span class="side-coin-pct" style="color:#FFD93D">{{ (gold.pricePerGramUsd * gold.usdVndRate) | number:'1.0-0' }} ₫</span>
+          </div>
+          <div class="side-coin-row">
+            <div class="side-coin-info"><span class="side-coin-sym">1 chỉ (3.75g)</span></div>
+            <span class="side-coin-pct" style="color:#FFD93D">{{ gold.pricePerChiVnd | number:'1.0-0' }} ₫</span>
+          </div>
+          <div class="side-coin-row" style="background:rgba(255,215,0,0.06);border-radius:8px">
+            <div class="side-coin-info"><span class="side-coin-sym" style="color:#FFD93D;font-weight:800">1 lượng (37.5g)</span></div>
+            <span style="font-size:0.88rem;font-weight:800;color:#FFD93D;white-space:nowrap">{{ gold.pricePerLuongVnd | number:'1.0-0' }} ₫</span>
+          </div>
+          <div class="side-coin-row">
+            <div class="side-coin-info"><span class="side-coin-sym">1 kg</span></div>
+            <span class="side-coin-pct" style="color:#FFD93D">{{ (gold.pricePerGramUsd * gold.usdVndRate * 1000) | number:'1.0-0' }} ₫</span>
+          </div>
+        </div>
+        <p class="gold-disclaimer" style="margin-top:10px">* Spot × {{ gold.usdVndRate | number:'1.0-0' }} ₫/USD (tham khảo)</p>
+      </div>
+
+      <div class="side-card tip-card">
+        <div class="side-card-header">
+          <span class="side-card-icon">💡</span>
+          <span class="side-card-title">{{ language.translate('invest.tipTitle') }}</span>
+        </div>
+        <p class="tip-text">{{ language.translate('invest.goldDisclaimer') }}</p>
+      </div>
+      </ng-container>
+    </aside>
+
+  </div><!-- end gold content-layout -->
+
+  <!-- ═══════════════════ VN STOCKS TAB ═══════════════════ -->
+  <div class="content-layout" *ngIf="activeTab === 'vn'">
+
+    <div class="main-content-card">
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="vnLoading && vnStocks.length === 0">
+        <div class="loading-spinner"></div>
+        <p>{{ language.translate('invest.loadingVN') }}</p>
+      </div>
+
+      <!-- Error -->
+      <div class="error-state" *ngIf="vnError && !vnLoading">
+        <i class="fa fa-exclamation-triangle"></i>
+        <p>{{ vnError }}</p>
+        <button class="retry-btn" (click)="marketService.fetchVNStocks()">{{ language.translate('invest.retry') }}</button>
+      </div>
+
+      <!-- VN Stocks Grid -->
+      <div class="stocks-grid" *ngIf="vnStocks.length > 0">
+        <div class="stock-card vn-card" *ngFor="let s of vnStocks; trackBy: trackBySymbol">
+          <div class="stock-card-header">
+            <div class="vn-ticker-circle">{{ s.ticker }}</div>
+            <div class="stock-identity">
+              <span class="stock-symbol">{{ s.ticker }}</span>
+              <span class="stock-name">{{ s.companyName }}</span>
+            </div>
+            <div class="stock-badges">
+              <span class="exchange-badge">{{ s.exchange }}</span>
+              <div class="stock-change-badge"
+                   [class.positive]="s.pctChange >= 0"
+                   [class.negative]="s.pctChange < 0">
+                {{ s.pctChange >= 0 ? '▲' : '▼' }}
+                {{ abs(s.pctChange) | number:'1.2-2' }}%
+              </div>
+            </div>
+          </div>
+
+          <div class="vn-stock-price">
+            {{ s.price | number:'1.0-0' }} ₫
+            <span class="stock-change-amt"
+                  [class.positive]="s.change >= 0"
+                  [class.negative]="s.change < 0">
+              {{ s.change >= 0 ? '+' : '' }}{{ s.change | number:'1.0-0' }}
+            </span>
+          </div>
+
+          <div class="coin-stats">
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-arrow-up coral-text"></i> {{ language.translate('invest.high24h') }}</span>
+              <span class="stat-val">{{ s.high | number:'1.0-0' }} ₫</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-arrow-down teal-text"></i> {{ language.translate('invest.low24h') }}</span>
+              <span class="stat-val">{{ s.low | number:'1.0-0' }} ₫</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-building yellow-text"></i> {{ language.translate('invest.openPrice') }}</span>
+              <span class="stat-val">{{ s.open | number:'1.0-0' }} ₫</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key"><i class="fa fa-exchange teal-text"></i> {{ language.translate('invest.volumeShort') }}</span>
+              <span class="stat-val">{{ formatLarge(s.volume) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VN Side Panel -->
+    <aside class="side-panel">
+      <div class="side-card gainers-card" *ngIf="vnStocks.length > 0">
+        <div class="side-card-header">
+          <span class="side-card-icon">🚀</span>
+          <span class="side-card-title">{{ language.translate('invest.topGainers') }}</span>
+          <span class="side-card-badge green">1D</span>
+        </div>
+        <div class="side-coin-list">
+          <div class="side-coin-row" *ngFor="let s of getVNTopGainers()">
+            <div class="vn-mini-circle">{{ s.ticker }}</div>
+            <div class="side-coin-info">
+              <span class="side-coin-sym">{{ s.ticker }}</span>
+              <span class="side-coin-price">{{ s.price | number:'1.0-0' }} ₫</span>
+            </div>
+            <span class="side-coin-pct positive">
+              ▲ {{ abs(s.pctChange) | number:'1.2-2' }}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card losers-card" *ngIf="vnStocks.length > 0">
+        <div class="side-card-header">
+          <span class="side-card-icon">📉</span>
+          <span class="side-card-title">{{ language.translate('invest.topLosers') }}</span>
+          <span class="side-card-badge red">1D</span>
+        </div>
+        <div class="side-coin-list">
+          <div class="side-coin-row" *ngFor="let s of getVNTopLosers()">
+            <div class="vn-mini-circle">{{ s.ticker }}</div>
+            <div class="side-coin-info">
+              <span class="side-coin-sym">{{ s.ticker }}</span>
+              <span class="side-coin-price">{{ s.price | number:'1.0-0' }} ₫</span>
+            </div>
+            <span class="side-coin-pct negative">
+              ▼ {{ abs(s.pctChange) | number:'1.2-2' }}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card tip-card">
+        <div class="side-card-header">
+          <span class="side-card-icon">💡</span>
+          <span class="side-card-title">{{ language.translate('invest.tipTitle') }}</span>
+        </div>
+        <p class="tip-text">{{ language.translate('invest.vnTip') }}</p>
+      </div>
+    </aside>
+
+  </div><!-- end vn content-layout -->
+
+</div>

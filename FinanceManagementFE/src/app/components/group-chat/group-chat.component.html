@@ -1,0 +1,451 @@
+<div class="group-chat-wrapper">
+<div class="group-chat-container"
+     (dragover)="onDragOver($event)"
+     (dragleave)="onDragLeave($event)"
+     (drop)="onDrop($event)">
+  <!-- Chat header -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <img class="chat-header-avatar"
+           [src]="groupAvatarUrl || getGroupAvatarUrl()"
+           [alt]="groupName">
+      <div class="chat-header-text">
+        <span class="chat-header-name">{{ groupName }}</span>
+        <span class="chat-header-members" *ngIf="sidebarMembers.length > 0">{{ sidebarMembers.length }} thành viên</span>
+      </div>
+    </div>
+    <button class="info-btn" [class.active]="showSidebar" (click)="toggleSidebar()" title="Thông tin đoạn chat">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="8"/>
+        <line x1="12" y1="12" x2="12" y2="16"/>
+      </svg>
+    </button>
+  </div>
+  
+  <!-- Drag overlay -->
+  <div class="drag-overlay" *ngIf="isDragOver">
+    <div class="drag-content">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+        <path d="M12 12v9"/>
+        <path d="M8 17l4 4 4-4"/>
+      </svg>
+      <span>Thả file vào đây</span>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Đang tải tin nhắn...</span>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && messages.length === 0">
+    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"/>
+    </svg>
+    <h3>Chưa có tin nhắn nào</h3>
+    <p>Hãy bắt đầu cuộc trò chuyện với nhóm!</p>
+  </div>
+
+  <!-- Messages container -->
+  <div class="messages-container" 
+       #messagesContainer 
+       (scroll)="onScroll($event)"
+       *ngIf="!loading">
+    
+    <!-- Load more indicator -->
+    <div class="load-more" *ngIf="loadingMore">
+      <div class="loading-spinner small"></div>
+      <span>Đang tải thêm...</span>
+    </div>
+
+    <!-- Messages -->
+    <div *ngFor="let message of messages; let i = index; trackBy: trackByMessageId">
+      <!-- Date separator -->
+      <div class="date-separator" *ngIf="shouldShowDateSeparator(i)">
+        <span>{{ formatDate(message.createdAt) }}</span>
+      </div>
+
+      <!-- Message -->
+      <div class="message"
+           [id]="'msg-' + message.id"
+           [class.own]="isOwnMessage(message)"
+           [class.deleted]="message.isDeleted"
+           [class.highlighted]="highlightedMessageId === message.id">
+        
+        <!-- Avatar (for other users' messages) -->
+        <div class="message-avatar" *ngIf="!isOwnMessage(message)">
+          <img [src]="getSenderAvatar(message)" [alt]="message.senderName">
+        </div>
+
+        <div class="message-content">
+          <!-- Sender name (for other users) -->
+          <div class="message-sender" *ngIf="!isOwnMessage(message)">
+            {{ message.senderName }}
+          </div>
+
+          <!-- Reply reference -->
+          <div class="reply-reference" *ngIf="message.replyToMessageId && message.replyToContent">
+            <div class="reply-line"></div>
+            <div class="reply-content">{{ message.replyToContent }}</div>
+          </div>
+
+          <!-- Deleted message -->
+          <div class="message-bubble deleted-bubble" *ngIf="message.isDeleted">
+            <span class="deleted-text">Tin nhắn đã bị xóa</span>
+          </div>
+
+          <!-- Text message -->
+          <div class="message-bubble" *ngIf="!message.isDeleted && message.messageType === 'TEXT'">
+            <span class="message-text">{{ message.content }}</span>
+          </div>
+
+          <!-- Sticker message -->
+          <div class="message-bubble sticker-bubble" *ngIf="!message.isDeleted && message.messageType === 'STICKER'">
+            <span class="sticker-emoji">{{ message.content }}</span>
+          </div>
+
+          <!-- Image message -->
+          <div class="message-bubble image-bubble" *ngIf="!message.isDeleted && message.messageType === 'IMAGE'">
+            <div class="image-loading" *ngIf="!getFileUrl(message)">
+              <div class="loading-spinner small"></div>
+            </div>
+            <img *ngIf="getFileUrl(message)" 
+                 [src]="getFileUrl(message)" 
+                 [alt]="message.fileName"
+                 (click)="downloadFile(message)">
+          </div>
+
+          <!-- File message -->
+          <div class="message-bubble file-bubble" *ngIf="!message.isDeleted && message.messageType === 'FILE'">
+            <div class="file-info" (click)="downloadFile(message)">
+              <span class="file-icon">{{ getFileIcon(message.fileType || '') }}</span>
+              <div class="file-details">
+                <span class="file-name">{{ message.fileName }}</span>
+                <span class="file-size">{{ formatFileSize(message.fileSize) }}</span>
+              </div>
+              <svg class="download-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Message meta -->
+          <div class="message-meta">
+            <span class="message-time">{{ formatTime(message.createdAt) }}</span>
+            <span class="edited-badge" *ngIf="message.isEdited">đã sửa</span>
+          </div>
+
+          <!-- Message actions -->
+          <div class="message-actions" *ngIf="!message.isDeleted">
+            <button class="action-btn" (click)="replyTo(message)" title="Trả lời">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 17 4 12 9 7"/>
+                <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll to bottom sticky button (inside scroll container) -->
+    <div class="scroll-to-bottom-wrap" *ngIf="showScrollToBottom">
+      <button class="scroll-to-bottom-btn" (click)="scrollToBottomManual()" title="Tin mới nhất">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Typing indicator -->
+    <div class="typing-indicator" *ngIf="typingUsers.size > 0">
+      <div class="typing-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <span class="typing-text">{{ getTypingText() }}</span>
+    </div>
+  </div>
+
+  <!-- Input area -->
+  <div class="input-area">
+    <!-- Reply preview -->
+    <div class="reply-preview" *ngIf="replyingTo">
+      <div class="reply-info">
+        <span class="reply-label">Đang trả lời</span>
+        <span class="reply-name">{{ replyingTo.senderName }}</span>
+        <span class="reply-text">{{ replyingTo.content }}</span>
+      </div>
+      <button class="cancel-reply" (click)="cancelReply()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Files preview -->
+    <div class="files-preview" *ngIf="selectedFiles.length > 0">
+      <div class="files-header">
+        <span class="files-count">{{ selectedFiles.length }} file đã chọn</span>
+        <button class="clear-all-btn" (click)="clearSelectedFile()">Xóa tất cả</button>
+      </div>
+      <div class="files-list">
+        <div class="file-preview-item" *ngFor="let preview of filePreviews; let i = index">
+          <div class="preview-content">
+            <img *ngIf="preview.previewUrl" [src]="preview.previewUrl" class="preview-image">
+            <div *ngIf="!preview.previewUrl" class="preview-file">
+              <span class="file-icon">{{ getFileIcon(preview.file.type) }}</span>
+            </div>
+          </div>
+          <span class="preview-name">{{ preview.file.name }}</span>
+          <button class="remove-file-btn" (click)="clearSelectedFile(i)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticker picker -->
+    <div class="sticker-picker" *ngIf="showStickerPicker">
+      <div class="sticker-header">
+        <span class="sticker-title">Stickers</span>
+        <button class="sticker-close-btn" (click)="closeStickerPicker()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="sticker-categories">
+        <button 
+          class="category-btn"
+          *ngFor="let category of stickerCategories; let i = index"
+          [class.active]="selectedStickerCategory === i"
+          (click)="selectStickerCategory(i)">
+          {{ category.icon }}
+        </button>
+      </div>
+      <div class="sticker-grid">
+        <button 
+          class="sticker-item"
+          *ngFor="let sticker of stickerCategories[selectedStickerCategory].stickers"
+          (click)="sendSticker(sticker)">
+          {{ sticker }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Input row -->
+    <div class="input-row">
+      <!-- Attach file button -->
+      <button class="input-btn" (click)="fileInput.click()" title="Đính kèm file">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+        </svg>
+      </button>
+      <input 
+        type="file" 
+        #fileInput 
+        hidden 
+        multiple
+        (change)="onFileSelected($event)"
+        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+
+      <!-- Sticker button -->
+      <button class="input-btn" [class.active]="showStickerPicker" (click)="toggleStickerPicker()" title="Sticker">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+          <line x1="9" y1="9" x2="9.01" y2="9"/>
+          <line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      </button>
+
+      <!-- Message input -->
+      <div class="input-wrapper">
+        <textarea
+          #messageInput
+          class="message-input"
+          placeholder="Nhập tin nhắn..."
+          [(ngModel)]="newMessage"
+          (input)="onMessageInput($event)"
+          (keydown)="onKeyDown($event)"
+          [disabled]="sendingMessage || uploadingFile"
+          rows="1"></textarea>
+        <span class="input-hint">Alt+Enter để xuống dòng</span>
+      </div>
+
+      <!-- Send button -->
+      <button
+        class="send-btn"
+        [class.active]="newMessage.trim() || selectedFiles.length > 0"
+        [disabled]="(!newMessage.trim() && selectedFiles.length === 0) || sendingMessage || uploadingFile"
+        (click)="sendMessage()">
+        <svg *ngIf="!sendingMessage && !uploadingFile" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+        <div *ngIf="sendingMessage || uploadingFile" class="loading-spinner small"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="chat-sidebar" [class.visible]="showSidebar">
+  <!-- Sidebar header -->
+  <div class="sidebar-header">
+    <img class="sidebar-avatar"
+         [src]="groupAvatarUrl || getGroupAvatarUrl()"
+         [alt]="groupName">
+    <div class="sidebar-room-name">{{ groupName }}</div>
+    <div class="sidebar-member-count" *ngIf="sidebarMembers.length > 0">{{ sidebarMembers.length }} thành viên</div>
+  </div>
+
+  <!-- Sidebar action buttons -->
+  <div class="sidebar-actions">
+    <button class="sidebar-action-btn" (click)="toggleSidebar()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      <span>Tắt lại</span>
+    </button>
+    <button class="sidebar-action-btn" [class.active]="showSearch" (click)="toggleSearch()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <span>Tìm kiếm</span>
+    </button>
+  </div>
+
+  <!-- Search panel -->
+  <div class="sidebar-search-panel" *ngIf="showSearch">
+    <div class="search-input-row">
+      <input class="search-input" type="text" placeholder="Tìm kiếm tin nhắn..."
+             [(ngModel)]="searchKeyword" (input)="onSearch()">
+    </div>
+    <div class="search-results" *ngIf="searchResults.length > 0">
+      <div class="search-result-item" *ngFor="let msg of searchResults" (click)="scrollToMessage(msg.id)">
+        <div class="search-result-sender">{{ msg.senderName }}</div>
+        <div class="search-result-content">{{ msg.content }}</div>
+        <div class="search-result-time">{{ formatTime(msg.createdAt) }}</div>
+      </div>
+    </div>
+    <div class="search-empty" *ngIf="searchKeyword && searchResults.length === 0">
+      Không tìm thấy kết quả
+    </div>
+  </div>
+
+  <!-- Accordion: Thông tin về đoạn chat -->
+  <div class="accordion-item">
+    <div class="accordion-header" (click)="toggleSection('info')">
+      <span>Thông tin về đoạn chat</span>
+      <svg class="accordion-icon" [class.expanded]="isSectionExpanded('info')"
+           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+    <div class="accordion-content" *ngIf="isSectionExpanded('info')">
+      <div class="info-row"><span class="info-label">Tên nhóm</span><span class="info-value">{{ groupName }}</span></div>
+      <div class="info-row" *ngIf="room?.createdAt"><span class="info-label">Ngày tạo</span><span class="info-value">{{ formatDate(room?.createdAt) }}</span></div>
+      <div class="info-row" *ngIf="sidebarMembers.length > 0"><span class="info-label">Số thành viên</span><span class="info-value">{{ sidebarMembers.length }}</span></div>
+    </div>
+  </div>
+
+  <!-- Accordion: Thành viên -->
+  <div class="accordion-item">
+    <div class="accordion-header" (click)="toggleSection('members')">
+      <span>Thành viên trong đoạn chat</span>
+      <svg class="accordion-icon" [class.expanded]="isSectionExpanded('members')"
+           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+    <div class="accordion-content" *ngIf="isSectionExpanded('members')">
+      <div class="member-item" *ngFor="let member of sidebarMembers">
+        <img class="member-avatar" [src]="getMemberAvatar(member)" [alt]="member.fullName || member.email">
+        <div class="member-info">
+          <span class="member-name">{{ member.fullName || member.email }}</span>
+          <span class="member-role" *ngIf="member.role">{{ member.role }}</span>
+        </div>
+      </div>
+      <div class="no-members" *ngIf="sidebarMembers.length === 0">Đang tải thành viên...</div>
+    </div>
+  </div>
+
+  <!-- Accordion: File phương tiện, file và liên kết -->
+  <div class="accordion-item">
+    <div class="accordion-header" (click)="toggleSection('media')">
+      <span>File phương tiện, file và liên kết</span>
+      <svg class="accordion-icon" [class.expanded]="isSectionExpanded('media')"
+           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+    <div class="accordion-content" *ngIf="isSectionExpanded('media')">
+      <!-- Media sub-tabs -->
+      <div class="media-tabs">
+        <button class="media-tab" [class.active]="activeMediaTab === 'media'" (click)="setMediaTab('media')">File phương tiện</button>
+        <button class="media-tab" [class.active]="activeMediaTab === 'file'" (click)="setMediaTab('file')">File</button>
+        <button class="media-tab" [class.active]="activeMediaTab === 'link'" (click)="setMediaTab('link')">Liên kết</button>
+      </div>
+
+      <!-- Media grid -->
+      <div class="media-grid" *ngIf="activeMediaTab === 'media'">
+        <div class="media-thumb" *ngFor="let msg of mediaMessages" (click)="openImageFullscreen(msg)">
+          <img *ngIf="msg.fileLiveUrl" [src]="msg.fileLiveUrl" [alt]="msg.fileName">
+          <div *ngIf="!msg.fileLiveUrl" class="media-thumb-placeholder">
+            <div class="loading-spinner small"></div>
+          </div>
+        </div>
+        <div class="no-content" *ngIf="mediaMessages.length === 0">Chưa có ảnh nào</div>
+      </div>
+
+      <!-- File list -->
+      <div class="file-list-sidebar" *ngIf="activeMediaTab === 'file'">
+        <div class="sidebar-file-item" *ngFor="let msg of fileMessages" (click)="downloadFile(msg)">
+          <span class="sidebar-file-icon">{{ getFileIcon(msg.fileType || '') }}</span>
+          <div class="sidebar-file-info">
+            <span class="sidebar-file-name">{{ msg.fileName }}</span>
+            <span class="sidebar-file-size">{{ formatFileSize(msg.fileSize) }}</span>
+          </div>
+        </div>
+        <div class="no-content" *ngIf="fileMessages.length === 0">Chưa có file nào</div>
+      </div>
+
+      <!-- Link list -->
+      <div class="link-list-sidebar" *ngIf="activeMediaTab === 'link'">
+        <div class="link-item" *ngFor="let msg of linkMessages">
+          <div class="link-sender">{{ msg.senderName }}</div>
+          <a *ngFor="let url of extractLinks(msg.content || '')" [href]="url" target="_blank" class="link-url">{{ url }}</a>
+          <div class="link-time">{{ formatDate(msg.createdAt) }}</div>
+        </div>
+        <div class="no-content" *ngIf="linkMessages.length === 0">Chưa có liên kết nào</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Image Lightbox -->
+<div class="lightbox-overlay" *ngIf="lightboxUrl" (click)="closeLightbox()">
+  <div class="lightbox-content" (click)="$event.stopPropagation()">
+    <button class="lightbox-close" (click)="closeLightbox()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <img class="lightbox-img" [src]="lightboxUrl" (click)="closeLightbox()">
+  </div>
+</div>

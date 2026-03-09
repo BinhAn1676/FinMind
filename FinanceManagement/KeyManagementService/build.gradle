@@ -1,0 +1,105 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.5'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.finance'
+version = '0.0.1-SNAPSHOT'
+description = 'KeyManagementService'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    // Force resolution strategy for perfmark to ensure it's included
+    all {
+        resolutionStrategy {
+            force 'io.perfmark:perfmark-api:0.27.0'
+            force 'io.perfmark:perfmark-impl:0.27.0'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+ext {
+    set('springCloudVersion', "2024.0.1")
+    set('otelVersion', "2.11.0")
+}
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation("org.redisson:redisson:3.47.0")
+    runtimeOnly "io.opentelemetry.javaagent:opentelemetry-javaagent:${otelVersion}"
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // OpenTelemetry API incubator for logging support (required by Spring Boot 3.4.5)
+    // Version matches the SDK version used by Spring Boot 3.4.5
+    // Required because Google Cloud dependencies pull in opentelemetry-sdk-logs
+    implementation 'io.opentelemetry:opentelemetry-api-incubator:1.43.0-alpha'
+    // Add Prometheus metrics support
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-bus-kafka'
+
+    // Add direct Spring Kafka support
+    implementation 'org.springframework.kafka:spring-kafka'
+
+
+//	implementation 'org.springframework.cloud:spring-cloud-starter-bus-amqp'
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    //testImplementation 'com.h2database:h2:2.3.232'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+    // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
+    implementation("org.modelmapper:modelmapper:3.2.2")
+
+    // Add Jackson JSR310 module for Java 8 date/time support
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
+    // Google Cloud KMS dependencies
+    implementation 'com.google.cloud:google-cloud-kms:2.45.0'
+    implementation 'com.google.cloud:google-cloud-storage:2.45.0'
+    
+    // Force compatible gRPC versions
+    implementation 'io.grpc:grpc-netty-shaded:1.68.1'
+    implementation 'io.grpc:grpc-core:1.68.1'
+    implementation 'io.grpc:grpc-api:1.68.1'
+    implementation 'io.grpc:grpc-stub:1.68.1'
+    implementation 'io.grpc:grpc-auth:1.68.1'
+    // PerfMark is required by gRPC for performance monitoring
+    // Both API and implementation are needed
+    implementation 'io.perfmark:perfmark-api:0.27.0'
+    implementation 'io.perfmark:perfmark-impl:0.27.0'
+    // Protobuf is required by Google Cloud KMS
+    implementation 'com.google.protobuf:protobuf-java:3.25.5'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

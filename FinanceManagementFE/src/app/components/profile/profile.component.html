@@ -1,0 +1,329 @@
+<app-sidebar></app-sidebar>
+<div class="profile-container" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <div class="profile-header">
+    <h1>{{ language.translate('profileTitle') }}</h1>
+    <p class="profile-subtitle">{{ language.translate('profileSubtitle') }}</p>
+  </div>
+
+  <div class="profile-content">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <!-- Avatar Section -->
+      <div class="avatar-section">
+        <div class="avatar-container">
+          <img [src]="getUserAvatar()" [alt]="user.name" class="avatar-large">
+          <div class="avatar-overlay" (click)="triggerFileInput()" *ngIf="isEditMode">
+            <i class="camera-icon">📷</i>
+            <span>{{ language.translate('profileChangePhoto') }}</span>
+          </div>
+          <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+        </div>
+        <div class="avatar-info">
+          <h2>{{ user.username || 'User' }}</h2>
+          <p class="profile-email">{{ userProfile?.email || 'No email available' }}</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="profile-actions">
+        <button class="btn btn-edit" (click)="toggleEditMode()" *ngIf="!isEditMode">
+          <i class="icon">✏️</i>
+          {{ language.translate('profileEditInfo') }}
+        </button>
+        <div class="edit-actions" *ngIf="isEditMode">
+          <button class="btn btn-save" (click)="saveProfile()">
+            <i class="icon">💾</i>
+            {{ language.translate('profileSaveChanges') }}
+          </button>
+          <button class="btn btn-cancel" (click)="cancelEdit()">
+            <i class="icon">❌</i>
+            {{ language.translate('profileCancel') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Information Form -->
+    <div class="profile-form-section">
+      <div class="form-card">
+        <h3>{{ language.translate('profilePersonalInfo') }}</h3>
+
+        <div class="form-grid">
+          <!-- Full Name -->
+          <div class="form-group">
+            <label for="fullName">Họ và tên *</label>
+            <input
+              type="text"
+              id="fullName"
+              [(ngModel)]="user.fullName"
+              [readOnly]="!isEditMode"
+              class="form-input"
+              placeholder="Họ và tên">
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">{{ language.translate('profileEmail') }} *</label>
+            <input
+              type="email"
+              id="email"
+              [(ngModel)]="user.email"
+              [readOnly]="!isEditMode"
+              class="form-input"
+              [placeholder]="language.translate('profileEmail')">
+          </div>
+
+          <!-- Username -->
+          <div class="form-group">
+            <label for="username">{{ language.translate('profileUsername') }}</label>
+            <input
+              type="text"
+              id="username"
+              [(ngModel)]="user.username"
+              [readOnly]="true"
+              class="form-input readonly"
+              [placeholder]="language.translate('profileUsername')">
+            <small class="form-hint">{{ language.translate('profileUsernameHint') }}</small>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label for="phone">{{ language.translate('profilePhone') }}</label>
+            <input
+              type="tel"
+              id="phone"
+              [(ngModel)]="user.phone"
+              [readOnly]="!isEditMode"
+              class="form-input"
+              [placeholder]="language.translate('profilePhone')">
+          </div>
+
+          <!-- Date of Birth -->
+          <div class="form-group">
+            <label for="dateOfBirth">{{ language.translate('profileDateOfBirth') }}</label>
+            <p-calendar
+              inputId="dateOfBirth"
+              [(ngModel)]="dateOfBirthCal"
+              (onSelect)="onDateOfBirthChange()"
+              (onClearClick)="onDateOfBirthChange()"
+              [showIcon]="true"
+              dateFormat="dd/mm/yy"
+              [showButtonBar]="true"
+              [disabled]="!isEditMode"
+              appendTo="body"
+              styleClass="dob-calendar">
+            </p-calendar>
+          </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="form-section">
+            <h4>{{ language.translate('profileAdditionalInfo') }}</h4>
+
+            <div class="form-group">
+              <label for="address">{{ language.translate('profileAddress') }}</label>
+              <textarea
+                id="address"
+                [(ngModel)]="user.address"
+                [readOnly]="!isEditMode"
+                class="form-textarea"
+                [placeholder]="language.translate('profileAddress')"
+                rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="bio">{{ language.translate('profileBio') }}</label>
+              <textarea
+                id="bio"
+                [(ngModel)]="user.bio"
+                [readOnly]="!isEditMode"
+                class="form-textarea"
+                [placeholder]="language.translate('profileBio')"
+                rows="4"></textarea>
+            </div>
+          </div>
+      </div>
+
+      <!-- Account Settings -->
+      <div class="settings-card">
+        <h3>{{ language.translate('profileAccountSettings') }}</h3>
+        <div class="settings-list">
+          <!-- SePay OAuth2 Mode -->
+          <div class="setting-item" *ngIf="sepayConnectionStatus?.oauth2Enabled">
+            <div class="setting-info">
+              <h4>{{ language.translate('sepayOAuth2Title') }}</h4>
+              <p *ngIf="!sepayConnectionStatus?.connected">{{ language.translate('sepayOAuth2Desc') }}</p>
+              <p *ngIf="sepayConnectionStatus?.connected" class="connected-status">
+                <span class="status-badge connected">{{ language.translate('sepayConnected') }}</span>
+                {{ language.translate('sepayOAuth2ConnectedDesc') }}
+              </p>
+              <small *ngIf="sepayConnectionStatus?.connected && sepayConnectionStatus?.scopes" class="scopes-info">
+                {{ language.translate('sepayScopes') }}: {{ sepayConnectionStatus?.scopes }}
+              </small>
+            </div>
+            <div class="setting-actions">
+              <button class="btn btn-primary" *ngIf="!sepayConnectionStatus?.connected"
+                      (click)="connectSepayOAuth2()" [disabled]="sepayConnecting">
+                <i class="icon">🔗</i>
+                {{ sepayConnecting ? language.translate('sepayConnecting') : language.translate('sepayConnect') }}
+              </button>
+              <button class="btn btn-danger" *ngIf="sepayConnectionStatus?.connected"
+                      (click)="disconnectSepayOAuth2()" [disabled]="sepayDisconnecting">
+                <i class="icon">🔌</i>
+                {{ sepayDisconnecting ? language.translate('sepayDisconnecting') : language.translate('sepayDisconnect') }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Legacy Manual Token Mode -->
+          <div class="setting-item" *ngIf="!sepayConnectionStatus?.oauth2Enabled">
+            <div class="setting-info">
+              <h4>{{ language.translate('bankConnectTitle') }}</h4>
+              <p>{{ language.translate('bankConnectDesc') }}</p>
+            </div>
+            <button class="btn btn-secondary" (click)="openBankTokenModal()">
+              <i class="icon">🏦</i>
+              {{ language.translate('bankConnectSetup') }}
+            </button>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>{{ language.translate('bankTutorialTitle') }}</h4>
+              <p>{{ language.translate('bankTutorialDesc') }}</p>
+            </div>
+            <button class="btn btn-secondary" (click)="openTutorialModal()">
+              <i class="icon">📺</i>
+              {{ language.translate('bankTutorial') }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bank Token Modal -->
+<div class="modal-overlay" *ngIf="showBankTokenModal" (click)="closeBankTokenModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>🏦 {{ language.translate('bankTokenModalTitle') }}</h3>
+      <button class="modal-close" (click)="closeBankTokenModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="security-notice">
+        <div class="security-icon">🔐</div>
+        <div class="security-text">
+          <h4>{{ language.translate('bankTokenSecurityTitle') }}</h4>
+          <p>{{ language.translate('bankTokenSecurityDesc') }}</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="bankToken">{{ language.translate('bankTokenLabel') }} *</label>
+        <input
+          type="password"
+          id="bankToken"
+          [(ngModel)]="bankToken"
+          class="form-input"
+          [placeholder]="language.translate('bankTokenPlaceholder')"
+          maxlength="100">
+        <small class="form-hint">{{ language.translate('bankTokenHint') }}</small>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmBankToken">{{ language.translate('bankTokenConfirmLabel') }} *</label>
+        <input
+          type="password"
+          id="confirmBankToken"
+          [(ngModel)]="confirmBankToken"
+          class="form-input"
+          [placeholder]="language.translate('bankTokenConfirmPlaceholder')"
+          maxlength="100">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeBankTokenModal()">{{ language.translate('bankTokenCancel') }}</button>
+      <button class="btn btn-primary" (click)="saveBankToken()" [disabled]="!bankToken || !confirmBankToken || bankToken !== confirmBankToken">
+        <i class="icon">💾</i>
+        {{ language.translate('bankTokenSave') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tutorial Modal -->
+<div class="modal-overlay" *ngIf="showTutorialModal" (click)="closeTutorialModal()">
+  <div class="modal-content tutorial-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>🏦 Hướng dẫn kết nối SePay</h3>
+      <button class="modal-close" (click)="closeTutorialModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Step 1: Đăng ký -->
+      <div class="guide-step">
+        <div class="guide-step-header">
+          <span class="guide-step-number">1</span>
+          <div>
+            <h4 class="guide-step-title">Đăng ký tài khoản SePay</h4>
+            <p class="guide-step-desc">Truy cập trang web SePay và tạo tài khoản mới nếu bạn chưa có. Điền đầy đủ thông tin cá nhân và xác thực email để hoàn tất đăng ký.</p>
+          </div>
+        </div>
+        <img src="assets/images/guide/register.png" alt="Đăng ký tài khoản SePay" class="guide-step-img" (click)="openLightbox('assets/images/guide/register.png')">
+      </div>
+
+      <!-- Step 2: Đăng nhập -->
+      <div class="guide-step">
+        <div class="guide-step-header">
+          <span class="guide-step-number">2</span>
+          <div>
+            <h4 class="guide-step-title">Đăng nhập vào SePay</h4>
+            <p class="guide-step-desc">Sử dụng tài khoản vừa tạo để đăng nhập vào SePay. Nhập email và mật khẩu, sau đó nhấn nút Đăng nhập.</p>
+          </div>
+        </div>
+        <img src="assets/images/guide/login.png" alt="Đăng nhập SePay" class="guide-step-img" (click)="openLightbox('assets/images/guide/login.png')">
+      </div>
+
+      <!-- Step 3: Vào tab bank -->
+      <div class="guide-step">
+        <div class="guide-step-header">
+          <span class="guide-step-number">3</span>
+          <div>
+            <h4 class="guide-step-title">Vào tab Bank và chọn Kết nối</h4>
+            <p class="guide-step-desc">Tại trang chủ SePay, chọn tab <strong>Bank</strong> trên thanh điều hướng. Tìm và nhấn nút <strong>Kết nối</strong> để bắt đầu liên kết ngân hàng.</p>
+          </div>
+        </div>
+        <img src="assets/images/guide/bank.png" alt="Vào tab Bank và kết nối" class="guide-step-img" (click)="openLightbox('assets/images/guide/bank.png')">
+      </div>
+
+      <!-- Step 4: Chọn tài khoản -->
+      <div class="guide-step">
+        <div class="guide-step-header">
+          <span class="guide-step-number">4</span>
+          <div>
+            <h4 class="guide-step-title">Chọn tài khoản ngân hàng</h4>
+            <p class="guide-step-desc">Chọn tài khoản ngân hàng bạn muốn liên kết. Sau khi hoàn tất, giao dịch từ tài khoản này sẽ tự động đồng bộ vào ứng dụng.</p>
+          </div>
+        </div>
+        <img src="assets/images/guide/connect.png" alt="Chọn tài khoản ngân hàng" class="guide-step-img" (click)="openLightbox('assets/images/guide/connect.png')">
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="closeTutorialModal()">
+        Đã hiểu, bắt đầu kết nối!
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" *ngIf="lightboxSrc" (click)="closeLightbox()">
+  <button class="lightbox-close" (click)="closeLightbox()">&times;</button>
+  <div class="lightbox-hint">{{ lightboxZoomed ? 'Nhấn vào ảnh để thu nhỏ' : 'Nhấn vào ảnh để phóng to' }}</div>
+  <div class="lightbox-container" [class.zoomed]="lightboxZoomed" (click)="$event.stopPropagation(); toggleLightboxZoom()">
+    <img [src]="lightboxSrc" alt="Xem chi tiết" class="lightbox-img" [class.zoomed]="lightboxZoomed">
+  </div>
+</div>

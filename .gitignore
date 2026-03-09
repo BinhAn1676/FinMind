@@ -1,0 +1,18 @@
+# Build artifacts
+**/build/
+**/dist/
+**/node_modules/
+**/.gradle/
+**/.angular/
+**/.idea/
+
+# Secrets
+**/.env
+!**/.env.example
+
+# MongoDB keyfile
+**/mongodb/keyfile
+
+# Runtime data
+**/.data/
+**/data/

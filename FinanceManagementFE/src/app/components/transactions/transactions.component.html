@@ -1,0 +1,432 @@
+<div class="transactions-container" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <div class="transactions-header">
+    <h1>{{ language.translate('transactions.title') }}</h1>
+    <p class="subtitle">{{ language.translate('transactions.subtitle') }}</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-section">
+    <div class="summary-card">
+        <div class="summary-item">
+        <i class="fa fa-arrow-down summary-icon" style="color: var(--color-soft-green);"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('transactions.totalIncome') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary">
+            {{ loadingSummary ? '...' : formatCurrency(summary.totalIncome) }}
+          </span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <i class="fa fa-arrow-up summary-icon" style="color: var(--color-coral);"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('transactions.totalExpense') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary">
+            {{ loadingSummary ? '...' : formatCurrency(summary.totalExpense) }}
+          </span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <i class="fa fa-balance-scale summary-icon" style="color: var(--color-gold);"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('transactions.netAmount') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary" [class.positive]="summary.netAmount >= 0" [class.negative]="summary.netAmount < 0">
+            {{ loadingSummary ? '...' : formatCurrency(summary.netAmount) }}
+          </span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <i class="fa fa-list summary-icon" style="color: #4ECDFF;"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('transactions.totalCount') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary">
+            {{ loadingSummary ? '...' : summary.transactionCount }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-card">
+      <div class="filters-header">
+        <h3><i class="fa fa-filter"></i> {{ language.translate('transactions.filters') }}</h3>
+        <button class="btn-clear-filters" (click)="clearFilters()">
+          <i class="fa fa-times"></i> {{ language.translate('transactions.clearFilters') }}
+        </button>
+      </div>
+      <div class="filters-grid">
+        <!-- Row 1: Search, Type, Amount Range -->
+        <div class="filter-group">
+          <label>{{ language.translate('transactions.search') }}</label>
+          <input type="text" class="form-input"
+                 [(ngModel)]="searchTerm"
+                 (keyup.enter)="onSearch()"
+                 [placeholder]="language.translate('transactions.searchPlaceholder')">
+        </div>
+        <div class="filter-group">
+          <label>{{ language.translate('transactions.type') }}</label>
+          <select class="form-input" [(ngModel)]="transactionType" (change)="onFilterChange()">
+            <option value="">{{ language.translate('transactions.all') }}</option>
+            <option value="income">{{ language.translate('transactions.income') }}</option>
+            <option value="expense">{{ language.translate('transactions.expense') }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>{{ language.translate('transactions.amountRange.label') }}</label>
+          <select class="form-input" [(ngModel)]="amountRange" (change)="onFilterChange()">
+            <option *ngFor="let option of getAmountRangeOptions()" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Row 2: Start Date, End Date -->
+        <div class="filter-group filter-date">
+          <span class="p-float-label">
+            <p-calendar inputId="startDate"
+                        [(ngModel)]="startDate"
+                        (onSelect)="onFilterChange()"
+                        (onClearClick)="onFilterChange()"
+                        [showIcon]="true"
+                        dateFormat="dd/mm/yy"
+                        [showButtonBar]="true"
+                        styleClass="w-full">
+            </p-calendar>
+            <label for="startDate">{{ language.translate('transactions.startDate') }}</label>
+          </span>
+        </div>
+        <div class="filter-group filter-date">
+          <span class="p-float-label">
+            <p-calendar inputId="endDate"
+                        [(ngModel)]="endDate"
+                        (onSelect)="onFilterChange()"
+                        (onClearClick)="onFilterChange()"
+                        [showIcon]="true"
+                        dateFormat="dd/mm/yy"
+                        [showButtonBar]="true"
+                        styleClass="w-full">
+            </p-calendar>
+            <label for="endDate">{{ language.translate('transactions.endDate') }}</label>
+          </span>
+        </div>
+      </div>
+      <div class="filters-actions">
+        <button class="btn btn-primary" (click)="openCreateTransactionModal()">
+          <i class="fa fa-plus"></i> {{ language.translate('transactions.addNew') }}
+        </button>
+        <button class="btn btn-export" (click)="exportToExcel()" [title]="language.translate('transactions.exportExcel')">
+          <i class="fa fa-download"></i> {{ language.translate('transactions.exportExcel') }}
+        </button>
+        <button class="btn btn-sync" (click)="manualSyncTransactions()" [disabled]="syncingTransactions">
+          <span *ngIf="!syncingTransactions">{{ language.translate('transactions.syncButton') }}</span>
+          <span *ngIf="syncingTransactions">{{ language.translate('transactions.syncing') }}</span>
+        </button>
+        <div class="sync-guide-hint">
+          <button class="sync-guide-btn">?</button>
+          <div class="sync-guide-tooltip">
+            <strong>Không thể đồng bộ?</strong>
+            <p>Bạn cần kết nối tài khoản SePay trước. Vào <strong>Tài khoản cá nhân → Cài đặt tài khoản</strong> và nhấn nút <strong>Kết nối SePay</strong>.</p>
+          </div>
+        </div>
+        <button class="btn btn-search" (click)="onSearch()">
+          <i class="fa fa-search"></i> {{ language.translate('transactions.search') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions List -->
+  <div class="transactions-list-section">
+    <div class="transactions-card">
+      <div class="card-header">
+        <h3>{{ language.translate('transactions.list') }}</h3>
+        <span class="transaction-count">{{ totalElements }} {{ language.translate('transactions.items') }}</span>
+      </div>
+
+      <div *ngIf="loadingTransactions" class="loading-container">
+        <i class="fa fa-spinner fa-spin"></i>
+        <p>{{ language.translate('transactions.loading') }}</p>
+      </div>
+
+      <div *ngIf="!loadingTransactions && transactions.length === 0" class="no-transactions">
+        <i class="fa fa-inbox"></i>
+        <p>{{ language.translate('transactions.noTransactions') }}</p>
+      </div>
+
+      <div *ngIf="!loadingTransactions && transactions.length > 0" class="transactions-table">
+        <div class="transaction-row header-row">
+          <div class="col-date">{{ language.translate('transactions.date') }}</div>
+          <div class="col-content">{{ language.translate('transactions.content') }}</div>
+          <div class="col-account">{{ language.translate('transactions.account') }}</div>
+          <div class="col-amount">{{ language.translate('transactions.amount') }}</div>
+          <div class="col-category">{{ language.translate('transactions.category') }}</div>
+          <div class="col-actions">{{ language.translate('transactions.actions') }}</div>
+        </div>
+        <div *ngFor="let transaction of transactions" class="transaction-row"
+             [class.income]="getTransactionType(transaction) === 'income'"
+             [class.expense]="getTransactionType(transaction) === 'expense'">
+          <div class="col-date">{{ formatDate(transaction.transactionDate) }}</div>
+          <div class="col-content">
+            <div class="content-main">{{ transaction.transactionContent || '-' }}</div>
+            <div class="content-sub" *ngIf="transaction.referenceNumber">
+              {{ language.translate('transactions.refNumber') }}: {{ transaction.referenceNumber }}
+            </div>
+          </div>
+          <div class="col-account">
+            <div class="account-info">
+              <span class="account-number">{{ transaction.accountNumber || '-' }}</span>
+              <span class="bank-name" *ngIf="transaction.bankBrandName">{{ transaction.bankBrandName }}</span>
+            </div>
+          </div>
+          <div class="col-amount">
+            <span class="amount-value"
+                  [class.income]="getTransactionType(transaction) === 'income'"
+                  [class.expense]="getTransactionType(transaction) === 'expense'">
+              <i class="fa" [class.fa-arrow-down]="getTransactionType(transaction) === 'income'"
+                           [class.fa-arrow-up]="getTransactionType(transaction) === 'expense'"></i>
+              {{ formatCurrency(getTransactionAmount(transaction)) }}
+            </span>
+          </div>
+          <div class="col-category">
+            <span class="category-label">{{ getCategoryDisplay(transaction.category) }}</span>
+          </div>
+          <div class="col-actions">
+            <button class="icon-btn" (click)="openCategoryModal(transaction)" [title]="language.translate('transactions.updateCategory')">
+              <i class="fa fa-tag"></i>
+            </button>
+            <button class="icon-btn" (click)="viewTransactionDetail(transaction)" [title]="language.translate('transactions.viewDetail')">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!loadingTransactions && transactions.length > 0" class="pagination-wrapper">
+        <div class="pagination-info">
+          <span>{{ language.translate('transactions.showing') }} {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalElements) }} {{ language.translate('transactions.of') }} {{ totalElements }}</span>
+          <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" [disabled]="currentPage === 0" (click)="onPageChange(currentPage - 1)">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <span class="pagination-page">{{ currentPage + 1 }} / {{ totalPages || 1 }}</span>
+          <button class="pagination-btn" [disabled]="currentPage >= totalPages - 1" (click)="onPageChange(currentPage + 1)">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction Detail Modal -->
+  <div *ngIf="showDetail" class="modal-overlay" (click)="closeDetailDialog()">
+  <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('transactions.detail') }}</h3>
+      <button class="modal-close" (click)="closeDetailDialog()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="loadingDetail" class="loading-container">
+        <i class="fa fa-spinner fa-spin"></i>
+      </div>
+      <div *ngIf="!loadingDetail && transactionDetail" class="detail-grid">
+        <div class="detail-item">
+          <label>{{ language.translate('transactions.date') }}</label>
+          <div class="detail-value">{{ formatDate(transactionDetail.transactionDate) }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ language.translate('transactions.amount') }}</label>
+          <div class="detail-value amount"
+               [class.income]="getTransactionType(transactionDetail) === 'income'"
+               [class.expense]="getTransactionType(transactionDetail) === 'expense'">
+            {{ formatCurrency(getTransactionAmount(transactionDetail)) }}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>{{ language.translate('transactions.content') }}</label>
+          <div class="detail-value">{{ transactionDetail.transactionContent || '-' }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ language.translate('transactions.account') }}</label>
+          <div class="detail-value">{{ transactionDetail.accountNumber || '-' }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ language.translate('transactions.bank') }}</label>
+          <div class="detail-value">{{ transactionDetail.bankBrandName || '-' }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ language.translate('transactions.refNumber') }}</label>
+          <div class="detail-value">{{ transactionDetail.referenceNumber || '-' }}</div>
+        </div>
+        <div class="detail-item" *ngIf="transactionDetail.code">
+          <label>{{ language.translate('transactions.code') }}</label>
+          <div class="detail-value">{{ transactionDetail.code }}</div>
+        </div>
+        <div class="detail-item" *ngIf="transactionDetail.subAccount">
+          <label>{{ language.translate('transactions.subAccount') }}</label>
+          <div class="detail-value">{{ transactionDetail.subAccount }}</div>
+        </div>
+        
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeDetailDialog()">
+        {{ language.translate('transactions.close') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Transaction Modal -->
+<div *ngIf="showCreateTransactionModal" class="modal-overlay" (click)="closeCreateTransactionModal()">
+  <div class="modal-content create-transaction-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('transactions.createTitle') }}</h3>
+      <button class="modal-close" (click)="closeCreateTransactionModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group form-group-half">
+          <label>{{ language.translate('transactions.account') }} <span style="color: #ff6b6b;">*</span></label>
+          <select class="form-input" [(ngModel)]="newTransaction.bankAccountId" (ngModelChange)="onAccountSelectForTransaction($event)">
+            <option value="">{{ language.translate('transactions.selectAccount') }}</option>
+            <option *ngFor="let acc of accounts" [value]="acc.id.toString()">
+              {{ acc.label || acc.bankShortName || acc.bankFullName }} - {{ acc.accountNumber }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group form-group-half">
+          <label>{{ language.translate('transactions.date') }} <span style="color: #ff6b6b;">*</span></label>
+          <input type="datetime-local" class="form-input" [(ngModel)]="newTransaction.transactionDate" 
+                 (ngModelChange)="onTransactionDateChange($event)"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group form-group-half">
+          <label>{{ language.translate('transactions.amount') }} ({{ language.translate('transactions.income') }}) <span style="color: #ff6b6b;">*</span></label>
+          <input type="text" class="form-input" 
+                 [placeholder]="language.translate('transactions.amountPlaceholder')"
+                 (input)="onTransactionAmountInput($event, 'amountInFormatted')"
+                 [value]="formatNumberWithDots(newTransaction.amountInFormatted)"
+                 (blur)="onTransactionAmountInput($event, 'amountInFormatted')"/>
+          <small class="form-hint" style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+            {{ language.translate('transactions.amountHint') || 'Chỉ cần nhập một trong hai: tiền vào hoặc tiền ra' }}
+          </small>
+        </div>
+        <div class="form-group form-group-half">
+          <label>{{ language.translate('transactions.amount') }} ({{ language.translate('transactions.expense') }}) <span style="color: #ff6b6b;">*</span></label>
+          <input type="text" class="form-input" 
+                 [placeholder]="language.translate('transactions.amountPlaceholder')"
+                 (input)="onTransactionAmountInput($event, 'amountOutFormatted')"
+                 [value]="formatNumberWithDots(newTransaction.amountOutFormatted)"
+                 (blur)="onTransactionAmountInput($event, 'amountOutFormatted')"/>
+          <small class="form-hint" style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+            {{ language.translate('transactions.amountHint') || 'Chỉ cần nhập một trong hai: tiền vào hoặc tiền ra' }}
+          </small>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group form-group-half">
+          <label>{{ language.translate('transactions.content') }}</label>
+          <input type="text" class="form-input" [(ngModel)]="newTransaction.transactionContent" [placeholder]="language.translate('transactions.contentPlaceholder')"/>
+        </div>
+        <div class="form-group form-group-half">
+          <label>{{ language.translate('transactions.category') }}</label>
+          <select class="form-input" [(ngModel)]="newTransaction.category">
+            <option *ngFor="let cat of getCategoryNames()" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('transactions.refNumber') }}</label>
+        <input type="text" class="form-input" [(ngModel)]="newTransaction.referenceNumber" [placeholder]="language.translate('transactions.refNumberPlaceholder')" readonly/>
+        <small class="form-hint">{{ language.translate('transactions.refNumberAutoGenerated') }}</small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeCreateTransactionModal()">
+        {{ language.translate('transactions.cancel') }}
+      </button>
+      <button class="btn btn-primary" (click)="createTransaction()" [disabled]="creatingTransaction">
+        <span *ngIf="!creatingTransaction">{{ language.translate('transactions.create') }}</span>
+        <span *ngIf="creatingTransaction">{{ language.translate('transactions.creating') }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Update Modal -->
+<div *ngIf="showCategoryModal" class="modal-overlay" (click)="closeCategoryModal()">
+  <div class="modal-content category-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('transactions.updateCategory') }}</h3>
+      <button class="modal-close" (click)="closeCategoryModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>{{ language.translate('transactions.selectCategory') }}</label>
+        <select class="form-input" [(ngModel)]="selectedCategory" 
+                (change)="showNewCategoryInput = false"
+                [disabled]="showNewCategoryInput || loadingCategories">
+          <option *ngFor="let cat of getCategoryNames()" [value]="cat">{{ cat }}</option>
+        </select>
+        <div *ngIf="loadingCategories" class="loading-text">Đang tải...</div>
+      </div>
+      
+      <div class="form-group">
+        <button class="btn btn-link" (click)="toggleNewCategoryInput()" type="button">
+          <i class="fa" [class.fa-plus]="!showNewCategoryInput" [class.fa-minus]="showNewCategoryInput"></i>
+          {{ showNewCategoryInput ? language.translate('transactions.cancelNewCategory') : language.translate('transactions.addNewCategory') }}
+        </button>
+      </div>
+      
+      <div class="form-group" *ngIf="showNewCategoryInput">
+        <label>{{ language.translate('transactions.newCategoryName') }}</label>
+        <input type="text" class="form-input" 
+               [(ngModel)]="newCategory"
+               [placeholder]="language.translate('transactions.newCategoryPlaceholder')"
+               (keyup.enter)="updateTransactionCategory()">
+      </div>
+
+      <!-- Category Management Section -->
+      <div class="category-management">
+        <h4>{{ language.translate('transactions.manageCategories') }}</h4>
+        <div class="categories-list">
+          <div *ngFor="let category of categories" class="category-item">
+            <span class="category-name">{{ category.name }}</span>
+            <button class="btn-delete-category" 
+                    (click)="deleteCategory(category.name)"
+                    [disabled]="category.isDefault"
+                    [title]="category.isDefault ? language.translate('transactions.cannotDeleteDefault') : language.translate('transactions.deleteCategory')">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeCategoryModal()">
+        {{ language.translate('transactions.cancel') }}
+      </button>
+      <button class="btn btn-primary" (click)="updateTransactionCategory()">
+        {{ language.translate('transactions.update') }}
+      </button>
+    </div>
+  </div>
+</div>
+

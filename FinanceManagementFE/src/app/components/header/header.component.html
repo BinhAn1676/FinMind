@@ -1,0 +1,79 @@
+<!-- Main Header for all pages -->
+<header class="main-header">
+  <nav>
+    <div class="logo" (click)="showLogoModal()">
+      <img src="assets/images/logo.png" alt="FinanceTracker Logo" class="logo-image">
+      <span class="logo-text">FinanceTracker</span>
+    </div>
+    <div class="nav-links">
+      <!-- Features button - only show when not logged in -->
+      <a href="#features" data-key="navFeatures" *ngIf="!isLoggedIn" (click)="scrollToFeatures($event)">Tính năng</a>
+
+      <!-- Login button for non-logged in users -->
+      <!-- Language toggle for non-logged in users -->
+      <a class="btn btn-ghost" *ngIf="!isLoggedIn" (click)="toggleLanguage()">
+        🌐 <span>{{ getTranslation('navLanguage') }} ({{ currentLang === 'vi' ? 'EN' : 'VI' }})</span>
+      </a>
+
+      <!-- Login button for non-logged in users -->
+      <a href="#" class="btn btn-secondary" *ngIf="!isLoggedIn" data-key="navLogin" (click)="navigateToLogin($event)">Đăng nhập</a>
+
+      <!-- Notification and Chat icons for logged in users -->
+      <div class="header-icons" *ngIf="isLoggedIn">
+        <!-- Market Ticker -->
+        <app-market-ticker></app-market-ticker>
+
+        <!-- Chat Dropdown -->
+        <app-chat-dropdown (openChatBox)="onOpenChatBox($event)"></app-chat-dropdown>
+
+        <!-- Notification Bell -->
+        <app-notification-bell></app-notification-bell>
+      </div>
+
+      <!-- User profile dropdown for logged in users -->
+      <div class="user-profile" *ngIf="isLoggedIn" (click)="toggleUserDropdown()">
+        <div class="user-avatar">
+          <img [src]="getUserAvatar()" [alt]="user.name" class="avatar-image">
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ getUserDisplayName() }}</span>
+          <i class="dropdown-arrow" [class.rotated]="showUserDropdown">▼</i>
+        </div>
+
+        <!-- User dropdown menu -->
+        <div class="user-dropdown" [class.show]="showUserDropdown" (click)="$event.stopPropagation()">
+          <div class="dropdown-header">
+            <span class="dropdown-user-name">{{ getUserDisplayName() }}</span>
+          </div>
+          <div class="dropdown-item" (click)="navigateToProfile()">
+            <i class="icon">👤</i>
+            <span>{{ getTranslation('navAccount') }}</span>
+          </div>
+          <div class="dropdown-item" (click)="toggleLanguage()">
+            <i class="icon">🌐</i>
+            <span>{{ getTranslation('navLanguage') }} ({{ currentLang === 'vi' ? 'EN' : 'VI' }})</span>
+          </div>
+          <div class="dropdown-item" (click)="logout()">
+            <i class="icon">🚪</i>
+            <span>{{ getTranslation('navLogout') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+
+<!-- Logo Modal -->
+<div class="logo-modal" *ngIf="showModal" (click)="closeLogoModal()">
+  <div class="logo-modal-content" (click)="$event.stopPropagation()">
+    <div class="logo-modal-header">
+      <h3 data-key="modalLogoTitle">FinanceTracker Logo</h3>
+      <button class="close-btn" (click)="closeLogoModal()" data-key="modalCloseButton">&times;</button>
+    </div>
+    <div class="logo-modal-body">
+      <img src="assets/images/logo.png" alt="FinanceTracker Logo" class="modal-logo-image">
+      <p data-key="modalLogoDesc">Logo chính thức của FinanceTracker - Ứng dụng quản lý tài chính cá nhân</p>
+    </div>
+  </div>
+</div>

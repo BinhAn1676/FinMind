@@ -1,0 +1,70 @@
+spring:
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: "chat"
+  config:
+    import: "optional:configserver:http://localhost:8071"
+  cloud:
+    bus:
+      enabled: true
+    openfeign:
+      client:
+        config:
+          ai:
+            connect-timeout: 10000
+            read-timeout: 360000
+    stream:
+      kafka:
+        binder:
+          brokers: 192.168.0.101:9194
+  kafka:
+    bootstrap-servers: 192.168.0.101:9194
+    consumer:
+      group-id: chat-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: "chat-service"
+    description: "Chat Service Application"
+    version: "1.0.0"
+
+logging:
+  level:
+    com:
+      finance:
+        notificationservice: DEBUG
+    org:
+      springframework:
+        kafka: INFO
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+

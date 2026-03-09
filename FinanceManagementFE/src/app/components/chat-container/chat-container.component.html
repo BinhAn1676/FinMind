@@ -1,0 +1,15 @@
+<div class="chat-container">
+  <app-chat-box
+    *ngFor="let box of activeChatBoxes; trackBy: trackByRoomId"
+    [room]="box.room"
+    [isMinimized]="box.isMinimized"
+    [isExpanded]="box.isExpanded"
+    [rightOffset]="getOpenBoxRightOffset(box)"
+    [minimizedIndex]="getMinimizedIndex(box)"
+    [openBoxesTotalWidth]="getOpenBoxesTotalWidth()"
+    (close)="closeChat(box.roomId)"
+    (minimize)="minimizeChat(box.roomId)"
+    (maximize)="maximizeChat(box.roomId)"
+    (toggleExpand)="toggleExpandChat(box.roomId)">
+  </app-chat-box>
+</div>

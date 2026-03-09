@@ -1,0 +1,12 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+    # Alternatively disable the import check entirely
+    import-check:
+      enabled: false
+
+google:
+  cloud:
+    kms:
+      enabled: false

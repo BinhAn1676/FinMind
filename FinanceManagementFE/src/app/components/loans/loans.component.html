@@ -1,0 +1,646 @@
+<!-- TABS on top -->
+<div class="tabs-wrapper">
+  <button 
+    class="tab-btn" 
+    [class.active]="activeTab === 'CHO_VAY'"
+    type="button" 
+    (click)="switchTab('CHO_VAY')">
+    {{ language.translate('loans.tab.choVay') }}
+  </button>
+  <button 
+    class="tab-btn" 
+    [class.active]="activeTab === 'VAY'"
+    type="button" 
+    (click)="switchTab('VAY')">
+    {{ language.translate('loans.tab.vay') }}
+  </button>
+</div>
+
+<div class="loans-container" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <div class="loans-header">
+    <h1>{{ language.translate('loans.title') }}</h1>
+    <p class="subtitle">{{ language.translate('loans.subtitle') }}</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-section">
+    <div class="summary-card">
+      <div class="summary-item">
+        <i class="fa fa-money summary-icon" style="color: var(--color-soft-green);"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('loans.summary.totalPrincipal') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary">
+            {{ loadingSummary ? '...' : formatCurrency(summary.totalPrincipal) }}
+          </span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <i class="fa fa-percent summary-icon" style="color: var(--color-gold);"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('loans.summary.totalInterest') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary">
+            {{ loadingSummary ? '...' : formatCurrency(summary.totalInterest) }}
+          </span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <i class="fa fa-arrow-down summary-icon" style="color: var(--color-soft-green);"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('loans.summary.totalCollected') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary">
+            {{ loadingSummary ? '...' : formatCurrency(summary.totalCollected) }}
+          </span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <i class="fa fa-calculator summary-icon" style="color: #4ECDFF;"></i>
+        <div class="summary-content">
+          <span class="summary-label">{{ language.translate('loans.summary.totalAfterInterest') }}</span>
+          <span class="summary-value" [class.loading]="loadingSummary">
+            {{ loadingSummary ? '...' : formatCurrency(summary.totalAfterInterest) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Reconciliation Date (Side by Side) -->
+  <div class="filters-section">
+    <div class="filters-wrapper">
+      <!-- Left: Filters (Larger) -->
+      <div class="filters-card filters-card-large">
+        <div class="filters-header">
+          <h3><i class="fa fa-filter"></i> {{ language.translate('loans.filters') }}</h3>
+          <button class="btn-clear-filters" (click)="clearFilters()">
+            <i class="fa fa-times"></i> {{ language.translate('loans.clearFilters') }}
+          </button>
+        </div>
+        <div class="filters-grid">
+          <!-- 1. Search -->
+          <div class="filter-group">
+            <label>{{ language.translate('loans.search') }}</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="searchTerm"
+                   (keyup.enter)="onSearch()"
+                   [placeholder]="language.translate('loans.searchPlaceholder')">
+          </div>
+          
+          <!-- 2. Start Date -->
+          <div class="filter-group filter-date">
+            <label>{{ language.translate('loans.startDate') }}</label>
+            <p-calendar inputId="loanStartDate"
+                        [(ngModel)]="startDate"
+                        (onSelect)="onFilterChange()"
+                        (onClearClick)="onFilterChange()"
+                        [showIcon]="true"
+                        dateFormat="dd/mm/yy"
+                        [showButtonBar]="true"
+                        [placeholder]="language.translate('loans.startDate')"
+                        styleClass="w-full">
+            </p-calendar>
+          </div>
+          
+          <!-- 3. End Date -->
+          <div class="filter-group filter-date">
+            <label>{{ language.translate('loans.endDate') }}</label>
+            <p-calendar inputId="loanEndDate"
+                        [(ngModel)]="endDate"
+                        (onSelect)="onFilterChange()"
+                        (onClearClick)="onFilterChange()"
+                        [showIcon]="true"
+                        dateFormat="dd/mm/yy"
+                        [showButtonBar]="true"
+                        [placeholder]="language.translate('loans.endDate')"
+                        styleClass="w-full">
+            </p-calendar>
+          </div>
+          
+          <!-- 4. Status -->
+          <div class="filter-group filter-status">
+            <label>{{ language.translate('loans.status') }}</label>
+            <div class="status-filter">
+              <div *ngFor="let status of availableStatuses"
+                   class="status-checkbox"
+                   [class.selected]="isStatusSelected(status.value)"
+                   (click)="toggleStatus(status.value)">
+                <i class="fa" [class.fa-check-square]="isStatusSelected(status.value)"
+                   [class.fa-square-o]="!isStatusSelected(status.value)"></i>
+                <span>{{ language.translate(status.label) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="filters-actions">
+          <button class="btn btn-search" (click)="onSearch()">
+            <i class="fa fa-search"></i> {{ language.translate('loans.search') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Reconciliation Date (Smaller) -->
+      <div class="reconciliation-filter-card reconciliation-filter-card-small">
+        <div class="reconciliation-filter-header">
+          <h4><i class="fa fa-calendar-check-o"></i> <span>{{ language.translate('loans.reconciliationDate') }}</span></h4>
+        </div>
+        <div class="reconciliation-filter-content">
+          <div class="filter-group">
+            <label>{{ language.translate('loans.reconciliationDateLabel') }}</label>
+            <p-calendar inputId="reconciliationDate"
+                        [(ngModel)]="reconciliationDate"
+                        (onSelect)="onReconciliationDateChange()"
+                        (onClearClick)="onReconciliationDateChange()"
+                        [showIcon]="true"
+                        dateFormat="dd/mm/yy"
+                        [showButtonBar]="true"
+                        [placeholder]="language.translate('loans.reconciliationDateLabel')"
+                        styleClass="w-full">
+            </p-calendar>
+          </div>
+          <div class="helper-text">
+            <i class="fa fa-info-circle"></i> {{ language.translate('loans.reconciliationDateHint') }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loans List -->
+  <div class="loans-list-section">
+    <div class="loans-card">
+      <div class="card-header">
+        <h3>{{ language.translate('loans.list') }}</h3>
+        <div class="header-actions">
+          <span class="loan-count">{{ totalElements }} {{ language.translate('loans.items') }}</span>
+          <button class="btn btn-primary" (click)="openCreateModal()">
+            <i class="fa fa-plus"></i> {{ language.translate('loans.addLoan') }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="loadingLoans" class="loading-container">
+        <i class="fa fa-spinner fa-spin"></i>
+        <p>{{ language.translate('loans.loading') }}</p>
+      </div>
+
+      <div *ngIf="!loadingLoans && loans.length === 0" class="no-loans">
+        <i class="fa fa-inbox"></i>
+        <p>{{ language.translate('loans.noLoans') }}</p>
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <i class="fa fa-plus"></i> {{ language.translate('loans.addLoan') }}
+        </button>
+      </div>
+
+      <div *ngIf="!loadingLoans && loans.length > 0" class="loans-table-wrapper">
+        <div class="loans-table">
+        <div class="loan-row header-row">
+          <div class="col-status">{{ language.translate('loans.status') }}</div>
+          <div class="col-borrower">{{ language.translate('loans.borrower') }}</div>
+          <div class="col-phone">{{ language.translate('loans.phone') }}</div>
+          <div class="col-principal">{{ language.translate('loans.principal') }}</div>
+          <div class="col-interest-rate">{{ language.translate('loans.interestRate') }}</div>
+          <div class="col-interest-amount">{{ language.translate('loans.interest') }}</div>
+          <div class="col-term-days">{{ language.translate('loans.termDays') }}</div>
+          <div class="col-daily-payment">{{ language.translate('loans.dailyPayment') }}</div>
+          <div class="col-start-date">{{ language.translate('loans.startDate') }}</div>
+          <div class="col-end-date">{{ language.translate('loans.endDate') }}</div>
+          <div class="col-paid">{{ language.translate('loans.totalPaid') }}</div>
+          <div class="col-amount-due">{{ language.translate('loans.amountDue') }}</div>
+          <div class="col-actions">{{ language.translate('loans.actions') }}</div>
+        </div>
+        <div *ngFor="let loan of loans" class="loan-row">
+          <div class="col-status">
+            <span class="status-badge" 
+                  [class.status-paid]="loan.status === 'PAID'"
+                  [class.status-outdate]="loan.status === 'OUTDATE'"
+                  [class.status-ongoing]="loan.status === 'ON_GOING'">
+              {{ getStatusLabel(loan.status || '') }}
+            </span>
+          </div>
+          <div class="col-borrower">
+            <div class="borrower-name" *ngIf="loan.borrowers && loan.borrowers.length > 0">
+              <span *ngFor="let borrower of loan.borrowers; let last = last">
+                {{ borrower.fullName || '-' }}<span *ngIf="!last">, </span>
+              </span>
+            </div>
+            <div class="borrower-name" *ngIf="!loan.borrowers || loan.borrowers.length === 0">
+              {{ loan.borrower?.fullName || '-' }}
+            </div>
+            <div class="borrower-cccd" *ngIf="loan.borrowers && loan.borrowers.length > 0 && loan.borrowers[0]?.cccd">
+              CCCD: {{ loan.borrowers[0].cccd }}
+            </div>
+            <div class="borrower-cccd" *ngIf="(!loan.borrowers || loan.borrowers.length === 0) && loan.borrower?.cccd">
+              CCCD: {{ loan.borrower?.cccd }}
+            </div>
+          </div>
+          <div class="col-phone">
+            <span *ngIf="loan.borrowers && loan.borrowers.length > 0">
+              {{ loan.borrowers[0]?.phoneNumber || '-' }}
+            </span>
+            <span *ngIf="!loan.borrowers || loan.borrowers.length === 0">
+              {{ loan.borrower?.phoneNumber || '-' }}
+            </span>
+          </div>
+          <div class="col-principal">{{ formatCurrency(loan.principalAmount) }}</div>
+          <div class="col-interest-rate">{{ loan.interestRate || 0 }}%</div>
+          <div class="col-interest-amount">{{ formatCurrency(loan.interestAmount) }}</div>
+          <div class="col-term-days">{{ loan.termDays || 0 }} {{ language.translate('loans.days') }}</div>
+          <div class="col-daily-payment">{{ formatCurrency(loan.dailyPaymentAmount) }}</div>
+          <div class="col-start-date">{{ formatDate(loan.startDate) }}</div>
+          <div class="col-end-date">{{ formatDate(loan.endDate) }}</div>
+          <div class="col-paid">{{ formatCurrency(loan.totalPaid) }}</div>
+          <div class="col-amount-due">
+            <span [class.positive]="getAmountDue(loan) > 0" 
+                  [class.negative]="getAmountDue(loan) < 0">
+              {{ formatCurrency(getAmountDue(loan)) }}
+            </span>
+          </div>
+          <div class="col-actions">
+            <button class="icon-btn" (click)="viewLoanDetail(loan)" [title]="language.translate('loans.viewDetail')">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button class="icon-btn" (click)="openEditModal(loan)" [title]="language.translate('loans.edit')">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="icon-btn" (click)="deleteLoan(loan)" [title]="language.translate('loans.delete')">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!loadingLoans && loans.length > 0" class="pagination-wrapper">
+        <div class="pagination-info">
+          <span>{{ language.translate('loans.showing') }} {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalElements) }} {{ language.translate('loans.of') }} {{ totalElements }}</span>
+          <select class="page-size-select" [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" [disabled]="currentPage === 0" (click)="onPageChange(currentPage - 1)">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <span class="pagination-page">{{ currentPage + 1 }} / {{ totalPages || 1 }}</span>
+          <button class="pagination-btn" [disabled]="currentPage >= totalPages - 1" (click)="onPageChange(currentPage + 1)">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loan Detail Modal -->
+<div *ngIf="showDetail" class="modal-overlay" (click)="closeDetailDialog()">
+  <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('loans.detail') }}</h3>
+      <button class="modal-close" (click)="closeDetailDialog()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="loadingDetail" class="loading-container">
+        <i class="fa fa-spinner fa-spin"></i>
+      </div>
+      <div *ngIf="!loadingDetail && loanDetail" class="detail-content">
+        <!-- Borrower Information -->
+        <div class="detail-section">
+          <h4>{{ language.translate('loans.detailSection.borrowerInfo') }}</h4>
+          <div *ngIf="loanDetail.borrowers && loanDetail.borrowers.length > 0">
+            <div *ngFor="let borrower of loanDetail.borrowers; let i = index" class="borrower-detail-card">
+              <h5 class="borrower-title">{{ language.translate('loans.borrower') }} {{ i + 1 }}</h5>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <label>{{ language.translate('loans.borrower') }}</label>
+                  <div class="detail-value">{{ borrower.fullName || '-' }}</div>
+                </div>
+                <div class="detail-item">
+                  <label>{{ language.translate('loans.phone') }}</label>
+                  <div class="detail-value">{{ borrower.phoneNumber || '-' }}</div>
+                </div>
+                <div class="detail-item">
+                  <label>CCCD</label>
+                  <div class="detail-value">{{ borrower.cccd || '-' }}</div>
+                </div>
+                <div class="detail-item">
+                  <label>{{ language.translate('loans.address') }}</label>
+                  <div class="detail-value">{{ borrower.address || '-' }}</div>
+                </div>
+                <div class="detail-item full-width" *ngIf="borrower.additionalInfo">
+                  <label>{{ language.translate('loans.additionalInfo') }}</label>
+                  <div class="detail-value">{{ borrower.additionalInfo }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!loanDetail.borrowers || loanDetail.borrowers.length === 0" class="detail-grid">
+            <div class="detail-item">
+              <label>{{ language.translate('loans.borrower') }}</label>
+              <div class="detail-value">{{ loanDetail.borrower?.fullName || '-' }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.phone') }}</label>
+              <div class="detail-value">{{ loanDetail.borrower?.phoneNumber || '-' }}</div>
+            </div>
+            <div class="detail-item">
+              <label>CCCD</label>
+              <div class="detail-value">{{ loanDetail.borrower?.cccd || '-' }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.address') }}</label>
+              <div class="detail-value">{{ loanDetail.borrower?.address || '-' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan Information -->
+        <div class="detail-section">
+          <h4>{{ language.translate('loans.detailSection.loanInfo') }}</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>{{ language.translate('loans.principal') }}</label>
+              <div class="detail-value">{{ formatCurrency(loanDetail.principalAmount) }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.interestRate') }}</label>
+              <div class="detail-value">{{ loanDetail.interestRate }}%</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.interest') }}</label>
+              <div class="detail-value">{{ formatCurrency(loanDetail.interestAmount) }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.startDate') }}</label>
+              <div class="detail-value">{{ formatDate(loanDetail.startDate) }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.endDate') }}</label>
+              <div class="detail-value">{{ formatDate(loanDetail.endDate) }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.termDays') }}</label>
+              <div class="detail-value">{{ loanDetail.termDays }} {{ language.translate('loans.days') }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.totalPaid') }}</label>
+              <div class="detail-value">{{ formatCurrency(loanDetail.totalPaid) }}</div>
+            </div>
+            <div class="detail-item">
+              <label>{{ language.translate('loans.outstandingDebt') }}</label>
+              <div class="detail-value" [class.positive]="(loanDetail.outstandingDebt || 0) > 0" 
+                   [class.negative]="(loanDetail.outstandingDebt || 0) < 0">
+                {{ formatCurrency(loanDetail.outstandingDebt) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="detail-section">
+          <div class="section-header">
+            <h4>{{ language.translate('loans.detailSection.paymentHistory') }}</h4>
+            <button class="btn btn-primary btn-sm" (click)="openPaymentModal()">
+              <i class="fa fa-plus"></i> {{ language.translate('loans.addPayment') }}
+            </button>
+          </div>
+          <div *ngIf="!loanDetail.payments || loanDetail.payments.length === 0" class="no-payments">
+            <p>{{ language.translate('loans.noPayments') }}</p>
+          </div>
+          <div *ngIf="loanDetail.payments && loanDetail.payments.length > 0" class="payments-table">
+            <div class="payment-row header-row">
+              <div class="col-payment-date">{{ language.translate('loans.paymentDate') }}</div>
+              <div class="col-payment-amount">{{ language.translate('loans.amount') }}</div>
+              <div class="col-payment-notes">{{ language.translate('loans.notes') }}</div>
+              <div class="col-payment-actions">{{ language.translate('loans.actions') }}</div>
+            </div>
+            <div *ngFor="let payment of loanDetail.payments" class="payment-row">
+              <div class="col-payment-date">{{ formatDate(payment.paymentDate) }}</div>
+              <div class="col-payment-amount">{{ formatCurrency(payment.amount) }}</div>
+              <div class="col-payment-notes">{{ payment.notes || '-' }}</div>
+              <div class="col-payment-actions">
+                <button class="icon-btn" (click)="openPaymentModal(payment)" [title]="language.translate('loans.edit')">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="icon-btn" (click)="deletePayment(payment)" [disabled]="deletingPayment" [title]="language.translate('loans.delete')">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeDetailDialog()">
+        {{ language.translate('loans.close') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Loan Modal -->
+<div *ngIf="showCreateModal || showEditModal" class="modal-overlay" (click)="showCreateModal ? closeCreateModal() : closeEditModal()">
+  <div class="modal-content loan-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingLoan ? language.translate('loans.editLoan') : language.translate('loans.createLoan') }}</h3>
+      <button class="modal-close" (click)="showCreateModal ? closeCreateModal() : closeEditModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <form [formGroup]="loanForm" (ngSubmit)="saveLoan()">
+      <div class="modal-body modal-two-column">
+        <!-- Left Column: Borrower Information -->
+        <div class="modal-column modal-column-left">
+          <div class="form-section">
+            <div class="section-header">
+              <h4>{{ language.translate('loans.detailSection.borrowerInfo') }}</h4>
+              <button type="button" class="btn btn-primary btn-sm" (click)="addBorrower()">
+                <i class="fa fa-plus"></i> {{ language.translate('loans.addBorrower') }}
+              </button>
+            </div>
+            <div *ngFor="let borrower of borrowers; let i = index" class="borrower-card">
+              <div class="borrower-header">
+                <span class="borrower-number">{{ language.translate('loans.borrower') }} {{ i + 1 }}</span>
+                <button *ngIf="borrowers.length > 1" type="button" class="btn-remove-borrower" (click)="removeBorrower(i)">
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>{{ language.translate('loans.borrower') }} <span class="required">*</span></label>
+                  <input type="text" class="form-input" 
+                         [(ngModel)]="borrower.fullName"
+                         [ngModelOptions]="{standalone: true}"
+                         [placeholder]="language.translate('loans.borrowerPlaceholder')">
+                </div>
+                <div class="form-group">
+                  <label>{{ language.translate('loans.phone') }} <span class="required">*</span></label>
+                  <input type="text" class="form-input" 
+                         [(ngModel)]="borrower.phoneNumber"
+                         [ngModelOptions]="{standalone: true}"
+                         [placeholder]="language.translate('loans.phonePlaceholder')">
+                </div>
+                <div class="form-group">
+                  <label>CCCD</label>
+                  <input type="text" class="form-input" 
+                         [(ngModel)]="borrower.cccd"
+                         [ngModelOptions]="{standalone: true}"
+                         [placeholder]="language.translate('loans.cccdPlaceholder')">
+                </div>
+                <div class="form-group">
+                  <label>{{ language.translate('loans.address') }}</label>
+                  <input type="text" class="form-input" 
+                         [(ngModel)]="borrower.address"
+                         [ngModelOptions]="{standalone: true}"
+                         [placeholder]="language.translate('loans.addressPlaceholder')">
+                </div>
+                <div class="form-group full-width">
+                  <label>{{ language.translate('loans.additionalInfo') }}</label>
+                  <textarea class="form-input" 
+                            [(ngModel)]="borrower.additionalInfo"
+                            [ngModelOptions]="{standalone: true}"
+                            rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Loan Information -->
+        <div class="modal-column modal-column-right">
+          <div class="form-section">
+            <h4>{{ language.translate('loans.detailSection.loanInfo') }}</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>{{ language.translate('loans.principal') }} <span class="required">*</span></label>
+                <input type="text" class="form-input" 
+                       [placeholder]="language.translate('loans.principalPlaceholder')"
+                       (input)="onNumberInput($event, 'principalAmount', loanForm)"
+                       [value]="formatNumberWithDots(loanForm.get('principalAmount')?.value)"
+                       (blur)="onNumberInput($event, 'principalAmount', loanForm)">
+              </div>
+              <div class="form-group">
+                <label>{{ language.translate('loans.interestRate') }} (%) <span class="required">*</span></label>
+                <input type="number" class="form-input" formControlName="interestRate" min="0" step="0.01" 
+                       [placeholder]="language.translate('loans.interestRatePlaceholder')">
+              </div>
+              <div class="form-group">
+                <label>{{ language.translate('loans.disbursementDate') }} <span class="required">*</span></label>
+                <input type="date" class="form-input" formControlName="startDate" 
+                       (change)="onDisbursementDateOrTermChange()">
+              </div>
+              <div class="form-group">
+                <label>{{ language.translate('loans.termDays') }} <span class="required">*</span></label>
+                <input type="number" class="form-input" formControlName="termDays" min="1" 
+                       [placeholder]="language.translate('loans.termDaysPlaceholder')"
+                       (change)="onDisbursementDateOrTermChange()">
+              </div>
+              <div class="form-group">
+                <label>{{ language.translate('loans.endDate') }}</label>
+                <input type="date" class="form-input" formControlName="endDate" readonly>
+                <div class="helper-text">
+                  <i class="fa fa-info-circle"></i> {{ language.translate('loans.endDateAutoCalculated') }}
+                </div>
+              </div>
+              <div class="form-group full-width">
+                <label>{{ language.translate('loans.notes') }}</label>
+                <textarea class="form-input" formControlName="notes" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" type="button" (click)="showCreateModal ? closeCreateModal() : closeEditModal()">
+          {{ language.translate('loans.cancel') }}
+        </button>
+        <button class="btn btn-primary" type="submit" [disabled]="saving">
+          <span *ngIf="!saving">
+            {{ editingLoan ? language.translate('loans.update') : language.translate('loans.create') }}
+          </span>
+          <span *ngIf="saving">
+            <i class="fa fa-spinner fa-spin"></i> {{ language.translate('loans.saving') }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div *ngIf="showPaymentModal" class="modal-overlay" (click)="closePaymentModal()">
+  <div class="modal-content payment-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingPayment ? language.translate('loans.editPayment') : language.translate('loans.addPayment') }}</h3>
+      <button class="modal-close" (click)="closePaymentModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>{{ language.translate('loans.paymentDate') }} <span class="required">*</span></label>
+            <input type="date" class="form-input" formControlName="paymentDate">
+          </div>
+          <div class="form-group">
+            <label>{{ language.translate('loans.amount') }} <span class="required">*</span></label>
+            <input type="text" class="form-input" 
+                   [placeholder]="language.translate('loans.amountPlaceholder')"
+                   (input)="onNumberInput($event, 'amount', paymentForm)"
+                   [value]="formatNumberWithDots(paymentForm.get('amount')?.value)"
+                   (blur)="onNumberInput($event, 'amount', paymentForm)">
+          </div>
+          <div class="form-group full-width">
+            <label>{{ language.translate('loans.notes') }}</label>
+            <textarea class="form-input" formControlName="notes" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" type="button" (click)="closePaymentModal()">
+          {{ language.translate('loans.cancel') }}
+        </button>
+        <button class="btn btn-primary" type="submit" [disabled]="savingPayment">
+          <span *ngIf="!savingPayment">
+            {{ editingPayment ? language.translate('loans.update') : language.translate('loans.create') }}
+          </span>
+          <span *ngIf="savingPayment">
+            <i class="fa fa-spinner fa-spin"></i> {{ language.translate('loans.saving') }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteConfirm" class="modal-overlay" (click)="cancelDelete()">
+  <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('loans.confirmDelete') }}</h3>
+      <button class="modal-close" (click)="cancelDelete()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>{{ language.translate('loans.deleteConfirmMessage') }}</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="cancelDelete()">
+        {{ language.translate('loans.cancel') }}
+      </button>
+      <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting">
+        <span *ngIf="!deleting">{{ language.translate('loans.delete') }}</span>
+        <span *ngIf="deleting">
+          <i class="fa fa-spinner fa-spin"></i> {{ language.translate('loans.deleting') }}
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

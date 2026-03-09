@@ -1,0 +1,213 @@
+<div class="cron-builder">
+  <!-- Mode Tabs -->
+  <div class="mode-tabs">
+    <button
+      type="button"
+      class="mode-tab"
+      [class.active]="mode === 'simple'"
+      (click)="onModeChange('simple')">
+      <i class="fa fa-magic"></i>
+      Simple Mode
+    </button>
+    <button
+      type="button"
+      class="mode-tab"
+      [class.active]="mode === 'advanced'"
+      (click)="onModeChange('advanced')">
+      <i class="fa fa-code"></i>
+      Advanced Mode
+    </button>
+  </div>
+
+  <!-- 2-Column Layout -->
+  <div class="cron-content-grid">
+    <!-- Left Column: Builder Controls -->
+    <div class="builder-column">
+      <!-- Simple Mode -->
+      <div *ngIf="mode === 'simple'" class="simple-mode">
+    <!-- Presets -->
+    <div class="input-group">
+      <label for="preset">
+        <i class="fa fa-bookmark"></i>
+        Choose a Preset
+      </label>
+      <select
+        id="preset"
+        class="form-input"
+        [(ngModel)]="selectedPreset"
+        (change)="onPresetSelect()"
+        [ngModelOptions]="{standalone: true}">
+        <option value="">-- Select a preset schedule --</option>
+        <option *ngFor="let preset of presets" [value]="preset.expression">
+          {{ preset.name }} - {{ preset.description }}
+        </option>
+      </select>
+    </div>
+
+    <div class="separator">
+      <span>OR</span>
+    </div>
+
+    <!-- Custom Builder -->
+    <div class="custom-builder">
+      <h4><i class="fa fa-wrench"></i> Build Custom Schedule</h4>
+
+      <!-- Frequency -->
+      <div class="input-group">
+        <label for="frequency">
+          <i class="fa fa-repeat"></i>
+          Frequency
+        </label>
+        <select
+          id="frequency"
+          class="form-input"
+          [(ngModel)]="customFrequency"
+          (change)="buildSimpleCron()"
+          [ngModelOptions]="{standalone: true}">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+
+      <!-- Days of Week (for weekly) -->
+      <div *ngIf="customFrequency === 'weekly'" class="input-group">
+        <label>
+          <i class="fa fa-calendar"></i>
+          Days of Week
+        </label>
+        <div class="days-checkboxes">
+          <label
+            *ngFor="let day of daysOfWeek"
+            class="day-checkbox"
+            [class.selected]="isDaySelected(day.value)">
+            <input
+              type="checkbox"
+              [checked]="isDaySelected(day.value)"
+              (change)="toggleDayOfWeek(day.value)">
+            <span>{{ day.label }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Day of Month (for monthly) -->
+      <div *ngIf="customFrequency === 'monthly'" class="input-group">
+        <label for="dayOfMonth">
+          <i class="fa fa-calendar-o"></i>
+          Day of Month
+        </label>
+        <select
+          id="dayOfMonth"
+          class="form-input"
+          [(ngModel)]="selectedDayOfMonth"
+          (change)="buildSimpleCron()"
+          [ngModelOptions]="{standalone: true}">
+          <option *ngFor="let day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]" [value]="day">
+            {{ day }}{{ day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th' }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Time -->
+      <div class="time-inputs">
+        <div class="input-group">
+          <label for="hour">
+            <i class="fa fa-clock-o"></i>
+            Hour
+          </label>
+          <select
+            id="hour"
+            class="form-input"
+            [(ngModel)]="customHour"
+            (change)="buildSimpleCron()"
+            [ngModelOptions]="{standalone: true}">
+            <option *ngFor="let h of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]" [value]="h">
+              {{ h.toString().padStart(2, '0') }}:00
+            </option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="minute">
+            <i class="fa fa-clock-o"></i>
+            Minute
+          </label>
+          <select
+            id="minute"
+            class="form-input"
+            [(ngModel)]="customMinute"
+            (change)="buildSimpleCron()"
+            [ngModelOptions]="{standalone: true}">
+            <option [value]="0">00</option>
+            <option [value]="15">15</option>
+            <option [value]="30">30</option>
+            <option [value]="45">45</option>
+          </select>
+        </div>
+      </div>
+    </div>
+      </div>
+
+      <!-- Advanced Mode -->
+      <div *ngIf="mode === 'advanced'" class="advanced-mode">
+        <div class="input-group">
+          <label for="cronExpression">
+            <i class="fa fa-terminal"></i>
+            Cron Expression
+          </label>
+          <input
+            type="text"
+            id="cronExpression"
+            class="form-input mono-font"
+            [(ngModel)]="cronExpression"
+            (ngModelChange)="onAdvancedCronChange()"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="0 0 9 * * ?">
+          <small class="help-text">
+            Format: second minute hour day-of-month month day-of-week
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Preview Section -->
+    <div class="preview-column">
+      <div class="preview-section" *ngIf="cronExpression">
+    <!-- Validation Status -->
+    <div class="validation-status" [class.valid]="isValid" [class.invalid]="!isValid">
+      <i class="fa" [class.fa-check-circle]="isValid" [class.fa-times-circle]="!isValid"></i>
+      <span>{{ validationMessage }}</span>
+    </div>
+
+    <!-- Description -->
+    <div *ngIf="isValid && description" class="description-box">
+      <i class="fa fa-info-circle"></i>
+      <strong>Description:</strong> {{ description }}
+    </div>
+
+    <!-- Generated Expression (Simple Mode) -->
+    <div *ngIf="mode === 'simple' && cronExpression" class="expression-display">
+      <strong>Generated Expression:</strong>
+      <code>{{ cronExpression }}</code>
+    </div>
+
+    <!-- Next Executions -->
+    <div *ngIf="isValid && !isLoadingPreview && nextExecutions.length > 0" class="next-executions">
+      <h5><i class="fa fa-calendar-check-o"></i> Next 5 Executions:</h5>
+      <ul>
+        <li *ngFor="let execution of nextExecutions">
+          <i class="fa fa-clock-o"></i>
+          {{ execution }}
+        </li>
+      </ul>
+    </div>
+
+        <!-- Loading Preview -->
+        <div *ngIf="isLoadingPreview" class="loading-preview">
+          <i class="fa fa-spinner fa-spin"></i>
+          Calculating next executions...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

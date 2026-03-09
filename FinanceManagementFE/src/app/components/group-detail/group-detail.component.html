@@ -1,0 +1,2135 @@
+<div class="group-detail" *ngIf="group">
+  <!-- Group Header -->
+  <div class="group-header">
+    <div class="group-avatar" (click)="onAvatarClick()" *ngIf="avatarUrl">
+      <img [src]="avatarUrl" [alt]="group.name" />
+    </div>
+    <div class="group-avatar" *ngIf="!avatarUrl">
+      <span class="avatar-initials">{{ getGroupInitials() }}</span>
+    </div>
+    <div class="group-info">
+      <h1 class="group-name">{{ group.name }}</h1>
+      <p class="group-description" *ngIf="group.description">{{ group.description }}</p>
+      <p class="group-meta">
+        {{ group.memberCount || 0 }} {{ translate('groups.detail.members') }}
+      </p>
+    </div>
+    <div class="group-actions">
+      <button class="btn btn-secondary" (click)="onInviteMembers()">
+        <span class="icon">👤</span>
+        {{ translate('groups.detail.inviteMember') }}
+      </button>
+      <button *ngIf="isAdmin" class="btn btn-primary" (click)="onUpdateGroup()">
+        <span class="icon">✏️</span>
+        {{ translate('groups.detail.updateGroup') }}
+      </button>
+      <button *ngIf="isAdmin" class="btn btn-danger" (click)="onDeleteGroup()">
+        <span class="icon">🗑️</span>
+        {{ translate('groups.detail.deleteGroup') }}
+      </button>
+      <button *ngIf="group" class="btn btn-danger" (click)="onLeaveGroup()">
+        <span class="icon">🚪</span>
+        {{ translate('groups.detail.leaveGroup') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Overview Date Filter -->
+  <div class="overview-date-filter" *ngIf="activeTab === 'overview'">
+    <div class="date-controls">
+      <div class="preset-dropdown" (click)="$event.stopPropagation()">
+        <button class="preset-btn" (click)="showOverviewPresetMenu = !showOverviewPresetMenu">
+          {{ overviewPresetLabel }} <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="preset-menu" *ngIf="showOverviewPresetMenu" (click)="$event.stopPropagation()">
+          <div class="preset-item" (click)="applyOverviewPreset('today'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.today') || 'Hôm nay' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('yesterday'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.yesterday') || 'Hôm qua' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('last7'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.last7') || '7 ngày qua' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('last30'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.last30') || '30 ngày qua' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('thisMonth'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.thisMonth') || 'Tháng này' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('lastMonth'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.lastMonth') || 'Tháng trước' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('thisQuarter'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.thisQuarter') || 'Quý này' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('lastQuarter'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.lastQuarter') || 'Quý trước' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('thisYear'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.thisYear') || 'Năm nay' }}</div>
+          <div class="preset-item" (click)="applyOverviewPreset('lastYear'); refreshOverviewData(); showOverviewPresetMenu=false">{{ translate('overview.lastYear') || 'Năm trước' }}</div>
+        </div>
+      </div>
+      <div class="date-range">
+        <p-calendar
+          inputId="overviewStartDate"
+          [(ngModel)]="overviewStartDate"
+          (onSelect)="onOverviewDateChange()"
+          (onClearClick)="onOverviewDateChange()"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          [showButtonBar]="true"
+          [placeholder]="translate('overview.startDatePlaceholder')"
+        ></p-calendar>
+        <span>—</span>
+        <p-calendar
+          inputId="overviewEndDate"
+          [(ngModel)]="overviewEndDate"
+          (onSelect)="onOverviewDateChange()"
+          (onClearClick)="onOverviewDateChange()"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          [showButtonBar]="true"
+          [placeholder]="translate('overview.endDatePlaceholder')"
+        ></p-calendar>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button
+      *ngFor="let tab of tabs"
+      class="tab-btn"
+      [class.active]="activeTab === tab.id"
+      (click)="selectTab(tab.id)"
+    >
+      {{ translate(tab.label) }}
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="overview-tab">
+      <div class="overview-grid">
+        <div class="overview-main">
+          <!-- Asset Overview / Hero -->
+          <div class="card asset-overview-card">
+            <div class="asset-primary">
+              <p class="asset-label">{{ translate('groups.detail.overview.totalBalance') }}</p>
+              <div class="asset-value">{{ formatCurrency(groupSummary.totalBalance || 0) }}</div>
+              <div class="asset-meta">
+                <span>{{ translate('groups.detail.overview.totalTransactions') }}</span>
+                <strong>{{ groupSummary.totalTransactions || 0 }}</strong>
+              </div>
+            </div>
+            <div class="asset-stats">
+              <div class="asset-stat">
+                <span class="stat-label">{{ translate('groups.detail.overview.totalIncome') }}</span>
+                <span class="stat-value positive">{{ formatCurrency(groupSummary.totalIncome || 0) }}</span>
+              </div>
+              <div class="asset-stat">
+                <span class="stat-label">{{ translate('groups.detail.overview.totalExpense') }}</span>
+                <span class="stat-value negative">{{ formatCurrency(groupSummary.totalExpense || 0) }}</span>
+              </div>
+              <div class="asset-stat">
+                <span class="stat-label">{{ translate('groups.detail.overview.monthBalance') }}</span>
+                <span class="stat-value" [class.positive]="(groupSummary.monthBalance || 0) > 0" [class.negative]="(groupSummary.monthBalance || 0) < 0">
+                  {{ formatCurrency(groupSummary.monthBalance || 0) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Trend / Cashflow -->
+          <div class="card cashflow-card">
+            <div class="card-heading">
+              <h3>{{ translate('groups.detail.overview.periodTrend') }}</h3>
+              <span class="card-subtitle">{{ trendSubtitle }}</span>
+            </div>
+            <div class="trend-content" *ngIf="monthlyTrend; else noTrendData">
+              <div class="trend-comparison expanded">
+                <div class="trend-item">
+                  <div class="trend-label">{{ selectedPeriodLabel }}</div>
+                  <div class="trend-value">{{ formatCurrency(monthlyTrend.currentMonth.total) }}</div>
+                  <div class="trend-breakdown">
+                    <span class="trend-income">↑ {{ formatCurrency(monthlyTrend.currentMonth.income) }}</span>
+                    <span class="trend-expense">↓ {{ formatCurrency(monthlyTrend.currentMonth.expense) }}</span>
+                  </div>
+                </div>
+                <div class="trend-arrow">→</div>
+                <div class="trend-item">
+                  <div class="trend-label">{{ previousPeriodLabel }}</div>
+                  <div class="trend-value">{{ formatCurrency(monthlyTrend.lastMonth.total) }}</div>
+                  <div class="trend-breakdown">
+                    <span class="trend-income">↑ {{ formatCurrency(monthlyTrend.lastMonth.income) }}</span>
+                    <span class="trend-expense">↓ {{ formatCurrency(monthlyTrend.lastMonth.expense) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="trend-change" [class.positive]="monthlyTrend.changePercentage > 0" [class.negative]="monthlyTrend.changePercentage < 0">
+                <span class="trend-change-icon">{{ monthlyTrend.changePercentage > 0 ? '↑' : '↓' }}</span>
+                <span class="trend-change-text">
+                  {{ Math.abs(monthlyTrend.changePercentage).toFixed(1) }}% 
+                  {{ translate('groups.detail.overview.comparedToPrevious') }}
+                </span>
+              </div>
+            </div>
+            <ng-template #noTrendData>
+              <p class="no-data">
+                {{ translate('groups.detail.overview.noTrendData') }}
+              </p>
+            </ng-template>
+          </div>
+
+          <!-- Recent Transactions Card -->
+          <div class="card recent-transactions-card">
+            <div class="card-heading">
+              <h3>{{ translate('groups.detail.overview.recentTransactions') }}</h3>
+              <button class="link-tab-btn" (click)="navigateToTransactionsTab()">
+                {{ translate('groups.detail.overview.seeAllTransactions') }} →
+              </button>
+            </div>
+            <div class="transactions-list" *ngIf="recentTransactions && recentTransactions.length > 0">
+              <div class="transaction-item" *ngFor="let transaction of recentTransactions">
+                <div class="transaction-icon" [class.income]="transaction.amountIn && transaction.amountIn > 0" [class.expense]="transaction.amountOut && transaction.amountOut > 0">
+                  {{ transaction.amountIn && transaction.amountIn > 0 ? '↑' : '↓' }}
+                </div>
+                <div class="transaction-details">
+                  <div class="transaction-content">{{ transaction.transactionContent || translate('groups.detail.overview.noContent') }}</div>
+                  <div class="transaction-meta">
+                    <span class="transaction-date">{{ formatDate(transaction.transactionDate) }}</span>
+                    <span class="transaction-account" *ngIf="transaction.accountNumber">{{ transaction.accountNumber }}</span>
+                  </div>
+                </div>
+                <div class="transaction-amount" [class.income]="transaction.amountIn && transaction.amountIn > 0" [class.expense]="transaction.amountOut && transaction.amountOut > 0">
+                  {{ formatTransactionAmount(transaction) }}
+                </div>
+              </div>
+            </div>
+            <p *ngIf="!recentTransactions || recentTransactions.length === 0" class="no-data">
+              {{ translate('groups.detail.overview.noTransactions') }}
+            </p>
+          </div>
+
+        </div>
+
+        <div class="overview-side">
+          <!-- Bank Accounts Card -->
+      <div class="card bank-accounts-card">
+        <div class="card-heading">
+          <h3>{{ translate('groups.detail.overview.bankAccounts') }}</h3>
+          <button class="link-tab-btn" (click)="navigateToAccountsTab()">
+            {{ translate('groups.detail.overview.seeAllAccounts') }} →
+          </button>
+        </div>
+            <div class="accounts-list" *ngIf="groupBankAccounts && groupBankAccounts.length > 0">
+              <div class="account-item" *ngFor="let account of groupBankAccounts">
+                <div class="account-icon">🏦</div>
+            <div class="account-details">
+                  <div class="account-label">{{ account.label || account.accountNumber }}</div>
+                  <div class="account-meta">
+                    <span class="account-bank" *ngIf="account.bankBrandName">{{ account.bankBrandName }}</span>
+                    <span class="account-number" *ngIf="account.accountNumber">{{ account.accountNumber }}</span>
+                  </div>
+                </div>
+            <div class="account-balance">{{ formatCurrency(asNumber(account.accumulated)) }}</div>
+              </div>
+            </div>
+            <p *ngIf="!groupBankAccounts || groupBankAccounts.length === 0" class="no-data">
+              {{ translate('groups.detail.overview.noBankAccounts') }}
+            </p>
+          </div>
+
+          <!-- Plans Card -->
+          <div class="card plans-card">
+            <div class="card-heading">
+              <h3>{{ translate('groups.detail.overview.plans') }}</h3>
+              <button class="link-tab-btn" (click)="navigateToPlanTab()">
+                {{ translate('groups.detail.overview.seeAllPlans') }} →
+              </button>
+            </div>
+            <div class="plans-list" *ngIf="groupPlansOverview && groupPlansOverview.length > 0">
+              <div class="plan-item" *ngFor="let plan of groupPlansOverview" [class.overspent]="isOverspent(plan)">
+                <div class="plan-header">
+                  <span class="plan-category">{{ plan.category }}</span>
+                  <span class="plan-type-badge" [class]="'type-' + plan.planType.toLowerCase()">
+                    {{ getPlanTypeLabel(plan.planType) }}
+                  </span>
+                </div>
+                <div class="plan-range" *ngIf="formatPlanningRange(plan)">
+                  <i class="fa fa-calendar"></i>
+                  <span>{{ formatPlanningRange(plan) }}</span>
+                </div>
+                <div class="progress-section">
+                  <div class="progress-info">
+                    <span class="achieved">{{ translate('groups.detail.overview.achieved') || 'Đã đạt' }}: {{ formatCurrency(plan.spentAmount || 0) }}</span>
+                    <span class="goal">{{ translate('groups.detail.overview.goal') || 'Mục tiêu' }}: {{ formatCurrency(plan.budgetAmount) }}</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [class.danger]="isOverspent(plan)" 
+                         [style.width.%]="isOverspent(plan) ? 100 : getProgressPercentage(plan)"></div>
+                  </div>
+                </div>
+                <div class="plan-status-overview" [class.overspent]="isOverspent(plan)">
+                  <ng-container *ngIf="!isOverspent(plan)">
+                    {{ translate('planning.cards.remaining') || 'Còn lại' }}: {{ remainingAmount(plan) | number:'1.0-0' }} đ
+                  </ng-container>
+                  <ng-container *ngIf="isOverspent(plan)">
+                    {{ translate('planning.cards.overspent') || 'Vượt quá' }}: {{ (remainingAmount(plan) * -1) | number:'1.0-0' }} đ
+                  </ng-container>
+              </div>
+            </div>
+            </div>
+            <p *ngIf="!groupPlansOverview || groupPlansOverview.length === 0" class="no-data">
+              {{ translate('groups.detail.overview.noPlans') || 'Chưa có kế hoạch nào' }}
+            </p>
+          </div>
+
+          <!-- Recent Activities Card -->
+          <div class="card activities-card">
+            <div class="card-heading">
+              <h3>{{ translate('groups.detail.overview.recentActivities') }}</h3>
+              <button class="link-tab-btn" (click)="navigateToActivityTab()">
+                {{ translate('groups.detail.overview.seeAllActivities') }} →
+              </button>
+            </div>
+            <div class="activities-list" *ngIf="recentActivities && recentActivities.length > 0">
+              <div class="activity-item" *ngFor="let activity of recentActivities">
+                <div class="activity-icon">
+                  <i class="fa" [ngClass]="getActivityIcon(activity.type)"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text">
+                    {{ getActivityTitle(activity) }}
+                  </div>
+                  <div class="activity-date">
+                    {{ formatActivityDate(activity.createdAt) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p *ngIf="!recentActivities || recentActivities.length === 0" class="no-data">
+              {{ translate('groups.detail.overview.noActivities') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Statistics Full Width - Split into Expense and Income -->
+      <div class="card category-stats-card">
+        <div class="card-heading">
+          <h3>{{ translate('groups.detail.overview.categoryStatistics') }}</h3>
+          <span class="card-subtitle">{{ translate('groups.detail.overview.categorySubtitle') }}</span>
+        </div>
+        <div class="category-breakdown-container">
+          <!-- Expense Breakdown -->
+          <div class="category-breakdown-section">
+            <div class="breakdown-header">
+              <h4>{{ translate('groups.detail.overview.expenseBreakdown') || 'Chi tiêu' }}</h4>
+            </div>
+            <ng-container *ngIf="expenseBreakdown && expenseBreakdown.length > 0; else noExpenseDataTpl">
+              <div class="category-card-content" (mouseleave)="clearActiveExpenseCategory()">
+                <div class="category-chart-wrapper">
+                  <div class="category-chart-info">
+                    <div class="chart-label">{{ translate('groups.detail.overview.categoryTotalLabel') || 'Tổng chi' }}</div>
+                    <div class="chart-value">{{ getExpenseTotalFormatted() }}</div>
+                    <div class="chart-hover-info">
+                      <ng-container *ngIf="activeExpenseCategoryIndex !== null; else expenseHintTpl">
+                        <span class="hover-name">{{ getActiveExpenseCategoryLabel() }}</span>
+                        <span class="hover-percent">{{ getActiveExpenseCategoryPercent() | number:'1.1-1' }}%</span>
+                      </ng-container>
+                      <ng-template #expenseHintTpl>
+                        <span class="hover-name muted">{{ translate('groups.detail.overview.hoverHint') || 'Di chuột để xem %' }}</span>
+                      </ng-template>
+                    </div>
+                  </div>
+                  <div class="category-chart">
+                    <div *ngIf="loadingExpenseBreakdown" class="loading-inline">
+                      <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                    <apx-chart
+                      #expenseChart
+                      *ngIf="!loadingExpenseBreakdown && expenseChartOptions.series && expenseChartOptions.series.length > 0"
+                      [series]="expenseChartOptions.series!"
+                      [chart]="expenseChartOptions.chart!"
+                      [labels]="expenseChartOptions.labels!"
+                      [colors]="expenseChartOptions.colors!"
+                      [responsive]="expenseChartOptions.responsive!"
+                      [theme]="expenseChartOptions.theme!"
+                      [legend]="expenseChartOptions.legend!"
+                      [dataLabels]="expenseChartOptions.dataLabels!"
+                      [tooltip]="expenseChartOptions.tooltip!"
+                    ></apx-chart>
+                    <div *ngIf="!loadingExpenseBreakdown && (!expenseChartOptions.series || expenseChartOptions.series.length === 0)" class="no-data-chart">
+                      <p>{{ translate('groups.detail.overview.noCategoryStats') || 'Chưa có dữ liệu' }}</p>
+                    </div>
+                  </div>
+                </div>
+                <ul class="legend-list category-legend">
+                  <li *ngFor="let item of expenseBreakdown; index as i"
+                      (mouseenter)="setActiveExpenseCategory(i)">
+                    <span class="dot" [style.background]="categoryColors[i % categoryColors.length]"></span>
+                    <span>{{ item.category || translate('groups.detail.overview.uncategorized') }}</span>
+                    <strong>{{ formatCurrency(item.amount) }}</strong>
+                    <span class="percent">{{ getExpensePercentage(item.amount) | number:'1.1-1' }}%</span>
+                  </li>
+                </ul>
+              </div>
+            </ng-container>
+            <ng-template #noExpenseDataTpl>
+              <p class="no-data" *ngIf="!loadingExpenseBreakdown">
+                {{ translate('groups.detail.overview.noCategoryStats') || 'Chưa có dữ liệu chi tiêu' }}
+              </p>
+            </ng-template>
+          </div>
+
+          <!-- Income Breakdown -->
+          <div class="category-breakdown-section">
+            <div class="breakdown-header">
+              <h4>{{ translate('groups.detail.overview.incomeBreakdown') || 'Thu nhập' }}</h4>
+            </div>
+            <ng-container *ngIf="incomeBreakdown && incomeBreakdown.length > 0; else noIncomeDataTpl">
+              <div class="category-card-content" (mouseleave)="clearActiveIncomeCategory()">
+                <div class="category-chart-wrapper">
+                  <div class="category-chart-info">
+                    <div class="chart-label">{{ translate('groups.detail.overview.categoryTotalIncomeLabel') || 'Tổng thu' }}</div>
+                    <div class="chart-value">{{ getIncomeTotalFormatted() }}</div>
+                    <div class="chart-hover-info">
+                      <ng-container *ngIf="activeIncomeCategoryIndex !== null; else incomeHintTpl">
+                        <span class="hover-name">{{ getActiveIncomeCategoryLabel() }}</span>
+                        <span class="hover-percent">{{ getActiveIncomeCategoryPercent() | number:'1.1-1' }}%</span>
+                      </ng-container>
+                      <ng-template #incomeHintTpl>
+                        <span class="hover-name muted">{{ translate('groups.detail.overview.hoverHint') || 'Di chuột để xem %' }}</span>
+                      </ng-template>
+                    </div>
+                  </div>
+                  <div class="category-chart">
+                    <div *ngIf="loadingIncomeBreakdown" class="loading-inline">
+                      <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                    <apx-chart
+                      #incomeChart
+                      *ngIf="!loadingIncomeBreakdown && incomeChartOptions.series && incomeChartOptions.series.length > 0"
+                      [series]="incomeChartOptions.series!"
+                      [chart]="incomeChartOptions.chart!"
+                      [labels]="incomeChartOptions.labels!"
+                      [colors]="incomeChartOptions.colors!"
+                      [responsive]="incomeChartOptions.responsive!"
+                      [theme]="incomeChartOptions.theme!"
+                      [legend]="incomeChartOptions.legend!"
+                      [dataLabels]="incomeChartOptions.dataLabels!"
+                      [tooltip]="incomeChartOptions.tooltip!"
+                    ></apx-chart>
+                    <div *ngIf="!loadingIncomeBreakdown && (!incomeChartOptions.series || incomeChartOptions.series.length === 0)" class="no-data-chart">
+                      <p>{{ translate('groups.detail.overview.noCategoryStats') || 'Chưa có dữ liệu' }}</p>
+                    </div>
+                  </div>
+                </div>
+                <ul class="legend-list category-legend">
+                  <li *ngFor="let item of incomeBreakdown; index as i"
+                      (mouseenter)="setActiveIncomeCategory(i)">
+                    <span class="dot" [style.background]="categoryColors[i % categoryColors.length]"></span>
+                    <span>{{ item.category || translate('groups.detail.overview.uncategorized') }}</span>
+                    <strong>{{ formatCurrency(item.amount) }}</strong>
+                    <span class="percent">{{ getIncomePercentage(item.amount) | number:'1.1-1' }}%</span>
+                  </li>
+                </ul>
+              </div>
+            </ng-container>
+            <ng-template #noIncomeDataTpl>
+              <p class="no-data" *ngIf="!loadingIncomeBreakdown">
+                {{ translate('groups.detail.overview.noCategoryStats') || 'Chưa có dữ liệu thu nhập' }}
+              </p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions Tab -->
+    <div *ngIf="activeTab === 'transactions'" class="transactions-tab">
+      <!-- Summary Section -->
+      <div class="summary-section">
+        <div class="summary-card">
+          <div class="summary-item">
+            <i class="fa fa-arrow-down summary-icon" style="color: var(--color-soft-green);"></i>
+            <div class="summary-content">
+              <span class="summary-label">{{ translate('transactions.totalIncome') }}</span>
+              <span class="summary-value" [class.loading]="loadingGroupTransactionSummary">
+                {{ loadingGroupTransactionSummary ? '...' : formatCurrency(groupTransactionSummary.totalIncome) }}
+              </span>
+            </div>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-item">
+            <i class="fa fa-arrow-up summary-icon" style="color: var(--color-coral);"></i>
+            <div class="summary-content">
+              <span class="summary-label">{{ translate('transactions.totalExpense') }}</span>
+              <span class="summary-value" [class.loading]="loadingGroupTransactionSummary">
+                {{ loadingGroupTransactionSummary ? '...' : formatCurrency(groupTransactionSummary.totalExpense) }}
+              </span>
+            </div>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-item">
+            <i class="fa fa-balance-scale summary-icon" style="color: var(--color-gold);"></i>
+            <div class="summary-content">
+              <span class="summary-label">{{ translate('transactions.netAmount') }}</span>
+              <span class="summary-value" [class.loading]="loadingGroupTransactionSummary" 
+                    [class.positive]="groupTransactionSummary.netAmount >= 0" 
+                    [class.negative]="groupTransactionSummary.netAmount < 0">
+                {{ loadingGroupTransactionSummary ? '...' : formatCurrency(groupTransactionSummary.netAmount) }}
+              </span>
+            </div>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-item">
+            <i class="fa fa-list summary-icon" style="color: #4ECDFF;"></i>
+            <div class="summary-content">
+              <span class="summary-label">{{ translate('transactions.totalCount') }}</span>
+              <span class="summary-value" [class.loading]="loadingGroupTransactionSummary">
+                {{ loadingGroupTransactionSummary ? '...' : groupTransactionSummary.transactionCount }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filters-card">
+          <div class="filters-header">
+            <h3><i class="fa fa-filter"></i> {{ translate('transactions.filters') }}</h3>
+            <button class="btn-clear-filters" (click)="clearTransactionFilters()">
+              <i class="fa fa-times"></i> {{ translate('transactions.clearFilters') }}
+            </button>
+          </div>
+          <div class="filters-grid">
+            <!-- Row 1: Search, Type, Amount Range -->
+            <div class="filter-group">
+              <label>{{ translate('transactions.search') }}</label>
+              <input type="text" class="form-input"
+                     [(ngModel)]="transactionSearchTerm"
+                     (keyup.enter)="onTransactionSearch()"
+                     [placeholder]="translate('transactions.searchPlaceholder')">
+            </div>
+            <div class="filter-group">
+              <label>{{ translate('transactions.type') }}</label>
+              <select class="form-input" [(ngModel)]="transactionType" (change)="onTransactionFilterChange()">
+                <option value="">{{ translate('transactions.all') }}</option>
+                <option value="income">{{ translate('transactions.income') }}</option>
+                <option value="expense">{{ translate('transactions.expense') }}</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>{{ translate('transactions.amountRange.label') }}</label>
+              <select class="form-input" [(ngModel)]="transactionAmountRange" (change)="onTransactionFilterChange()">
+                <option *ngFor="let option of getTransactionAmountRangeOptions()" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+            
+            <!-- Row 2: Start Date, End Date, Account (if multiple accounts) -->
+            <div class="filter-group filter-group-date">
+              <label>{{ translate('transactions.startDate') }}</label>
+              <p-calendar
+                inputId="groupTransactionStartDate"
+                [(ngModel)]="transactionStartDate"
+                (onSelect)="onTransactionFilterChange()"
+                (onClearClick)="onTransactionFilterChange()"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+                [placeholder]="translate('transactions.startDate')"
+                styleClass="w-full"
+              ></p-calendar>
+            </div>
+            <div class="filter-group filter-group-date">
+              <label>{{ translate('transactions.endDate') }}</label>
+              <p-calendar
+                inputId="groupTransactionEndDate"
+                [(ngModel)]="transactionEndDate"
+                (onSelect)="onTransactionFilterChange()"
+                (onClearClick)="onTransactionFilterChange()"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+                [placeholder]="translate('transactions.endDate')"
+                styleClass="w-full"
+              ></p-calendar>
+            </div>
+            <div class="filter-group" *ngIf="groupBankAccounts.length > 1">
+              <label>{{ translate('transactions.account') }}</label>
+              <select class="form-input" [(ngModel)]="selectedTransactionAccountId" (change)="onTransactionFilterChange()">
+                <option value="">{{ translate('transactions.all') }}</option>
+                <option *ngFor="let account of groupBankAccounts" [value]="account.accountId.toString()">
+                  {{ account.label || account.accountNumber }} - {{ account.bankBrandName }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="filters-actions">
+            <button class="btn btn-sync" (click)="syncGroupTransactions()" [disabled]="syncingGroupTransactions">
+              <i class="fa fa-refresh" [class.fa-spin]="syncingGroupTransactions"></i>
+              <span *ngIf="!syncingGroupTransactions">{{ translate('transactions.syncButton') }}</span>
+              <span *ngIf="syncingGroupTransactions">{{ translate('transactions.syncing') }}</span>
+            </button>
+            <button class="btn btn-export" (click)="exportGroupTransactionsToExcel()" [title]="translate('transactions.exportExcel')">
+              <i class="fa fa-download"></i> {{ translate('transactions.exportExcel') }}
+            </button>
+            <button class="btn btn-search" (click)="onTransactionSearch()">
+              <i class="fa fa-search"></i> {{ translate('transactions.search') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transactions List -->
+      <div class="transactions-list-section">
+        <div class="transactions-card">
+          <div class="card-header">
+            <h3>{{ translate('transactions.list') }}</h3>
+            <span class="transaction-count">{{ transactionTotalElements }} {{ translate('transactions.items') }}</span>
+          </div>
+
+          <div *ngIf="loadingGroupTransactions" class="loading-container">
+            <i class="fa fa-spinner fa-spin"></i>
+            <p>{{ translate('transactions.loading') }}</p>
+          </div>
+
+          <div *ngIf="!loadingGroupTransactions && groupTransactions.length === 0" class="no-transactions">
+            <i class="fa fa-inbox"></i>
+            <p>{{ translate('transactions.noTransactions') }}</p>
+          </div>
+
+          <div *ngIf="!loadingGroupTransactions && groupTransactions.length > 0" class="transactions-table">
+            <div class="transaction-row header-row">
+              <div class="col-date">{{ translate('transactions.date') }}</div>
+              <div class="col-content">{{ translate('transactions.content') }}</div>
+              <div class="col-account">{{ translate('transactions.account') }}</div>
+              <div class="col-amount">{{ translate('transactions.amount') }}</div>
+              <div class="col-category">{{ translate('transactions.category') }}</div>
+              <div class="col-actions">{{ translate('transactions.actions') }}</div>
+            </div>
+            <div *ngFor="let transaction of groupTransactions" class="transaction-row"
+                 [class.income]="getGroupTransactionType(transaction) === 'income'"
+                 [class.expense]="getGroupTransactionType(transaction) === 'expense'">
+              <div class="col-date">{{ formatDate(transaction.transactionDate) }}</div>
+              <div class="col-content">
+                <div class="content-main">{{ transaction.transactionContent || '-' }}</div>
+                <div class="content-sub" *ngIf="transaction.referenceNumber">
+                  {{ translate('transactions.refNumber') }}: {{ transaction.referenceNumber }}
+                </div>
+              </div>
+              <div class="col-account">
+                <div class="account-info">
+                  <span class="account-number">{{ transaction.accountNumber || '-' }}</span>
+                  <span class="bank-name" *ngIf="transaction.bankBrandName">{{ transaction.bankBrandName }}</span>
+                </div>
+              </div>
+              <div class="col-amount">
+                <span class="amount-value"
+                      [class.income]="getGroupTransactionType(transaction) === 'income'"
+                      [class.expense]="getGroupTransactionType(transaction) === 'expense'">
+                  <i class="fa" [class.fa-arrow-down]="getGroupTransactionType(transaction) === 'income'"
+                           [class.fa-arrow-up]="getGroupTransactionType(transaction) === 'expense'"></i>
+                  {{ formatCurrency(getGroupTransactionAmount(transaction)) }}
+                </span>
+              </div>
+              <div class="col-category">
+                <span class="category-label">{{ getGroupCategoryDisplay(transaction.category) }}</span>
+              </div>
+              <div class="col-actions">
+                <button class="icon-btn" (click)="openGroupCategoryModal(transaction)" [title]="translate('transactions.updateCategory')">
+                  <i class="fa fa-tag"></i>
+                </button>
+                <button class="icon-btn" (click)="viewGroupTransactionDetail(transaction)" [title]="translate('transactions.viewDetail')">
+                  <i class="fa fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="!loadingGroupTransactions && groupTransactions.length > 0" class="pagination-wrapper">
+            <div class="pagination-info">
+              <span>{{ translate('transactions.showing') }} {{ transactionCurrentPage * transactionPageSize + 1 }} - {{ Math.min((transactionCurrentPage + 1) * transactionPageSize, transactionTotalElements) }} {{ translate('transactions.of') }} {{ transactionTotalElements }}</span>
+              <select class="page-size-select" [ngModel]="transactionPageSize" (ngModelChange)="onTransactionPageSizeChange($event)">
+                <option *ngFor="let size of transactionPageSizeOptions" [value]="size">{{ size }}</option>
+              </select>
+            </div>
+            <div class="pagination-controls">
+              <button class="pagination-btn" [disabled]="transactionCurrentPage === 0" (click)="onTransactionPageChange(transactionCurrentPage - 1)">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              <span class="pagination-page">{{ transactionCurrentPage + 1 }} / {{ transactionTotalPages || 1 }}</span>
+              <button class="pagination-btn" [disabled]="transactionCurrentPage >= transactionTotalPages - 1" (click)="onTransactionPageChange(transactionCurrentPage + 1)">
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accounts Tab -->
+    <div *ngIf="activeTab === 'accounts'" class="accounts-tab">
+      <div class="accounts-tab-header">
+        <div>
+          <h2>{{ translate('groups.detail.accounts.title') }}</h2>
+          <p>{{ translate('groups.detail.accounts.description') }}</p>
+        </div>
+      </div>
+      <div class="accounts-management-grid">
+        <div class="card linked-accounts-card">
+          <div class="card-heading">
+            <h3>{{ translate('groups.detail.accounts.linkedTitle') }}</h3>
+            <span class="card-subtitle">{{ groupBankAccounts?.length || 0 }} {{ translate('groups.detail.accounts.accountsLabel') }}</span>
+          </div>
+          <div *ngIf="groupBankAccounts && groupBankAccounts.length > 0; else noLinkedAccounts" class="accounts-list manage-list">
+            <div class="account-item" *ngFor="let account of groupBankAccounts">
+              <div class="account-icon">🏦</div>
+              <div class="account-details">
+                <div class="account-label">{{ account.label || account.accountNumber }}</div>
+                <div class="account-meta">
+                  <span class="account-bank" *ngIf="account.bankBrandName">{{ account.bankBrandName }}</span>
+                  <span class="account-number" *ngIf="account.accountNumber">{{ account.accountNumber }}</span>
+                </div>
+              </div>
+                <div class="account-actions">
+                  <div class="account-balance">{{ formatCurrency(asNumber(account.accumulated)) }}</div>
+                <button class="chip danger" (click)="unlinkAccountFromGroup(account.accountId)">
+                  {{ translate('groups.detail.accounts.unlink') }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <ng-template #noLinkedAccounts>
+            <p class="no-data">{{ translate('groups.detail.accounts.emptyLinked') }}</p>
+          </ng-template>
+        </div>
+
+        <div class="card add-account-card">
+          <div class="card-heading">
+            <h3>{{ translate('groups.detail.accounts.availableTitle') }}</h3>
+            <span class="card-subtitle" *ngIf="availableAccountsLoading">
+              {{ translate('groups.detail.accounts.loading') }}
+            </span>
+          </div>
+          <div class="search-box inline">
+            <input
+              type="text"
+              [value]="accountSearchTerm"
+              (input)="onAccountSearchChange($any($event.target).value)"
+              [placeholder]="translate('groups.detail.accounts.searchPlaceholder')"
+            />
+          </div>
+          <div *ngIf="filteredAvailableAccounts().length > 0; else noAvailableAccounts" class="accounts-list manage-list">
+            <div class="account-item" *ngFor="let account of filteredAvailableAccounts()">
+              <div class="account-icon alt">🏦</div>
+              <div class="account-details">
+                <div class="account-label">{{ account.label || account.accountNumber }}</div>
+                <div class="account-meta">
+                  <span class="account-bank" *ngIf="account.bankBrandName">{{ account.bankBrandName }}</span>
+                  <span class="account-number" *ngIf="account.accountNumber">{{ account.accountNumber }}</span>
+                </div>
+              </div>
+                <div class="account-actions">
+                <div class="account-balance">{{ formatCurrency(asNumber(account.accumulated)) }}</div>
+                <button class="chip success" (click)="linkAccountToGroup(account)">
+                  {{ translate('groups.detail.accounts.link') }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <ng-template #noAvailableAccounts>
+            <p class="no-data">
+              {{ availableAccountsLoading ? translate('groups.detail.accounts.loading') : translate('groups.detail.accounts.emptyAvailable') }}
+            </p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan Tab -->
+    <div *ngIf="activeTab === 'plan'" class="plan-tab">
+      <div class="planning-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h1>{{ translate('groups.detail.planning.title') || 'Kế hoạch nhóm' }}</h1>
+            <p>{{ translate('groups.detail.planning.subtitle') || 'Quản lý ngân sách và kế hoạch tài chính cho nhóm' }}</p>
+          </div>
+          <button class="btn btn-primary" type="button" (click)="openCreatePlanningModal()">
+            <i class="fa fa-plus"></i> {{ translate('groups.detail.planning.addPlan') || 'Thêm kế hoạch' }}
+          </button>
+        </div>
+
+        <div class="summary-strip" *ngIf="groupPlanningSummary">
+          <div class="summary-card card-budget">
+            <div class="summary-icon icon-budget">
+              <i class="fa fa-flag"></i>
+            </div>
+            <div>
+              <div class="summary-label">{{ translate('planning.summary.totalBudget') || 'Tổng ngân sách' }}</div>
+              <div class="summary-value">{{ groupPlanningSummary.totalBudgetAmount | number:'1.0-0' }} đ</div>
+            </div>
+          </div>
+          <div class="summary-card card-spent">
+            <div class="summary-icon icon-spent">
+              <i class="fa fa-arrow-up"></i>
+            </div>
+            <div>
+              <div class="summary-label">{{ translate('planning.summary.totalSpent') || 'Đã chi' }}</div>
+              <div class="summary-value">{{ groupPlanningSummary.totalSpentAmount | number:'1.0-0' }} đ</div>
+            </div>
+          </div>
+          <div class="summary-card card-remaining" [class.negative]="groupPlanningSummary.totalRemainingAmount < 0">
+            <div class="summary-icon icon-remaining">
+              <i class="fa fa-balance-scale"></i>
+            </div>
+            <div>
+              <div class="summary-label">{{ translate('planning.summary.totalRemaining') || 'Còn lại' }}</div>
+              <div class="summary-value" [class.negative]="groupPlanningSummary.totalRemainingAmount < 0">
+                {{ groupPlanningSummary.totalRemainingAmount | number:'1.0-0' }} đ
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="loading-state" *ngIf="loadingGroupPlans">
+          <i class="fa fa-spinner fa-spin"></i>
+          <span>{{ translate('groups.detail.planning.loading') || 'Đang tải...' }}</span>
+        </div>
+
+        <div class="empty-state" *ngIf="!loadingGroupPlans && groupPlansFull.length === 0">
+          <i class="fa fa-inbox"></i>
+          <p>{{ translate('groups.detail.planning.emptyState') || 'Chưa có kế hoạch nào' }}</p>
+          <button class="btn btn-primary" type="button" (click)="openCreatePlanningModal()">
+            <i class="fa fa-plus"></i> {{ translate('groups.detail.planning.addPlan') || 'Thêm kế hoạch' }}
+          </button>
+        </div>
+
+        <div class="planning-grid" *ngIf="!loadingGroupPlans && groupPlansFull.length">
+          <div class="plan-card" *ngFor="let plan of groupPlansFull; trackBy: trackByPlanning" [class.overspent]="isOverspent(plan)">
+            <div class="plan-header">
+              <div class="icon-circle">
+                <i class="fa" [ngClass]="iconForPlanning(plan.category)"></i>
+              </div>
+              <div class="plan-title">
+                <h4>{{ plan.category || translate('planning.uncategorized') || 'Chưa phân loại' }}</h4>
+                <span>{{ formatPlanningRange(plan) }}</span>
+              </div>
+              <div class="plan-actions">
+                <button class="icon-btn" type="button" (click)="openEditPlanningModal(plan)" 
+                        [title]="translate('planning.edit') || 'Chỉnh sửa'">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="icon-btn" type="button" (click)="deleteGroupPlanning(plan)" 
+                        [disabled]="deletingPlanningId === plan.id"
+                        [title]="translate('planning.delete') || 'Xóa'">
+                  <i class="fa" [ngClass]="deletingPlanningId === plan.id ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="plan-progress">
+              <div class="progress-bar" [class.danger]="isOverspent(plan)" 
+                   [style.width.%]="isOverspent(plan) ? 100 : getProgressPercentage(plan)"></div>
+            </div>
+
+            <div class="plan-stats">
+              <div class="stat">
+                <label>{{ translate('planning.cards.spent') || 'Đã chi' }}</label>
+                <span>{{ (plan.spentAmount || 0) | number:'1.0-0' }} đ</span>
+              </div>
+              <div class="divider"></div>
+              <div class="stat">
+                <label>{{ translate('planning.cards.budget') || 'Ngân sách' }}</label>
+                <span>{{ (plan.budgetAmount || 0) | number:'1.0-0' }} đ</span>
+              </div>
+            </div>
+
+            <div class="plan-status" [class.overspent]="isOverspent(plan)">
+              <ng-container *ngIf="!isOverspent(plan); else overspentTpl">
+                {{ translate('planning.cards.remaining') || 'Còn lại' }}: {{ remainingAmount(plan) | number:'1.0-0' }} đ
+              </ng-container>
+              <ng-template #overspentTpl>
+                {{ translate('planning.cards.overspent') || 'Vượt quá' }}: {{ (remainingAmount(plan) * -1) | number:'1.0-0' }} đ
+              </ng-template>
+            </div>
+
+            <div class="plan-description" *ngIf="plan.description">
+              <i class="fa fa-info-circle"></i>
+              <span>{{ plan.description }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit Planning Modal -->
+    <div class="modal-overlay" *ngIf="showCreatePlanningModal || showEditPlanningModal" 
+         (click)="closePlanningModal()">
+      <div class="modal-content planning-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ editingPlanning ? (translate('planning.modal.editTitle') || 'Chỉnh sửa kế hoạch') : (translate('planning.modal.title') || 'Tạo kế hoạch mới') }}</h3>
+          <button class="modal-close" type="button" (click)="closePlanningModal()">&times;</button>
+        </div>
+        <div class="modal-body modal-two-column">
+          <!-- Left Column: Category Section -->
+          <div class="modal-column modal-column-left">
+            <div class="form-group">
+              <label>{{ translate('planning.modal.category') || 'Danh mục' }} <span class="required">*</span></label>
+              <select class="form-input" [(ngModel)]="planningForm.category"
+                      [disabled]="loadingPlanningCategories || showNewPlanningCategoryInput"
+                      (change)="showNewPlanningCategoryInput = false"
+                      [ngModelOptions]="{standalone: true}">
+                <option value="">{{ translate('planning.modal.selectCategory') || 'Chọn phân loại' }}</option>
+                <option *ngFor="let cat of getGroupPlanningCategoryNames()" [value]="cat">{{ cat }}</option>
+              </select>
+              <div class="loading-text" *ngIf="loadingPlanningCategories">{{ translate('planning.loadingCategories') || 'Đang tải phân loại...' }}</div>
+            </div>
+
+            <div class="form-group">
+              <button class="btn btn-link" type="button" (click)="toggleNewPlanningCategoryInput()">
+                <i class="fa" [class.fa-plus]="!showNewPlanningCategoryInput" [class.fa-minus]="showNewPlanningCategoryInput"></i>
+                {{ showNewPlanningCategoryInput ? (translate('planning.modal.cancelNewCategory') || 'Hủy thêm loại') : (translate('planning.modal.addNewCategory') || 'Thêm loại mới') }}
+              </button>
+            </div>
+
+            <div class="form-group" *ngIf="showNewPlanningCategoryInput">
+              <label>{{ translate('planning.modal.newCategoryName') || 'Tên loại mới' }} <span class="required">*</span></label>
+              <input type="text" class="form-input"
+                     [(ngModel)]="newPlanningCategory"
+                     [ngModelOptions]="{standalone: true}"
+                     [placeholder]="translate('planning.modal.newCategoryPlaceholder') || 'Nhập tên loại mới...'"
+                     (keyup.enter)="editingPlanning ? updateGroupPlanning() : createGroupPlanning()">
+            </div>
+
+            <!-- Category Management Section -->
+            <div class="category-management">
+              <h4>{{ translate('planning.modal.manageCategories') || 'Quản lý loại' }}</h4>
+              <div class="categories-list">
+                <div *ngFor="let category of planningCategories" class="category-item">
+                  <span class="category-name">{{ category.name }}</span>
+                  <button class="btn-delete-category"
+                          type="button"
+                          (click)="deleteGroupPlanningCategory(category.name)"
+                          [disabled]="category.isDefault"
+                          [title]="category.isDefault ? (translate('planning.modal.cannotDeleteDefault') || 'Không thể xóa loại mặc định') : (translate('planning.modal.deleteCategory') || 'Xóa loại')">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Plan Information -->
+          <div class="modal-column modal-column-right">
+
+          <div class="form-group">
+            <label>{{ translate('planning.modal.planType') || 'Loại kế hoạch' }} <span class="required">*</span></label>
+            <select class="form-input" [(ngModel)]="planningForm.planType" [ngModelOptions]="{standalone: true}">
+              <option value="SHORT_TERM">{{ translate('planning.modal.planTypeShortTerm') || 'Ngắn hạn' }}</option>
+              <option value="LONG_TERM">{{ translate('planning.modal.planTypeLongTerm') || 'Dài hạn' }}</option>
+              <option value="RECURRING">{{ translate('planning.modal.planTypeRecurring') || 'Định kỳ' }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>{{ translate('planning.modal.budget') || 'Ngân sách' }} <span class="required">*</span></label>
+            <input class="form-input" type="text"
+                   [value]="formatNumberWithDots(planningForm.budgetAmount)"
+                   (input)="onGroupBudgetInput($event)"
+                   [placeholder]="translate('planning.modal.budgetPlaceholder') || 'Nhập số tiền'" />
+          </div>
+
+          <div *ngIf="planningForm.planType === 'SHORT_TERM' || planningForm.planType === 'LONG_TERM'" class="form-grid">
+            <div class="form-group">
+              <label>{{ translate('planning.modal.startDate') || 'Ngày bắt đầu' }} <span class="required">*</span></label>
+              <p-calendar
+                inputId="planningStartDate"
+                [(ngModel)]="planningForm.startDate"
+                [ngModelOptions]="{standalone: true}"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+                [placeholder]="translate('planning.modal.startDate') || 'Ngày bắt đầu'"
+                styleClass="w-full"
+              ></p-calendar>
+            </div>
+            <div class="form-group">
+              <label>{{ translate('planning.modal.endDate') || 'Ngày kết thúc' }} 
+                <span *ngIf="planningForm.planType === 'SHORT_TERM'" class="required">*</span>
+              </label>
+              <p-calendar
+                inputId="planningEndDate"
+                [(ngModel)]="planningForm.endDate"
+                [ngModelOptions]="{standalone: true}"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+                [placeholder]="translate('planning.modal.endDate') || 'Ngày kết thúc'"
+                styleClass="w-full"
+              ></p-calendar>
+            </div>
+          </div>
+
+          <div *ngIf="planningForm.planType === 'LONG_TERM'" class="form-group">
+            <label>{{ translate('planning.modal.repeatCycle') || 'Chu kỳ lặp lại' }} ({{ translate('planning.modal.optional') || 'Tùy chọn' }})</label>
+            <select class="form-input" [(ngModel)]="planningForm.repeatCycle" [ngModelOptions]="{standalone: true}">
+              <option value="">{{ translate('planning.modal.selectRepeatCycle') || 'Chọn chu kỳ' }}</option>
+              <option value="YEARLY">{{ translate('planning.modal.yearly') || 'Hàng năm' }}</option>
+            </select>
+          </div>
+
+          <div *ngIf="planningForm.planType === 'RECURRING'">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>{{ translate('planning.modal.repeatCycle') || 'Chu kỳ lặp lại' }} <span class="required">*</span></label>
+                <select class="form-input" [(ngModel)]="planningForm.repeatCycle" [ngModelOptions]="{standalone: true}">
+                  <option value="">{{ translate('planning.modal.selectRepeatCycle') || 'Chọn chu kỳ' }}</option>
+                  <option value="MONTHLY">{{ translate('planning.modal.monthly') || 'Hàng tháng' }}</option>
+                  <option value="QUARTERLY">{{ translate('planning.modal.quarterly') || 'Hàng quý' }}</option>
+                  <option value="YEARLY">{{ translate('planning.modal.yearly') || 'Hàng năm' }}</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="planningForm.repeatCycle === 'QUARTERLY'">
+                <label>{{ translate('planning.modal.dayOfMonth') || 'Ngày trong tháng' }} <span class="required">*</span></label>
+                <input class="form-input" type="number" [(ngModel)]="planningForm.dayOfMonth" 
+                       [ngModelOptions]="{standalone: true}" min="1" max="31" 
+                       [placeholder]="translate('planning.modal.dayOfMonthPlaceholder') || '1-31'" />
+              </div>
+            </div>
+            <!-- For MONTHLY: Show checkbox for "apply for whole month" -->
+            <div class="form-group" *ngIf="planningForm.repeatCycle === 'MONTHLY'">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="planningForm.applyForWholeMonth" 
+                       [ngModelOptions]="{standalone: true}"
+                       (change)="planningForm.dayOfMonth = planningForm.applyForWholeMonth ? null : planningForm.dayOfMonth" />
+                <span>{{ translate('planning.modal.applyForWholeMonth') || 'Áp dụng cho cả tháng' }}</span>
+              </label>
+              <div class="helper-text">
+                <i class="fa fa-info-circle"></i> {{ translate('planning.modal.applyForWholeMonthHint') || 'Kế hoạch sẽ áp dụng cho cả tháng, không cần chọn ngày cụ thể.' }}
+              </div>
+            </div>
+            <!-- For MONTHLY without "apply for whole month": Show day of month input -->
+            <div class="form-group" *ngIf="planningForm.repeatCycle === 'MONTHLY' && !planningForm.applyForWholeMonth">
+              <label>{{ translate('planning.modal.dayOfMonth') || 'Ngày trong tháng' }} <span class="required">*</span></label>
+              <input class="form-input" type="number" [(ngModel)]="planningForm.dayOfMonth" 
+                     [ngModelOptions]="{standalone: true}" min="1" max="31" 
+                     [placeholder]="translate('planning.modal.dayOfMonthPlaceholder') || '1-31'" />
+              <div class="helper-text">
+                <i class="fa fa-info-circle"></i> {{ translate('planning.modal.dayOfMonthHint') || 'Nếu bạn chọn 31, hệ thống sẽ tự động sử dụng ngày cuối cùng của tháng (28, 29 hoặc 30 tùy theo tháng).' }}
+              </div>
+            </div>
+            <!-- For YEARLY: Show checkbox for "apply for whole year" -->
+            <div class="form-group" *ngIf="planningForm.repeatCycle === 'YEARLY'">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="planningForm.applyForWholeYear" 
+                       [ngModelOptions]="{standalone: true}"
+                       (change)="planningForm.dayOfMonth = planningForm.applyForWholeYear ? null : planningForm.dayOfMonth" />
+                <span>{{ translate('planning.modal.applyForWholeYear') || 'Áp dụng cho cả năm' }}</span>
+              </label>
+              <div class="helper-text">
+                <i class="fa fa-info-circle"></i> {{ translate('planning.modal.applyForWholeYearHint') || 'Kế hoạch sẽ áp dụng cho cả năm, không cần chọn ngày cụ thể.' }}
+              </div>
+            </div>
+            <!-- For YEARLY without "apply for whole year": Show day of month input -->
+            <div class="form-group" *ngIf="planningForm.repeatCycle === 'YEARLY' && !planningForm.applyForWholeYear">
+              <label>{{ translate('planning.modal.dayOfMonth') || 'Ngày trong tháng' }} <span class="required">*</span></label>
+              <input class="form-input" type="number" [(ngModel)]="planningForm.dayOfMonth" 
+                     [ngModelOptions]="{standalone: true}" min="1" max="31" 
+                     [placeholder]="translate('planning.modal.dayOfMonthPlaceholder') || '1-31'" />
+              <div class="helper-text">
+                <i class="fa fa-info-circle"></i> {{ translate('planning.modal.dayOfMonthHint') || 'Nếu bạn chọn 31, hệ thống sẽ tự động sử dụng ngày cuối cùng của tháng (28, 29 hoặc 30 tùy theo tháng).' }}
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ translate('planning.modal.startDate') || 'Ngày bắt đầu' }} ({{ translate('planning.modal.optional') || 'Tùy chọn' }})</label>
+              <p-calendar
+                inputId="planningOptionalStartDate"
+                [(ngModel)]="planningForm.startDate"
+                [ngModelOptions]="{standalone: true}"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+                [placeholder]="translate('planning.modal.startDate') || 'Ngày bắt đầu'"
+                styleClass="w-full"
+              ></p-calendar>
+            </div>
+          </div>
+
+            <div class="form-group">
+              <label>{{ translate('planning.modal.description') || 'Mô tả' }} ({{ translate('planning.modal.optional') || 'Tùy chọn' }})</label>
+              <textarea class="form-input" [(ngModel)]="planningForm.description" 
+                        [ngModelOptions]="{standalone: true}"
+                        rows="3" [placeholder]="translate('planning.modal.descriptionPlaceholder') || 'Nhập mô tả (tùy chọn)'"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-cancel" type="button" (click)="closePlanningModal()">
+            {{ translate('planning.modal.cancel') || 'Hủy' }}
+          </button>
+          <button class="btn btn-primary" type="button" (click)="editingPlanning ? updateGroupPlanning() : createGroupPlanning()" 
+                  [disabled]="savingPlanning || !isPlanningFormValid()">
+            <span *ngIf="!savingPlanning">
+              {{ editingPlanning ? (translate('planning.modal.update') || 'Cập nhật') : (translate('planning.modal.create') || 'Tạo') }}
+            </span>
+            <span *ngIf="savingPlanning">
+              <i class="fa fa-spinner fa-spin"></i> 
+              {{ editingPlanning ? (translate('planning.modal.updating') || 'Đang cập nhật...') : (translate('planning.modal.creating') || 'Đang tạo...') }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members Tab -->
+    <div *ngIf="activeTab === 'members'" class="members-tab">
+      <!-- Members list - reuse transactions tab style -->
+      <div class="transactions-list-section">
+        <div class="transactions-card">
+            <div class="card-header">
+              <h3>{{ translate('groups.detail.membersTab.title') }}</h3>
+              <span class="transaction-count">
+                {{ membersTotalElements }} {{ translate('groups.detail.membersTab.members') }}
+              </span>
+            </div>
+
+          <!-- Loading -->
+          <div *ngIf="loadingMembers" class="loading-container">
+            <i class="fa fa-spinner fa-spin"></i>
+            <p>{{ translate('groups.detail.membersTab.loading') }}</p>
+          </div>
+
+          <!-- Empty -->
+          <div *ngIf="!loadingMembers && members.length === 0" class="no-transactions">
+            <i class="fa fa-users"></i>
+            <p>{{ translate('groups.detail.membersTab.empty') }}</p>
+          </div>
+
+          <!-- Table -->
+          <div *ngIf="!loadingMembers && members.length > 0" class="transactions-table">
+            <div class="transaction-row header-row">
+              <div class="col-date">{{ translate('groups.detail.membersTab.columns.member') }}</div>
+              <div class="col-content">{{ translate('groups.detail.membersTab.columns.contact') }}</div>
+              <div class="col-account">{{ translate('groups.detail.membersTab.columns.role') }}</div>
+              <div class="col-amount">{{ translate('groups.detail.membersTab.columns.joinedAt') }}</div>
+              <div class="col-category"></div>
+              <div class="col-actions">{{ translate('groups.detail.membersTab.columns.actions') }}</div>
+            </div>
+
+            <div class="transaction-row" *ngFor="let member of members">
+              <!-- Member avatar + name -->
+              <div class="col-date">
+                <div class="member-info">
+                  <div class="member-avatar">
+                    <img *ngIf="member.avatar" [src]="member.avatar" [alt]="member.fullName || member.userId" />
+                    <div *ngIf="!member.avatar" class="member-avatar-fallback">
+                      {{ getMemberInitials(member) }}
+                    </div>
+                  </div>
+                  <div class="member-name-role">
+                    <div class="member-name">
+                      {{ member.fullName || ('#' + member.userId) }}
+                      <span *ngIf="isCurrentUser(member)" class="member-badge">
+                        ({{ translate('groups.detail.membersTab.you') }})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contact info -->
+              <div class="col-content">
+                <div class="contact-line" *ngIf="member.email">
+                  <i class="fa fa-envelope"></i>
+                  <span>{{ member.email }}</span>
+                </div>
+                <div class="contact-line" *ngIf="member.phone">
+                  <i class="fa fa-phone"></i>
+                  <span>{{ member.phone }}</span>
+                </div>
+                <div class="contact-line muted" *ngIf="!member.email && !member.phone">
+                  {{ translate('groups.detail.membersTab.noContact') }}
+                </div>
+              </div>
+
+              <!-- Role -->
+              <div class="col-account">
+                <span class="role-pill" [ngClass]="'role-' + (member.role || 'MEMBER').toLowerCase()">
+                  {{ getMemberRoleLabel(member.role) }}
+                </span>
+              </div>
+
+              <!-- Joined at -->
+              <div class="col-amount">
+                {{ formatDate(member.joinedAt) }}
+              </div>
+
+              <!-- Reserved col-category (status or tags later) -->
+              <div class="col-category">
+                <!-- empty for now -->
+              </div>
+
+              <!-- Actions -->
+              <div class="col-actions" *ngIf="canManageMembers() && !isCurrentUser(member)">
+                <button
+                  class="icon-btn member-action-edit"
+                  (click)="onChangeMemberRole(member)"
+                  [title]="translate('groups.detail.membersTab.changeRole')"
+                >
+                  <i class="fa fa-pencil"></i>
+                </button>
+                <button
+                  class="icon-btn member-action-remove"
+                  (click)="onRemoveMember(member)"
+                  [title]="translate('groups.detail.membersTab.remove')"
+                >
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+              <div class="col-actions" *ngIf="!canManageMembers() || isCurrentUser(member)">
+                <!-- Empty space when actions are not available -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination-wrapper" *ngIf="!loadingMembers && members.length > 0">
+            <div class="pagination-info">
+              <span>
+                {{ translate('transactions.showing') }}
+                {{ membersPage * membersPageSize + 1 }}
+                -
+                {{ Math.min((membersPage + 1) * membersPageSize, membersTotalElements) }}
+                {{ translate('transactions.of') }}
+                {{ membersTotalElements }}
+              </span>
+              <select
+                class="page-size-select"
+                [ngModel]="membersPageSize"
+                (ngModelChange)="onMembersPageSizeChange($event)"
+              >
+                <option *ngFor="let size of memberPageSizeOptions" [value]="size">
+                  {{ size }}
+                </option>
+              </select>
+            </div>
+            <div class="pagination-controls">
+              <button
+                class="pagination-btn"
+                [disabled]="membersPage === 0"
+                (click)="onMembersPageChange(membersPage - 1)"
+              >
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              <span class="pagination-page">
+                {{ membersPage + 1 }} / {{ membersTotalPages || 1 }}
+              </span>
+              <button
+                class="pagination-btn"
+                [disabled]="membersPage >= membersTotalPages - 1"
+                (click)="onMembersPageChange(membersPage + 1)"
+              >
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invitations list -->
+      <div class="invites-section">
+        <div class="transactions-list-section">
+          <div class="transactions-card">
+            <div class="card-header">
+              <h3>{{ translate('groups.detail.membersTab.invitesTitle') }}</h3>
+              <span class="transaction-count">
+                {{ inviteTotalElements }} {{ translate('groups.detail.membersTab.invitesCount') }}
+              </span>
+            </div>
+
+            <div *ngIf="loadingInvites" class="loading-container">
+              <i class="fa fa-spinner fa-spin"></i>
+              <p>{{ translate('groups.detail.membersTab.invitesLoading') }}</p>
+            </div>
+
+            <div *ngIf="!loadingInvites && pendingInvites.length === 0" class="no-transactions">
+              <i class="fa fa-inbox"></i>
+              <p>{{ translate('groups.detail.membersTab.invitesEmpty') }}</p>
+            </div>
+
+            <div *ngIf="!loadingInvites && pendingInvites.length > 0" class="transactions-table">
+              <div class="transaction-row header-row">
+                <div class="col-date">{{ translate('groups.detail.membersTab.columns.invitee') }}</div>
+                <div class="col-content">{{ translate('groups.detail.membersTab.columns.contact') }}</div>
+                <div class="col-account">{{ translate('groups.detail.membersTab.columns.status') }}</div>
+                <div class="col-amount">{{ translate('groups.detail.membersTab.columns.invitedAt') }}</div>
+                <div class="col-category"></div>
+                <div class="col-actions">{{ translate('groups.detail.membersTab.columns.actions') }}</div>
+              </div>
+
+              <div class="transaction-row" *ngFor="let invite of pendingInvites">
+                <!-- Invitee info -->
+                <div class="col-date">
+                  <div class="invite-info">
+                    <span class="invite-initials">
+                      {{ invite.inviteeUserId }}
+                    </span>
+                    <div class="invite-text">
+                      <div class="invite-name">
+                        {{ invite.inviteeFullName || ('#' + invite.inviteeUserId) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contact info of invitee -->
+                <div class="col-content">
+                  <div class="contact-line" *ngIf="invite.inviteeEmail">
+                    <i class="fa fa-envelope"></i>
+                    <span>{{ invite.inviteeEmail }}</span>
+                  </div>
+                  <div class="contact-line" *ngIf="invite.inviteePhone">
+                    <i class="fa fa-phone"></i>
+                    <span>{{ invite.inviteePhone }}</span>
+                  </div>
+                  <div class="contact-line muted" *ngIf="!invite.inviteeEmail && !invite.inviteePhone">
+                    {{ translate('groups.detail.membersTab.noContact') }}
+                  </div>
+                </div>
+
+                <!-- Status -->
+                <div class="col-account">
+                  <span class="status-pill status-pending">
+                    {{ translate('groups.detail.membersTab.invitePending') }}
+                  </span>
+                </div>
+
+                <!-- Invited at -->
+                <div class="col-amount">
+                  {{ formatDate(invite.createdAt) }}
+                </div>
+
+                <!-- Empty reserved column for future tags -->
+                <div class="col-category"></div>
+
+                <!-- Actions: cancel invite -->
+                <div class="col-actions">
+                  <button
+                    class="chip danger invite-cancel-chip"
+                    (click)="cancelInvite(invite)"
+                  >
+                    {{ translate('groups.detail.membersTab.cancel') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Invites pagination -->
+            <div
+              class="pagination-wrapper"
+              *ngIf="!loadingInvites && pendingInvites.length > 0 && inviteTotalPages > 1"
+            >
+              <div class="pagination-info">
+                <span>
+                  {{ translate('transactions.showing') }}
+                  {{ invitePage * invitePageSize + 1 }}
+                  -
+                  {{ Math.min((invitePage + 1) * invitePageSize, inviteTotalElements) }}
+                  {{ translate('transactions.of') }}
+                  {{ inviteTotalElements }}
+                </span>
+                <select
+                  class="page-size-select"
+                  [ngModel]="invitePageSize"
+                  (ngModelChange)="onInvitesPageSizeChange($event)"
+                >
+                  <option *ngFor="let size of memberPageSizeOptions" [value]="size">
+                    {{ size }}
+                  </option>
+                </select>
+              </div>
+              <div class="pagination-controls">
+                <button
+                  class="pagination-btn"
+                  [disabled]="invitePage === 0"
+                  (click)="onInvitesPageChange(invitePage - 1)"
+                >
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <span class="pagination-page">
+                  {{ invitePage + 1 }} / {{ inviteTotalPages || 1 }}
+                </span>
+                <button
+                  class="pagination-btn"
+                  [disabled]="invitePage >= inviteTotalPages - 1"
+                  (click)="onInvitesPageChange(invitePage + 1)"
+                >
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Tab -->
+    <div *ngIf="activeTab === 'analysis'" class="analysis-tab">
+      <!-- Date Filter Row -->
+      <div class="filter-row">
+        <div class="inline-filter">
+          <label>{{ translate('groups.detail.analysis.selectPeriod') || 'Chọn kỳ' }}</label>
+          <div class="inline-controls">
+            <select [(ngModel)]="analysisTimeFilter" (ngModelChange)="applyAnalysisTimeFilter()">
+              <option *ngFor="let f of analysisTimeFilters" [value]="f.value">{{ f.label }}</option>
+            </select>
+            <div class="custom-range" *ngIf="analysisTimeFilter === 'custom'">
+              <p-calendar
+                inputId="analysisCustomStartDate"
+                [(ngModel)]="analysisCustomStartDate"
+                (onSelect)="applyAnalysisTimeFilter()"
+                (onClearClick)="applyAnalysisTimeFilter()"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+              ></p-calendar>
+              <span>→</span>
+              <p-calendar
+                inputId="analysisCustomEndDate"
+                [(ngModel)]="analysisCustomEndDate"
+                (onSelect)="applyAnalysisTimeFilter()"
+                (onClearClick)="applyAnalysisTimeFilter()"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+              ></p-calendar>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <ng-container *ngIf="!loadingAnalysisSummary; else summaryLoading">
+        <div class="summary-grid">
+          <div class="summary-card" *ngFor="let card of analysisSummaries; let i = index" [attr.data-index]="i">
+            <div class="card-header-summary">
+              <p>{{ card.title }}</p>
+              <i class="fa" [ngClass]="{
+                'fa-arrow-up': card.trendDirection === 'up',
+                'fa-arrow-down': card.trendDirection === 'down',
+                'fa-minus': card.trendDirection === 'flat'
+              }"></i>
+            </div>
+            <h3>{{ card.value }}</h3>
+            <div class="trend" [class.up]="card.trendDirection === 'up'" [class.down]="card.trendDirection === 'down'">
+              <span>{{ card.trend || '—' }}</span>
+              <small>{{ card.subLabel }}</small>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #summaryLoading>
+        <div class="summary-grid">
+          <div class="summary-card skeleton" *ngFor="let _ of [1,2,3,4]">
+            <div class="skeleton-bar title"></div>
+            <div class="skeleton-bar value"></div>
+            <div class="skeleton-bar small"></div>
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- Charts Grid -->
+      <div class="charts-grid">
+        <!-- Cashflow Chart -->
+        <div class="chart-card glass-panel cashflow-card">
+          <div class="chart-header">
+            <div>
+              <h4>{{ translate('groups.detail.analysis.cashflow.title') || 'Dòng tiền' }}</h4>
+              <span>{{ translate('groups.detail.analysis.cashflow.subtitle') || 'Biến động thu chi theo tháng' }}</span>
+            </div>
+            <div class="legend">
+              <span class="dot income"></span> {{ translate('groups.detail.analysis.cashflow.income') || 'Thu' }}
+              <span class="dot expense"></span> {{ translate('groups.detail.analysis.cashflow.expense') || 'Chi' }}
+              <span class="dot balance"></span> {{ translate('groups.detail.analysis.cashflow.balance') || 'Cân bằng' }}
+            </div>
+          </div>
+          <div class="chart-body">
+            <div *ngIf="loadingAnalysisCashflow" class="loading-inline"><i class="fa fa-spinner fa-spin"></i></div>
+            <div id="group-cashflow-chart" class="hc-container" *ngIf="!loadingAnalysisCashflow"></div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown Chart -->
+        <div class="chart-card glass-panel">
+          <div class="chart-header">
+            <div class="chart-title-with-toggle">
+              <h4>{{ translate('groups.detail.analysis.breakdown.title') || 'Phân loại' }}</h4>
+              <div class="pill-toggle">
+                <button [class.active]="analysisBreakdownMode==='expense'" (click)="onToggleAnalysisBreakdown('expense')">
+                  {{ translate('groups.detail.analysis.breakdown.expenseButton') || 'Chi tiêu' }}
+                </button>
+                <button [class.active]="analysisBreakdownMode==='income'" (click)="onToggleAnalysisBreakdown('income')">
+                  {{ translate('groups.detail.analysis.breakdown.incomeButton') || 'Thu nhập' }}
+                </button>
+              </div>
+            </div>
+            <span>{{ analysisBreakdownMode === 'expense' ? (translate('groups.detail.analysis.breakdown.expense') || 'Chi tiêu theo danh mục') : (translate('groups.detail.analysis.breakdown.income') || 'Thu nhập theo danh mục') }}</span>
+          </div>
+          <div class="category-chart-content" (mouseleave)="clearAnalysisActiveCategory()">
+            <div class="category-chart-wrapper">
+              <div class="category-chart-info">
+                <div class="chart-label">{{ analysisBreakdownMode === 'expense' ? (translate('groups.detail.analysis.breakdown.totalExpense') || 'Tổng chi') : (translate('groups.detail.analysis.breakdown.totalIncome') || 'Tổng thu') }}</div>
+                <div class="chart-value">{{ getAnalysisCategoryTotalFormatted() }}</div>
+                <div class="chart-hover-info">
+                  <ng-container *ngIf="analysisActiveCategoryIndex !== null; else analysisHintTpl">
+                    <span class="hover-name">{{ getAnalysisActiveCategoryLabel() }}</span>
+                    <span class="hover-percent">{{ getAnalysisActiveCategoryPercent() | number:'1.1-1' }}%</span>
+                  </ng-container>
+                  <ng-template #analysisHintTpl>
+                    <span class="hover-name muted">{{ translate('groups.detail.analysis.breakdown.hoverHint') || 'Di chuột để xem %' }}</span>
+                  </ng-template>
+                </div>
+              </div>
+              <div class="category-chart" [class.empty]="getAnalysisCategoryTotal() === 0">
+                <div *ngIf="loadingAnalysisBreakdown" class="loading-inline">
+                  <i class="fa fa-spinner fa-spin"></i>
+                </div>
+                <apx-chart
+                  #analysisBreakdownChart
+                  *ngIf="!loadingAnalysisBreakdown && analysisChartOptions.series && analysisChartOptions.series.length > 0"
+                  [series]="analysisChartOptions.series!"
+                  [chart]="analysisChartOptions.chart!"
+                  [labels]="analysisChartOptions.labels!"
+                  [colors]="analysisChartOptions.colors!"
+                  [responsive]="analysisChartOptions.responsive!"
+                  [theme]="analysisChartOptions.theme!"
+                  [legend]="analysisChartOptions.legend!"
+                  [dataLabels]="analysisChartOptions.dataLabels!"
+                  [tooltip]="analysisChartOptions.tooltip!"
+                ></apx-chart>
+                <div *ngIf="!loadingAnalysisBreakdown && (!analysisChartOptions.series || analysisChartOptions.series.length === 0)" class="no-data-chart">
+                  <p>{{ translate('groups.detail.analysis.breakdown.noData') || 'Không có dữ liệu' }}</p>
+                </div>
+              </div>
+            </div>
+            <ul class="legend-list category-legend">
+              <li *ngFor="let item of getAnalysisCurrentBreakdown(); index as i"
+                  (mouseenter)="setAnalysisActiveCategory(i)">
+                <span class="dot" [style.background]="analysisBreakdownColors[i % analysisBreakdownColors.length]"></span>
+                <span>{{ item.category || translate('groups.detail.analysis.uncategorized') || 'Chưa phân loại' }}</span>
+                <strong>{{ formatCurrency(item.amount) }}</strong>
+                <span class="percent">{{ item.percentage | number:'1.1-1' }}%</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Cards Grid -->
+      <div class="cards-grid">
+        <!-- Expense Heatmap -->
+        <div class="mini-card glass-panel">
+          <div class="card-header spaced">
+            <div class="title">
+              <h5>{{ translate('groups.detail.analysis.expenseDensity.title') || 'Mật độ chi tiêu' }}</h5>
+            </div>
+            <div class="heatmap-controls">
+              <select class="month-select" [(ngModel)]="analysisHeatmapMonth" (change)="onAnalysisHeatmapDateChange()">
+                <option [value]="1">{{ translate('statistics.months.january') || 'Tháng 1' }}</option>
+                <option [value]="2">{{ translate('statistics.months.february') || 'Tháng 2' }}</option>
+                <option [value]="3">{{ translate('statistics.months.march') || 'Tháng 3' }}</option>
+                <option [value]="4">{{ translate('statistics.months.april') || 'Tháng 4' }}</option>
+                <option [value]="5">{{ translate('statistics.months.may') || 'Tháng 5' }}</option>
+                <option [value]="6">{{ translate('statistics.months.june') || 'Tháng 6' }}</option>
+                <option [value]="7">{{ translate('statistics.months.july') || 'Tháng 7' }}</option>
+                <option [value]="8">{{ translate('statistics.months.august') || 'Tháng 8' }}</option>
+                <option [value]="9">{{ translate('statistics.months.september') || 'Tháng 9' }}</option>
+                <option [value]="10">{{ translate('statistics.months.october') || 'Tháng 10' }}</option>
+                <option [value]="11">{{ translate('statistics.months.november') || 'Tháng 11' }}</option>
+                <option [value]="12">{{ translate('statistics.months.december') || 'Tháng 12' }}</option>
+              </select>
+              <select class="year-select" [(ngModel)]="analysisHeatmapYear" (change)="onAnalysisHeatmapDateChange()">
+                <option *ngFor="let y of analysisAvailableYears" [value]="y">{{ y }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="heatmap-calendar">
+            <div class="calendar-header">
+              <div class="week-day" *ngFor="let day of analysisWeekDays">{{ day }}</div>
+            </div>
+            <div class="calendar-grid">
+              <div class="calendar-day" 
+                   *ngFor="let item of analysisCalendarDays"
+                   [class.level-0]="item.level === 0"
+                   [class.level-1]="item.level === 1"
+                   [class.level-2]="item.level === 2"
+                   [class.level-3]="item.level === 3"
+                   [class.level-4]="item.level === 4"
+                   [class.empty]="item.day === null">
+                <span *ngIf="item.day !== null">{{ item.day }}</span>
+              </div>
+            </div>
+            <div class="calendar-legend">
+              <span class="legend-label">{{ translate('groups.detail.analysis.expenseDensity.low') || 'Thấp' }}</span>
+              <div class="legend-gradient"></div>
+              <span class="legend-label">{{ translate('groups.detail.analysis.expenseDensity.high') || 'Cao' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Biggest Expenses -->
+        <div class="mini-card glass-panel">
+          <div class="card-header spaced">
+            <div class="title">
+              <span class="dot info"></span>
+              <h5>{{ translate('groups.detail.analysis.biggestExpenses.title') || 'Chi tiêu lớn nhất' }}</h5>
+            </div>
+            <small>{{ translate('groups.detail.analysis.biggestExpenses.recent') || 'Trong kỳ' }}</small>
+          </div>
+          <ul class="list">
+            <li *ngFor="let item of analysisBigSpends">
+              <div class="list-label">
+                <span class="icon">{{ item.icon }}</span>
+                <div>
+                  <p>{{ item.label }}</p>
+                  <small>{{ item.date }} • {{ item.category }}</small>
+                </div>
+              </div>
+              <strong class="negative">{{ item.amount }}</strong>
+            </li>
+          </ul>
+          <div *ngIf="loadingAnalysisBigSpends" class="loading-state">
+            <p>{{ translate('common.loading') || 'Đang tải...' }}</p>
+          </div>
+          <div *ngIf="!loadingAnalysisBigSpends && analysisBigSpends.length === 0" class="no-data-state">
+            <p>{{ translate('groups.detail.analysis.biggestExpenses.noData') || 'Không có dữ liệu' }}</p>
+          </div>
+        </div>
+
+        <!-- Spending Variance -->
+        <div class="mini-card glass-panel spending-variance">
+          <div class="card-header spaced">
+            <div class="title">
+              <span class="dot info">📈</span>
+              <h5>{{ translate('groups.detail.analysis.spendingVariance.title') || 'Biến động chi tiêu' }}</h5>
+            </div>
+            <div class="pill-toggle">
+              <button 
+                [class.active]="analysisVarianceMode === 'expense'"
+                (click)="onToggleAnalysisVariance('expense')">
+                {{ translate('groups.detail.analysis.spendingVariance.spending') || 'Chi' }}
+              </button>
+              <button 
+                [class.active]="analysisVarianceMode === 'income'"
+                (click)="onToggleAnalysisVariance('income')">
+                {{ translate('groups.detail.analysis.spendingVariance.income') || 'Thu' }}
+              </button>
+            </div>
+          </div>
+          <ul class="variance-list">
+            <li *ngFor="let item of analysisSpendingChanges">
+              <div class="left">
+                <div class="icon-badge">{{ item.icon }}</div>
+                <div class="text">
+                  <div class="label-row">
+                    <p class="label">{{ item.label }}</p>
+                    <span class="amount-inline">{{ translate('groups.detail.analysis.spendingVariance.actual') || 'Thực tế' }}: {{ item.actual }}</span>
+                  </div>
+                  <small>{{ translate('groups.detail.analysis.spendingVariance.vsLastPeriod') || 'So với kỳ trước' }}</small>
+                </div>
+              </div>
+              <div class="right" [class.up]="item.trend==='up'" [class.down]="item.trend==='down'" [class.flat]="item.trend==='flat'">
+                <div class="delta">{{ item.trend === 'up' ? '+' : item.trend === 'down' ? '-' : '' }}{{ item.delta }}</div>
+                <div class="delta-pct">{{ item.deltaPct }}</div>
+              </div>
+            </li>
+          </ul>
+          <div *ngIf="loadingAnalysisVariance" class="loading-state">
+            <p>{{ translate('common.loading') || 'Đang tải...' }}</p>
+          </div>
+          <div *ngIf="!loadingAnalysisVariance && analysisSpendingChanges.length === 0" class="no-data-state">
+            <p>{{ translate('groups.detail.analysis.spendingVariance.noData') || 'Không có dữ liệu' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Tab -->
+    <div *ngIf="activeTab === 'activity'" class="activity-tab">
+      <!-- Filters (reuse design from transactions tab) -->
+      <div class="filters-section">
+        <div class="filters-card">
+          <div class="filters-header">
+            <h3><i class="fa fa-history"></i> {{ translate('groups.detail.activity.title') }}</h3>
+            <button class="btn-clear-filters" (click)="clearActivityFilters()">
+              <i class="fa fa-times"></i> {{ translate('groups.detail.activity.clearFilters') }}
+            </button>
+          </div>
+          <div class="filters-grid">
+            <!-- Row 1: Search, Type -->
+            <div class="filter-group">
+              <label>{{ translate('groups.detail.activity.search') }}</label>
+              <input
+                type="text"
+                class="form-input"
+                [(ngModel)]="activitySearchTerm"
+                (keyup.enter)="onActivitySearch()"
+                [placeholder]="translate('groups.detail.activity.searchPlaceholder')"
+              />
+            </div>
+            <div class="filter-group">
+              <label>{{ translate('groups.detail.activity.typeLabel') }}</label>
+              <select class="form-input" [(ngModel)]="activityType" (change)="onActivityFilterChange()">
+                <option value="">{{ translate('groups.detail.activity.type.all') }}</option>
+                <option value="GROUP_CREATED">{{ translate('groups.detail.activity.type.GROUP_CREATED') }}</option>
+                <option value="INVITE_SENT">{{ translate('groups.detail.activity.type.INVITE_SENT') }}</option>
+                <option value="INVITE_ACCEPTED">{{ translate('groups.detail.activity.type.INVITE_ACCEPTED') }}</option>
+                <option value="INVITE_REJECTED">{{ translate('groups.detail.activity.type.INVITE_REJECTED') }}</option>
+                <option value="ACCOUNT_LINKED">{{ translate('groups.detail.activity.type.ACCOUNT_LINKED') }}</option>
+                <option value="ACCOUNT_UNLINKED">{{ translate('groups.detail.activity.type.ACCOUNT_UNLINKED') }}</option>
+                <option value="MEMBER_LEFT">{{ translate('groups.detail.activity.type.MEMBER_LEFT') }}</option>
+                <option value="ADMIN_LEFT">{{ translate('groups.detail.activity.type.ADMIN_LEFT') }}</option>
+                <option value="PLANNING_CREATED">{{ translate('groups.detail.activity.type.PLANNING_CREATED') }}</option>
+                <option value="PLANNING_UPDATED">{{ translate('groups.detail.activity.type.PLANNING_UPDATED') }}</option>
+                <option value="PLANNING_DELETED">{{ translate('groups.detail.activity.type.PLANNING_DELETED') }}</option>
+              </select>
+            </div>
+            
+            <!-- Row 2: Start Date, End Date (close together) -->
+            <div class="filter-group filter-group-date">
+              <label>{{ translate('groups.detail.activity.startDate') }}</label>
+              <p-calendar
+                inputId="activityStartDate"
+                [(ngModel)]="activityStartDate"
+                (onSelect)="onActivityFilterChange()"
+                (onClearClick)="onActivityFilterChange()"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+                styleClass="w-full"
+              ></p-calendar>
+            </div>
+            <div class="filter-group filter-group-date">
+              <label>{{ translate('groups.detail.activity.endDate') }}</label>
+              <p-calendar
+                inputId="activityEndDate"
+                [(ngModel)]="activityEndDate"
+                (onSelect)="onActivityFilterChange()"
+                (onClearClick)="onActivityFilterChange()"
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                [showButtonBar]="true"
+                styleClass="w-full"
+              ></p-calendar>
+            </div>
+          </div>
+          <div class="filters-actions">
+            <button class="btn btn-search" (click)="onActivitySearch()">
+              <i class="fa fa-search"></i> {{ translate('groups.detail.activity.searchButton') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activities list -->
+      <div class="activities-list-section">
+        <div class="activities-card">
+        <div class="card-heading">
+          <h3>{{ translate('groups.detail.activity.listTitle') }}</h3>
+          <span class="activity-count">{{ activityTotalElements }} {{ translate('groups.detail.activity.items') }}</span>
+        </div>
+
+        <div *ngIf="loadingActivities" class="loading-container">
+          <i class="fa fa-spinner fa-spin"></i>
+          <p>{{ translate('groups.detail.activity.loading') }}</p>
+        </div>
+
+        <div *ngIf="!loadingActivities && activityGroups.length === 0" class="no-transactions">
+          <i class="fa fa-inbox"></i>
+          <p>{{ translate('groups.detail.activity.empty') }}</p>
+        </div>
+
+        <!-- Timeline style list -->
+        <div *ngIf="!loadingActivities && activityGroups.length > 0" class="activity-timeline">
+          <div class="activity-day-group" *ngFor="let group of activityGroups">
+            <div class="activity-day-header">
+              {{ group.dateLabel }}
+            </div>
+            <div class="activity-day-list">
+              <div class="activity-timeline-item" *ngFor="let activity of group.items">
+                <div class="activity-timeline-left">
+                  <span class="activity-dot" [ngClass]="getActivityDotClass(activity.type)"></span>
+                  <span class="activity-line"></span>
+                </div>
+                <div class="activity-timeline-card">
+                  <div class="activity-timeline-header">
+                    <div class="activity-header-main">
+                      <span class="activity-actor">{{ activity.actorName || (activity.actorUserId | number) }}</span>
+                      <span class="activity-type-pill">
+                        <i class="fa" [ngClass]="getActivityIcon(activity.type)"></i>
+                        {{ getActivityTypeLabel(activity.type) }}
+                      </span>
+                    </div>
+                    <div class="activity-time">
+                      {{ formatActivityTime(activity.createdAt) }}
+                    </div>
+                  </div>
+                  <div class="activity-timeline-body">
+                    <div class="activity-title">
+                      {{ getActivityTitle(activity) }}
+                    </div>
+                    <div class="activity-message">
+                      {{ getActivityMessage(activity) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pagination-wrapper" *ngIf="activityTotalPages > 1">
+          <div class="page-size">
+            <label>{{ translate('transactions.pageSize') }}</label>
+            <select
+              class="form-input"
+              [(ngModel)]="activityPageSize"
+              (change)="onActivityPageSizeChange(activityPageSize)"
+            >
+              <option *ngFor="let size of activityPageSizeOptions" [value]="size">
+                {{ size }}
+              </option>
+            </select>
+          </div>
+          <div class="pagination">
+            <button
+              class="page-btn"
+              [disabled]="activityPage === 0"
+              (click)="onActivityPageChange(activityPage - 1)"
+            >
+              ‹
+            </button>
+            <span class="page-info">
+              {{ activityPage + 1 }} / {{ activityTotalPages }}
+            </span>
+            <button
+              class="page-btn"
+              [disabled]="activityPage + 1 >= activityTotalPages"
+              (click)="onActivityPageChange(activityPage + 1)"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Tab -->
+    <div *ngIf="activeTab === 'chat'" class="chat-tab">
+      <app-group-chat 
+        [groupId]="groupId" 
+        [groupName]="group?.name || ''"
+        [groupAvatarUrl]="avatarUrl">
+      </app-group-chat>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="loading">
+  <p>{{ translate('groups.detail.loading') }}</p>
+</div>
+
+<app-group-update-modal
+  *ngIf="showUpdateModal && group"
+  [group]="group"
+  (updated)="handleGroupUpdated($event)"
+  (closed)="handleUpdateModalClosed()"
+></app-group-update-modal>
+
+<app-invite-member-modal
+  *ngIf="showInviteModal && group"
+  [groupId]="group.id"
+  (closed)="handleInviteModalClosed()"
+  (invited)="handleMemberInvited()"
+></app-invite-member-modal>
+
+<!-- Delete Confirmation Modal -->
+<div class="confirm-modal-backdrop" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🗑️</div>
+    <h3>{{ translate('groups.detail.deleteModal.title') }}</h3>
+    <p class="confirm-text">
+      {{ translate('groups.detail.deleteModal.message') }}
+    </p>
+    <p class="confirm-warning">
+      {{ translate('groups.detail.deleteModal.warning') }}
+    </p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" (click)="closeDeleteModal()" [disabled]="deleteInProgress">
+        {{ translate('groups.detail.deleteModal.cancel') }}
+      </button>
+      <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleteInProgress">
+        <span *ngIf="!deleteInProgress">{{ translate('groups.detail.deleteModal.confirm') }}</span>
+        <span *ngIf="deleteInProgress">{{ translate('groups.detail.deleteModal.deleting') }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Leave Group Confirmation Modal -->
+<div class="confirm-modal-backdrop" *ngIf="showLeaveModal" (click)="closeLeaveModal()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🚪</div>
+    <h3>{{ translate('groups.detail.leave.confirm') }}</h3>
+    <p class="confirm-text">
+      {{ translate('groups.detail.leave.lastAdminWarning') }}
+    </p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" (click)="closeLeaveModal()" [disabled]="leaveInProgress">
+        {{ translate('groups.detail.deleteModal.cancel') }}
+      </button>
+      <button class="btn btn-danger" (click)="confirmLeaveGroup()" [disabled]="leaveInProgress">
+        {{ leaveInProgress ? translate('groups.detail.deleteModal.deleting') : translate('groups.detail.leaveGroup') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar View Modal -->
+<div class="avatar-view-modal" *ngIf="showAvatarView && avatarUrl" (click)="closeAvatarView()">
+  <div class="avatar-view-content" (click)="$event.stopPropagation()">
+    <button class="avatar-view-close" (click)="closeAvatarView()">×</button>
+    <img [src]="avatarUrl" [alt]="group?.name" />
+  </div>
+</div>
+
+<!-- Transaction Detail Modal -->
+<div *ngIf="showTransactionDetail" class="modal-overlay" (click)="closeTransactionDetailDialog()">
+  <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ translate('transactions.detail') }}</h3>
+      <button class="modal-close" (click)="closeTransactionDetailDialog()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="loadingTransactionDetail" class="loading-container">
+        <i class="fa fa-spinner fa-spin"></i>
+      </div>
+      <div *ngIf="!loadingTransactionDetail && transactionDetail" class="detail-grid">
+        <div class="detail-item">
+          <label>{{ translate('transactions.date') }}</label>
+          <div class="detail-value">{{ formatDate(transactionDetail.transactionDate) }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ translate('transactions.amount') }}</label>
+          <div class="detail-value amount"
+               [class.income]="getGroupTransactionType(transactionDetail) === 'income'"
+               [class.expense]="getGroupTransactionType(transactionDetail) === 'expense'">
+            {{ formatCurrency(getGroupTransactionAmount(transactionDetail)) }}
+          </div>
+        </div>
+        <div class="detail-item">
+          <label>{{ translate('transactions.content') }}</label>
+          <div class="detail-value">{{ transactionDetail.transactionContent || '-' }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ translate('transactions.account') }}</label>
+          <div class="detail-value">{{ transactionDetail.accountNumber || '-' }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ translate('transactions.bank') }}</label>
+          <div class="detail-value">{{ transactionDetail.bankBrandName || '-' }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ translate('transactions.refNumber') }}</label>
+          <div class="detail-value">{{ transactionDetail.referenceNumber || '-' }}</div>
+        </div>
+        <div class="detail-item" *ngIf="transactionDetail.code">
+          <label>{{ translate('transactions.code') }}</label>
+          <div class="detail-value">{{ transactionDetail.code }}</div>
+        </div>
+        <div class="detail-item" *ngIf="transactionDetail.subAccount">
+          <label>{{ translate('transactions.subAccount') }}</label>
+          <div class="detail-value">{{ transactionDetail.subAccount }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ translate('transactions.category') }}</label>
+          <div class="detail-value">{{ getGroupCategoryDisplay(transactionDetail.category) }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeTransactionDetailDialog()">
+        {{ translate('transactions.close') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div *ngIf="showCategoryModal" class="modal-overlay" (click)="closeGroupCategoryModal()">
+  <div class="modal-content category-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ translate('transactions.updateCategory') }}</h3>
+      <button class="modal-close" (click)="closeGroupCategoryModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>{{ translate('transactions.selectCategory') }}</label>
+        <select class="form-input" [(ngModel)]="selectedCategory" 
+                (change)="showNewCategoryInput = false"
+                [disabled]="showNewCategoryInput || loadingCategories">
+          <option *ngFor="let cat of getGroupCategoryNames()" [value]="cat">{{ cat }}</option>
+        </select>
+        <div *ngIf="loadingCategories" class="loading-text">Đang tải...</div>
+      </div>
+      
+      <div class="form-group">
+        <button class="btn btn-link" (click)="toggleNewCategoryInput()" type="button">
+          <i class="fa" [class.fa-plus]="!showNewCategoryInput" [class.fa-minus]="showNewCategoryInput"></i>
+          {{ showNewCategoryInput ? translate('transactions.cancelNewCategory') : translate('transactions.addNewCategory') }}
+        </button>
+      </div>
+      
+      <div class="form-group" *ngIf="showNewCategoryInput">
+        <label>{{ translate('transactions.newCategoryName') }}</label>
+        <input type="text" class="form-input" 
+               [(ngModel)]="newCategory"
+               [placeholder]="translate('transactions.newCategoryPlaceholder')"
+               (keyup.enter)="updateGroupTransactionCategory()">
+      </div>
+
+      <!-- Category Management Section -->
+      <div class="category-management">
+        <h4>{{ translate('transactions.manageCategories') }}</h4>
+        <div class="categories-list">
+          <div *ngFor="let category of categories" class="category-item">
+            <span class="category-name">{{ category.name }}</span>
+            <button class="btn-delete-category" 
+                    (click)="deleteGroupCategory(category.name)"
+                    [disabled]="category.isDefault"
+                    [title]="category.isDefault ? translate('groups.detail.transactions.cannotDeleteDefault') : translate('groups.detail.transactions.deleteCategory')">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeGroupCategoryModal()">
+        {{ translate('transactions.cancel') }}
+      </button>
+      <button class="btn btn-primary" (click)="updateGroupTransactionCategory()">
+        {{ translate('transactions.update') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Member Role Modal -->
+<div class="modal-overlay" *ngIf="showEditMemberRoleModal && selectedMember" (click)="closeEditMemberRoleModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ translate('groups.detail.membersTab.editRoleTitle') }}</h3>
+      <button class="modal-close" (click)="closeEditMemberRoleModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="member-info-display">
+        <div class="member-avatar-large" *ngIf="selectedMember.avatar">
+          <img [src]="selectedMember.avatar" [alt]="selectedMember.fullName || selectedMember.userId" />
+        </div>
+        <div class="member-avatar-large member-avatar-fallback" *ngIf="!selectedMember.avatar">
+          {{ getMemberInitials(selectedMember) }}
+        </div>
+        <div class="member-details">
+          <h4>{{ selectedMember.fullName || ('#' + selectedMember.userId) }}</h4>
+          <p *ngIf="selectedMember.email" class="member-contact">
+            <i class="fa fa-envelope"></i> {{ selectedMember.email }}
+          </p>
+          <p *ngIf="selectedMember.phone" class="member-contact">
+            <i class="fa fa-phone"></i> {{ selectedMember.phone }}
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>{{ translate('groups.detail.membersTab.columns.role') }}</label>
+        <select class="form-input" [(ngModel)]="selectedMemberRole" [disabled]="updatingMemberRole">
+          <option value="ADMIN">{{ translate('groups.detail.membersTab.role.ADMIN') }}</option>
+          <option value="MODERATOR">{{ translate('groups.detail.membersTab.role.MODERATOR') }}</option>
+          <option value="MEMBER">{{ translate('groups.detail.membersTab.role.MEMBER') }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeEditMemberRoleModal()" [disabled]="updatingMemberRole">
+        {{ translate('planning.modal.cancel') }}
+      </button>
+      <button class="btn btn-primary" (click)="saveMemberRole()" [disabled]="updatingMemberRole || selectedMemberRole === selectedMember.role">
+        <span *ngIf="!updatingMemberRole">{{ translate('groups.detail.membersTab.saveRole') }}</span>
+        <span *ngIf="updatingMemberRole">{{ translate('groups.detail.membersTab.saving') }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Planning Confirmation Modal -->
+<div class="confirm-modal-backdrop" *ngIf="showDeletePlanningModal" (click)="closeDeletePlanningModal()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🗑️</div>
+    <h3>{{ translate('planning.deleteConfirm.title') || 'Xóa kế hoạch' }}</h3>
+    <p class="confirm-text">
+      {{ translate('planning.deleteConfirm.message') || 'Bạn có chắc chắn muốn xóa kế hoạch này không?' }}
+    </p>
+    <p class="confirm-warning" *ngIf="planningToDelete">
+      <strong>{{ planningToDelete.category }}</strong>
+      <span *ngIf="planningToDelete.budgetAmount"> - {{ planningToDelete.budgetAmount | number:'1.0-0' }}₫</span>
+    </p>
+    <p class="confirm-warning">
+      {{ translate('planning.deleteConfirm.warning') || 'Hành động này không thể hoàn tác.' }}
+    </p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" (click)="closeDeletePlanningModal()" [disabled]="deletingPlanningId">
+        {{ translate('planning.deleteConfirm.cancel') || 'Hủy' }}
+      </button>
+      <button class="btn btn-danger" (click)="confirmDeletePlanning()" [disabled]="deletingPlanningId">
+        <span *ngIf="!deletingPlanningId">{{ translate('planning.deleteConfirm.confirm') || 'Xóa' }}</span>
+        <span *ngIf="deletingPlanningId">{{ translate('planning.deleteConfirm.deleting') || 'Đang xóa...' }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Member Confirmation Modal -->
+<div class="confirm-modal-backdrop" *ngIf="showDeleteMemberModal && selectedMember" (click)="closeDeleteMemberModal()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">🗑️</div>
+    <h3>{{ translate('groups.detail.membersTab.deleteMemberTitle') }}</h3>
+    <p class="confirm-text">
+      {{ translate('groups.detail.membersTab.deleteMemberMessage') }}
+    </p>
+    <div class="member-info-confirm" *ngIf="selectedMember">
+      <div class="member-avatar-small" *ngIf="selectedMember.avatar">
+        <img [src]="selectedMember.avatar" [alt]="selectedMember.fullName || selectedMember.userId" />
+      </div>
+      <div class="member-avatar-small member-avatar-fallback" *ngIf="!selectedMember.avatar">
+        {{ getMemberInitials(selectedMember) }}
+      </div>
+      <div class="member-name-confirm">
+        <strong>{{ selectedMember.fullName || ('#' + selectedMember.userId) }}</strong>
+        <span class="member-role-confirm">{{ getMemberRoleLabel(selectedMember.role) }}</span>
+      </div>
+    </div>
+    <p class="confirm-warning">
+      {{ translate('groups.detail.membersTab.deleteMemberWarning') }}
+    </p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" (click)="closeDeleteMemberModal()" [disabled]="removingMember">
+        {{ translate('groups.detail.deleteModal.cancel') }}
+      </button>
+      <button class="btn btn-danger" (click)="confirmRemoveMember()" [disabled]="removingMember">
+        <span *ngIf="!removingMember">{{ translate('groups.detail.membersTab.remove') }}</span>
+        <span *ngIf="removingMember">{{ translate('groups.detail.membersTab.removing') }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+

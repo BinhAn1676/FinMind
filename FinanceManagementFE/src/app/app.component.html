@@ -1,0 +1,17 @@
+<div class="background-gradient"></div>
+<div class="app-shell" [ngClass]="{
+  'with-sidebar': showSidebar && !layout.isSidebarCollapsed,
+  'with-sidebar-collapsed': showSidebar && layout.isSidebarCollapsed
+}">
+  <app-sidebar *ngIf="showSidebar"></app-sidebar>
+  <div class="content">
+    <app-header></app-header>
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+<app-loading-spinner></app-loading-spinner>
+<app-toast></app-toast>
+<app-chat-container></app-chat-container>
+<app-help-panel></app-help-panel>

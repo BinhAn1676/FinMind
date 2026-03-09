@@ -1,0 +1,58 @@
+http:
+  routers:
+    frontend:
+      rule: "Host(`finmind.pro.vn`)"
+      entryPoints: [websecure]
+      service: frontend
+      tls:
+        certResolver: letsencrypt
+
+    gateway:
+      rule: "Host(`api.finmind.pro.vn`)"
+      entryPoints: [websecure]
+      service: gateway
+      tls:
+        certResolver: letsencrypt
+
+    keycloak:
+      rule: "Host(`auth.finmind.pro.vn`)"
+      entryPoints: [websecure]
+      service: keycloak
+      middlewares: [keycloak-https-headers]
+      tls:
+        certResolver: letsencrypt
+
+    minio:
+      rule: "Host(`files.finmind.pro.vn`)"
+      entryPoints: [websecure]
+      service: minio
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    keycloak-https-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+          X-Forwarded-Port: "443"
+
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://frontend:80"
+
+    gateway:
+      loadBalancer:
+        servers:
+          - url: "http://gatewayserver:8072"
+
+    keycloak:
+      loadBalancer:
+        servers:
+          - url: "http://keycloak:7080"
+
+    minio:
+      loadBalancer:
+        servers:
+          - url: "http://minio:9000"

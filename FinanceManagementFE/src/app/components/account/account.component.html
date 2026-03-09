@@ -1,0 +1,506 @@
+<!-- TABS on top, centered -->
+<div class="tabs-wrapper">
+  <button 
+    class="tab-btn" 
+    [class.active]="activeTab === 'bank'"
+    type="button" 
+    (click)="switchTab('bank')">
+    {{ language.translate('accountTab.bank') }}
+  </button>
+  <button 
+    class="tab-btn" 
+    [class.active]="activeTab === 'external'"
+    type="button" 
+    (click)="switchTab('external')">
+    {{ language.translate('accountTab.external') }}
+  </button>
+</div>
+
+<div class="accounts-layout" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <!-- LEFT: Account List -->
+  <div class="account-container full-width">
+  <!-- SUMMARY - Full width, no gap -->
+  <div class="summary-section full-width">
+    <div class="summary-card full-width">
+      <div class="summary-item">
+        <div class="summary-icon">💰</div>
+        <div class="summary-content">
+          <div class="summary-label">{{ language.translate('account.summary.totalBalance') }}</div>
+          <div class="summary-value xl">{{ summary?.totalBalance | number:'1.0-0' }}₫</div>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <div class="summary-icon">🏦</div>
+        <div class="summary-content">
+          <div class="summary-label">{{ language.translate('account.summary.totalAccounts') }}</div>
+          <div class="summary-value xl">{{ summary?.accountCount }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER + SYNC / CREATE -->
+  <div class="account-actions">
+    <input [(ngModel)]="searchTerm" (keydown.enter)="activeTab === 'bank' ? filterAccounts() : filterExternalAccounts()" [placeholder]="language.translate('account.searchPlaceholder')" class="form-input"/>
+    <button class="btn btn-primary" (click)="activeTab === 'bank' ? filterAccounts() : filterExternalAccounts()">{{ language.translate('account.filterButton') }}</button>
+    <div *ngIf="activeTab === 'bank'" class="sync-actions-group">
+      <button class="btn btn-primary" (click)="openCreateBankModal()">
+        <i class="fa fa-plus"></i> {{ language.translate('account.bank.addNew') }}
+      </button>
+      <button class="btn btn-sync" (click)="manualSyncAccounts()" [disabled]="syncingSepay">
+        <span *ngIf="!syncingSepay">{{ language.translate('account.syncButton') }}</span>
+        <span *ngIf="syncingSepay">{{ language.translate('account.syncing') }}</span>
+      </button>
+      <div class="sync-guide-hint">
+        <button class="sync-guide-btn">?</button>
+        <div class="sync-guide-tooltip">
+          <strong>Không thể đồng bộ?</strong>
+          <p>Bạn cần kết nối tài khoản SePay trước. Vào <strong>Tài khoản cá nhân → Cài đặt tài khoản</strong> và nhấn nút <strong>Kết nối SePay</strong>.</p>
+        </div>
+      </div>
+      <button class="sync-info-icon" (click)="openSyncInfoModal()" [title]="language.translate('account.syncInfo.title')">
+        <i class="fa fa-exclamation-triangle"></i>
+      </button>
+    </div>
+    <button *ngIf="activeTab === 'external'" class="btn btn-sync" (click)="openCreateModal()">
+      {{ language.translate('account.external.addNew') }}
+    </button>
+  </div>
+
+  <!-- ACCOUNT CARDS GRID -->
+  <div class="accounts-grid" *ngIf="accounts && accounts.length; else noAccount">
+    <!-- Bank Accounts -->
+    <ng-container *ngIf="activeTab === 'bank'">
+      <div class="account-tile" *ngFor="let acc of accounts" (click)="viewAccountDetail(acc)">
+        <div class="tile-header">
+          <div class="bank-avatar">{{ getBankInitials(acc) }}</div>
+          <div class="tile-title">
+            <div class="title-text">{{ acc.label || (acc.bankShortName || acc.bankFullName || 'Tài khoản ngân hàng') }}</div>
+            <div class="subtitle-text">{{ acc.bankShortName || acc.bankFullName || 'Ngân hàng' }}</div>
+          </div>
+        </div>
+        <div class="tile-body">
+          <div class="tile-info-row">
+            <span class="info-label">{{ language.translate('account.accountNumber') }}:</span>
+            <span class="info-value">{{ acc.accountNumber || 'N/A' }}</span>
+          </div>
+          <div class="tile-info-row" *ngIf="acc.accountHolderName">
+            <span class="info-label">{{ language.translate('account.accountHolderName') }}:</span>
+            <span class="info-value">{{ acc.accountHolderName }}</span>
+          </div>
+          <div class="tile-amount">{{ (acc.accumulated || '0') | number:'1.0-0' }} đ</div>
+        </div>
+        <div class="tile-actions" (click)="$event.stopPropagation()">
+          <button class="icon-btn" [title]="language.translate('account.edit')" (click)="openEditDialog(acc)">✏️</button>
+          <button class="icon-btn" [title]="language.translate('account.delete')" (click)="deleteAccount(acc)">🗑️</button>
+        </div>
+      </div>
+    </ng-container>
+    
+    <!-- External Accounts -->
+    <ng-container *ngIf="activeTab === 'external'">
+      <div class="account-tile" *ngFor="let acc of accounts" (click)="viewAccountDetail(acc)">
+        <div class="tile-header">
+          <div class="bank-avatar">{{ getExternalAccountInitials(acc) }}</div>
+        <div class="tile-title">
+          <div class="title-text">{{ acc.label || acc.type || 'Tài khoản ngoài' }}</div>
+          <div class="subtitle-text">{{ acc.type || 'Loại' }}</div>
+        </div>
+        </div>
+        <div class="tile-body">
+        <div class="tile-info-row">
+          <span class="info-label">{{ language.translate('account.external.type') }}:</span>
+          <span class="info-value">{{ acc.type || 'N/A' }}</span>
+        </div>
+          <div class="tile-info-row" *ngIf="acc.description">
+            <span class="info-label">{{ language.translate('account.external.description') }}:</span>
+            <span class="info-value">{{ acc.description }}</span>
+          </div>
+          <div class="tile-amount">{{ (acc.accumulated || '0') | number:'1.0-0' }} đ</div>
+        </div>
+        <div class="tile-actions" (click)="$event.stopPropagation()">
+          <button class="icon-btn" [title]="language.translate('account.edit')" (click)="openEditDialog(acc)">✏️</button>
+          <button class="icon-btn" [title]="language.translate('account.delete')" (click)="deleteAccount(acc)">🗑️</button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+  <ng-template #noAccount>
+    <div class="no-account">
+      <span *ngIf="activeTab === 'bank'">{{ language.translate('account.noBank') }}</span>
+      <span *ngIf="activeTab === 'external'">{{ language.translate('account.external.noAccount') }}</span>
+    </div>
+  </ng-template>
+
+  <!-- PAGINATION -->
+  <div class="pagination-wrapper" *ngIf="totalPages > 1">
+    <div class="pagination-info">
+      <span>{{ language.translate('account.pagination.showing') }} {{ (currentPage * pageSize) + 1 }}-{{ Math.min((currentPage + 1) * pageSize, totalElements) }} {{ language.translate('account.pagination.of') }} {{ totalElements }}</span>
+      <select [(ngModel)]="pageSize" (change)="onPageSizeChange(+$any($event.target).value)" class="page-size-select">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
+      <span>{{ language.translate('account.pagination.perPage') }}</span>
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" [disabled]="currentPage === 0" (click)="onPageChange(0)">«</button>
+      <button class="pagination-btn" [disabled]="currentPage === 0" (click)="onPageChange(currentPage - 1)">‹</button>
+      <span class="pagination-page">{{ currentPage + 1 }} / {{ totalPages }}</span>
+      <button class="pagination-btn" [disabled]="currentPage >= totalPages - 1" (click)="onPageChange(currentPage + 1)">›</button>
+      <button class="pagination-btn" [disabled]="currentPage >= totalPages - 1" (click)="onPageChange(totalPages - 1)">»</button>
+    </div>
+  </div>
+</div>
+
+  <!-- RIGHT: Chart Distribution -->
+  <div class="chart-container full-width">
+    <div class="chart-header">
+      <h3>{{ language.translate('account.distributionTitle') }}</h3>
+    </div>
+    <div class="chart-content">
+      <div class="pie-chart-wrapper" *ngIf="distributionData && distributionData.length > 0 && pieSegments && pieSegments.length > 0; else noChartData">
+        <!-- Total text above chart -->
+        <div class="chart-total-text">
+          <div class="total-label">{{ language.translate('account.total') }}</div>
+          <div class="total-amount">{{ summary?.totalBalance | number:'1.0-0' }}₫</div>
+        </div>
+        <div class="chart-svg-container">
+          <svg class="pie-chart" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- Special handling for full circle -->
+            <ng-container *ngIf="pieSegments.length === 1 && pieSegments[0].isFullCircle">
+              <circle 
+                cx="100" 
+                cy="100" 
+                r="80"
+                [attr.fill]="pieSegments[0].color"
+                stroke="white"
+                stroke-width="2"
+                class="chart-segment chart-full-circle"
+                (mouseenter)="showTooltip($event, pieSegments[0])"
+                (mouseleave)="hideTooltip()"
+                (mousemove)="moveTooltip($event)"
+                style="cursor: pointer;"
+              />
+            </ng-container>
+            <!-- Multiple segments -->
+            <ng-container *ngIf="!(pieSegments.length === 1 && pieSegments[0].isFullCircle)">
+              <g *ngFor="let segment of pieSegments; let i = index">
+                <path
+                  [attr.d]="segment.pathData"
+                  [attr.fill]="segment.color"
+                  stroke="white"
+                  [attr.stroke-width]="segment.percentage > 0 ? '2' : '0'"
+                  [attr.opacity]="segment.opacity || 1"
+                  class="chart-segment"
+                  (mouseenter)="showTooltip($event, segment)"
+                  (mouseleave)="hideTooltip()"
+                  (mousemove)="moveTooltip($event)"
+                  style="cursor: pointer;"
+                />
+              </g>
+            </ng-container>
+          </svg>
+          <!-- Tooltip -->
+          <div class="chart-tooltip" *ngIf="tooltipVisible" [style.left.px]="tooltipX" [style.top.px]="tooltipY">
+            <div class="tooltip-label">{{ tooltipData?.label }}</div>
+            <div class="tooltip-amount">{{ tooltipData?.balance | number:'1.0-0' }}₫</div>
+            <div class="tooltip-percentage">{{ tooltipData?.percentage | number:'1.2-2' }}%</div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item" *ngFor="let item of distributionData">
+            <div class="legend-color" [style.background-color]="getColorForAccount(item.accountId)"></div>
+            <div class="legend-text">
+              <div class="legend-label">{{ activeTab === 'external' ? (item.label || item.type || 'Tài khoản ngoài') : (item.label || item.bankName) }}</div>
+              <div class="legend-percentage">{{ item.percentage | number:'1.2-2' }}%</div>
+            </div>
+            <div class="legend-amount">{{ parseBalance(item.balance) | number:'1.0-0' }}₫</div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noChartData>
+        <div class="no-chart-data">{{ language.translate('account.noChartData') }}</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog chi tiết tài khoản -->
+<div class="modal-overlay" *ngIf="showDetail" (click)="closeDetailDialog()">
+  <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('account.detailTitle') }}</h3>
+      <button class="modal-close" (click)="closeDetailDialog()">&times;</button>
+    </div>
+    <div class="modal-body" *ngIf="accountDetail">
+      <div class="detail-grid">
+        <!-- Bank Account specific fields -->
+        <div class="detail-item" *ngIf="activeTab === 'bank'">
+          <label>{{ language.translate('account.accountNumber') }}</label>
+          <div class="detail-value">{{ accountDetail.accountNumber || 'N/A' }}</div>
+        </div>
+        <div class="detail-item">
+          <label>{{ language.translate('account.label') }}</label>
+          <div class="detail-value">{{ accountDetail.label || 'N/A' }}</div>
+        </div>
+        <div class="detail-item" *ngIf="activeTab === 'bank'">
+          <label>{{ language.translate('account.accountHolderName') }}</label>
+          <div class="detail-value">{{ accountDetail.accountHolderName || 'N/A' }}</div>
+        </div>
+        <div class="detail-item" *ngIf="activeTab === 'bank'">
+          <label>{{ language.translate('account.bankName') }}</label>
+          <div class="detail-value">{{ accountDetail.bankFullName || accountDetail.bankShortName || 'N/A' }}</div>
+        </div>
+        <div class="detail-item" *ngIf="activeTab === 'bank'">
+          <label>{{ language.translate('account.bankCode') }}</label>
+          <div class="detail-value">{{ accountDetail.bankCode || 'N/A' }}</div>
+        </div>
+        <!-- External Account specific fields -->
+        <div class="detail-item" *ngIf="activeTab === 'external'">
+          <label>{{ language.translate('account.external.type') }}</label>
+          <div class="detail-value">{{ accountDetail.type || 'N/A' }}</div>
+        </div>
+        <div class="detail-item" *ngIf="activeTab === 'external' && accountDetail.description">
+          <label>{{ language.translate('account.external.description') }}</label>
+          <div class="detail-value">{{ accountDetail.description }}</div>
+        </div>
+        <!-- Common field -->
+        <div class="detail-item">
+          <label>{{ language.translate('account.accumulated') }}</label>
+          <div class="detail-value amount">{{ (accountDetail.accumulated || '0') | number:'1.0-0' }} đ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog edit tài khoản -->
+<div class="modal-overlay" *ngIf="showEdit" (click)="closeEditDialog()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('account.editTitle') }}</h3>
+      <button class="modal-close" (click)="closeEditDialog()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Bank Account Edit -->
+      <div *ngIf="activeTab === 'bank'">
+        <div class="form-group">
+          <label>{{ language.translate('account.label') }}</label>
+          <input [(ngModel)]="editAccount.label" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label>{{ language.translate('account.accumulated') }}</label>
+          <input type="text" class="form-input"
+                 [value]="formatNumberWithDots(editAccount.accumulated)"
+                 (input)="onEditAccumulatedInput($event)"/>
+        </div>
+      </div>
+      <!-- External Account Edit -->
+      <div *ngIf="activeTab === 'external'">
+        <div class="form-group">
+          <label>{{ language.translate('account.label') }}</label>
+          <input [(ngModel)]="editAccount.label" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label>{{ language.translate('account.external.type') }}</label>
+          <input [(ngModel)]="editAccount.type" class="form-input" placeholder="{{ language.translate('account.external.typePlaceholder') }}"/>
+        </div>
+        <div class="form-group">
+          <label>{{ language.translate('account.accumulated') }}</label>
+          <input type="text" class="form-input"
+                 [value]="formatNumberWithDots(editAccount.accumulated)"
+                 (input)="onEditAccumulatedInput($event)"/>
+        </div>
+        <div class="form-group">
+          <label>{{ language.translate('account.external.description') }}</label>
+          <textarea [(ngModel)]="editAccount.description" class="form-input" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" (click)="closeEditDialog()">{{ language.translate('account.cancel') }}</button>
+        <button class="btn btn-primary" (click)="updateAccount()" [disabled]="savingEdit">{{ language.translate('account.save') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog tạo mới tài khoản ngân hàng -->
+<div class="modal-overlay" *ngIf="showCreateBankModal" (click)="closeCreateBankModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('account.bank.createTitle') }}</h3>
+      <button class="modal-close" (click)="closeCreateBankModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>{{ language.translate('account.accountNumber') }} <span style="color: #ff6b6b;">*</span></label>
+        <input [(ngModel)]="newBankAccount.accountNumber" class="form-input" placeholder="{{ language.translate('account.bank.accountNumberPlaceholder') }}"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.accountHolderName') }}</label>
+        <input [(ngModel)]="newBankAccount.accountHolderName" class="form-input" placeholder="{{ language.translate('account.bank.accountHolderNamePlaceholder') }}"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.bank.bankShortName') }}</label>
+        <input [(ngModel)]="newBankAccount.bankShortName" class="form-input" placeholder="VD: VPBank, TPBank"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.bank.bankFullName') }}</label>
+        <input [(ngModel)]="newBankAccount.bankFullName" class="form-input" placeholder="VD: Ngân hàng Việt Nam Thịnh Vượng"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.bankCode') }}</label>
+        <input [(ngModel)]="newBankAccount.bankCode" class="form-input" placeholder="VD: 970432"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.label') }} <span style="color: #ff6b6b;">*</span></label>
+        <input [(ngModel)]="newBankAccount.label" class="form-input" placeholder="{{ language.translate('account.bank.labelPlaceholder') }}"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.accumulated') }}</label>
+        <input type="text" class="form-input" 
+               [placeholder]="language.translate('account.accumulatedPlaceholder')"
+               (input)="onNumberInput($event, 'accumulated')"
+               [value]="formatNumberWithDots(newBankAccount.accumulated)"
+               (blur)="onNumberInput($event, 'accumulated')"/>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" (click)="closeCreateBankModal()">{{ language.translate('account.cancel') }}</button>
+        <button class="btn btn-primary" (click)="createBankAccount()" [disabled]="creatingBank">
+          <span *ngIf="!creatingBank">{{ language.translate('account.bank.createButton') }}</span>
+          <span *ngIf="creatingBank">{{ language.translate('account.bank.creating') }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog tạo mới tài khoản ngoài -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('account.external.createTitle') }}</h3>
+      <button class="modal-close" (click)="closeCreateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>{{ language.translate('account.label') }} <span style="color: #ff6b6b;">*</span></label>
+        <input [(ngModel)]="newExternalAccount.label" class="form-input" placeholder="{{ language.translate('account.external.labelPlaceholder') }}"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.external.type') }} <span style="color: #ff6b6b;">*</span></label>
+        <input [(ngModel)]="newExternalAccount.type" class="form-input" placeholder="{{ language.translate('account.external.typePlaceholder') }}"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.accumulated') }} <span style="color: #ff6b6b;">*</span></label>
+        <input type="text" class="form-input"
+               [value]="formatNumberWithDots(newExternalAccount.accumulated)"
+               (input)="onExternalAccumulatedInput($event)"
+               placeholder="0"/>
+      </div>
+      <div class="form-group">
+        <label>{{ language.translate('account.external.description') }}</label>
+        <textarea [(ngModel)]="newExternalAccount.description" class="form-input" rows="3" placeholder="{{ language.translate('account.external.descriptionPlaceholder') }}"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" (click)="closeCreateModal()">{{ language.translate('account.cancel') }}</button>
+        <button class="btn btn-primary" (click)="createExternalAccount()" [disabled]="creating">
+          <span *ngIf="!creating">{{ language.translate('account.external.createButton') }}</span>
+          <span *ngIf="creating">{{ language.translate('account.external.creating') }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog xác nhận xóa tài khoản -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ language.translate('account.deleteConfirmTitle') }}</h3>
+      <button class="modal-close" (click)="cancelDelete()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-warning">
+        <div class="warning-icon">⚠️</div>
+        <p class="warning-message">{{ language.translate('account.deleteConfirmMessage') }}</p>
+        <div class="account-info" *ngIf="accountToDelete">
+          <div class="info-row">
+            <span class="info-label">{{ language.translate('account.label') }}:</span>
+            <span class="info-value">{{ accountToDelete.label || accountToDelete.bankShortName || accountToDelete.bankFullName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ language.translate('account.accountNumber') }}:</span>
+            <span class="info-value">{{ accountToDelete.accountNumber }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ language.translate('account.accumulated') }}:</span>
+            <span class="info-value amount">{{ (accountToDelete.accumulated || '0') | number:'1.0-0' }}₫</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" (click)="cancelDelete()" [disabled]="deleting">
+          {{ language.translate('account.cancel') }}
+        </button>
+        <button class="btn btn-delete" (click)="confirmDelete()" [disabled]="deleting">
+          <span *ngIf="!deleting">{{ language.translate('account.confirmDelete') }}</span>
+          <span *ngIf="deleting">{{ language.translate('account.deleting') }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sync Info Modal -->
+<div class="modal-overlay" *ngIf="showSyncInfoModal" (click)="closeSyncInfoModal()">
+  <div class="modal-content sync-info-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa fa-info-circle"></i> {{ language.translate('account.syncInfo.title') }}</h3>
+      <button class="modal-close" (click)="closeSyncInfoModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="sync-info-content">
+        <p class="sync-info-intro">{{ language.translate('account.syncInfo.intro') }}</p>
+        
+        <div class="supported-banks-list">
+          <h4>{{ language.translate('account.syncInfo.transactionSync') }}</h4>
+          <ul class="banks-list">
+            <li *ngFor="let bank of getSupportedBanks()">
+              <span class="bank-name">{{ bank.name }}</span>
+              <span class="bank-features">{{ bank.features }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="balance-sync-note">
+          <h4><i class="fa fa-star"></i> {{ language.translate('account.syncInfo.balanceSyncTitle') }}</h4>
+          <p>{{ language.translate('account.syncInfo.balanceSyncDesc') }}</p>
+          <ul class="balance-banks">
+            <li><strong>TPBank</strong></li>
+            <li><strong>VietinBank</strong></li>
+          </ul>
+        </div>
+
+        <div class="recommended-banks-note">
+          <h4><i class="fa fa-lightbulb-o"></i> {{ language.translate('account.syncInfo.recommendedTitle') }}</h4>
+          <p>{{ language.translate('account.syncInfo.recommendedDesc') }}</p>
+          <ul class="recommended-banks">
+            <li><strong>MBBank</strong></li>
+            <li><strong>ACB</strong></li>
+            <li><strong>VietinBank</strong></li>
+            <li><strong>TPBank</strong></li>
+            <li><strong>Sacombank</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="closeSyncInfoModal()">
+        {{ language.translate('account.syncInfo.close') }}
+      </button>
+    </div>
+  </div>
+</div>

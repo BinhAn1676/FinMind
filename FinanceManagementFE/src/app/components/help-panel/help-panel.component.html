@@ -1,0 +1,39 @@
+<ng-container *ngIf="hasContent && !helpService.isExcludedRoute()">
+
+  <!-- Floating Help Button (tự dịch lên tránh chat box) -->
+  <button class="help-fab" [style.bottom]="fabBottom" (click)="toggle()" [class.active]="isOpen" title="Hướng dẫn sử dụng">
+    <i class="fa" [ngClass]="isOpen ? 'fa-times' : 'fa-question'"></i>
+  </button>
+
+  <!-- Slide-in Panel Backdrop -->
+  <div class="help-backdrop" *ngIf="isOpen" (click)="close()"></div>
+
+  <!-- Slide-in Panel -->
+  <div class="help-panel" [class.open]="isOpen">
+    <div class="help-panel-header">
+      <div class="help-panel-title">
+        <i class="fa fa-book"></i>
+        <span>{{ helpContent?.title }}</span>
+      </div>
+      <button class="help-close-btn" (click)="close()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <div class="help-panel-body" *ngIf="helpContent">
+      <p class="help-description">{{ helpContent.description }}</p>
+
+      <div class="help-tips-label">Hướng dẫn nhanh</div>
+
+      <ul class="help-tips">
+        <li *ngFor="let tip of helpContent.tips" class="help-tip-item">
+          <span class="tip-icon">
+            <i class="fa {{ tip.icon }}"></i>
+          </span>
+          <span class="tip-text">{{ tip.text }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</ng-container>

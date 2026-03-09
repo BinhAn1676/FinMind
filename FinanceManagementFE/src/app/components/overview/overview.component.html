@@ -1,0 +1,182 @@
+<div class="overview-container" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <div class="overview-header">
+    <h1>{{ language.translate('overview.title') }}</h1>
+    <div class="date-controls">
+      <div class="preset-pills">
+        <button class="pill-btn" [class.active]="preset === 'today'" (click)="applyPreset('today'); refreshAll()">{{ language.translate('overview.today') }}</button>
+        <button class="pill-btn" [class.active]="preset === 'last7'" (click)="applyPreset('last7'); refreshAll()">7D</button>
+        <button class="pill-btn" [class.active]="preset === 'last30'" (click)="applyPreset('last30'); refreshAll()">30D</button>
+        <button class="pill-btn" [class.active]="preset === 'thisMonth'" (click)="applyPreset('thisMonth'); refreshAll()">{{ language.translate('overview.thisMonth') }}</button>
+        <button class="pill-btn" [class.active]="preset === 'thisYear'" (click)="applyPreset('thisYear'); refreshAll()">{{ language.translate('overview.thisYear') }}</button>
+        <button class="pill-btn pill-more" (click)="showPresetMenu = !showPresetMenu" (click)="$event.stopPropagation()">
+          ··· <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="preset-menu" *ngIf="showPresetMenu">
+          <div class="preset-item" (click)="applyPreset('yesterday'); refreshAll(); showPresetMenu=false">{{ language.translate('overview.yesterday') || 'Hôm qua' }}</div>
+          <div class="preset-item" (click)="applyPreset('lastMonth'); refreshAll(); showPresetMenu=false">{{ language.translate('overview.lastMonth') || 'Tháng trước' }}</div>
+          <div class="preset-item" (click)="applyPreset('thisQuarter'); refreshAll(); showPresetMenu=false">{{ language.translate('overview.thisQuarter') || 'Quý này' }}</div>
+          <div class="preset-item" (click)="applyPreset('lastQuarter'); refreshAll(); showPresetMenu=false">{{ language.translate('overview.lastQuarter') || 'Quý trước' }}</div>
+          <div class="preset-item" (click)="applyPreset('lastYear'); refreshAll(); showPresetMenu=false">{{ language.translate('overview.lastYear') }}</div>
+        </div>
+      </div>
+      <div class="date-range">
+        <span class="p-float-label date-picker-wrap">
+          <p-calendar inputId="ovStartDate"
+                      [(ngModel)]="startDateCal"
+                      (onSelect)="onCalendarChange()"
+                      (onClearClick)="onCalendarChange()"
+                      [showIcon]="true"
+                      dateFormat="dd/mm/yy"
+                      [showButtonBar]="true"
+                      appendTo="body"
+                      styleClass="w-full">
+          </p-calendar>
+          <label for="ovStartDate">{{ language.translate('transactions.startDate') }}</label>
+        </span>
+        <span class="date-sep">—</span>
+        <span class="p-float-label date-picker-wrap">
+          <p-calendar inputId="ovEndDate"
+                      [(ngModel)]="endDateCal"
+                      (onSelect)="onCalendarChange()"
+                      (onClearClick)="onCalendarChange()"
+                      [showIcon]="true"
+                      dateFormat="dd/mm/yy"
+                      [showButtonBar]="true"
+                      appendTo="body"
+                      styleClass="w-full">
+          </p-calendar>
+          <label for="ovEndDate">{{ language.translate('transactions.endDate') }}</label>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card card-income">
+      <div class="card-top-border"></div>
+      <div class="icon"><i class="fa fa-arrow-down"></i></div>
+      <div class="content">
+        <div class="label">{{ language.translate('overview.income') }}</div>
+        <div class="value" [class.loading]="loadingSummary">{{ loadingSummary ? '...' : formatCurrency(txnSummary.totalIncome) }}</div>
+        <div class="trend"><i class="fa fa-arrow-circle-up" style="color:#50aaff"></i> <span class="trend-text">Thu nhập kỳ này</span></div>
+      </div>
+    </div>
+    <div class="summary-card card-expense">
+      <div class="card-top-border"></div>
+      <div class="icon"><i class="fa fa-arrow-up"></i></div>
+      <div class="content">
+        <div class="label">{{ language.translate('overview.expense') }}</div>
+        <div class="value" [class.loading]="loadingSummary">{{ loadingSummary ? '...' : formatCurrency(txnSummary.totalExpense) }}</div>
+        <div class="trend"><i class="fa fa-arrow-circle-down" style="color:#ef4444"></i> <span class="trend-text">Chi tiêu kỳ này</span></div>
+      </div>
+    </div>
+    <div class="summary-card card-balance">
+      <div class="card-top-border"></div>
+      <div class="icon"><i class="fa fa-balance-scale"></i></div>
+      <div class="content">
+        <div class="label">{{ language.translate('overview.balance') }}</div>
+        <div class="value" [class.positive]="txnSummary.netAmount>=0" [class.negative]="txnSummary.netAmount<0" [class.loading]="loadingSummary">
+          {{ loadingSummary ? '...' : formatCurrency(txnSummary.netAmount) }}
+        </div>
+        <div class="trend"><i class="fa fa-exchange" style="color:#22c55e"></i> <span class="trend-text">Số dư ròng</span></div>
+      </div>
+    </div>
+    <div class="summary-card card-current">
+      <div class="card-top-border"></div>
+      <div class="icon"><i class="fa fa-credit-card"></i></div>
+      <div class="content">
+        <div class="label">{{ language.translate('overview.currentBalance') }}</div>
+        <div class="value">{{ formatCurrency(accountSummary.totalBalance) }}</div>
+        <div class="trend"><i class="fa fa-bank" style="color:#8b5cf6"></i> <span class="trend-text">Tổng tài sản</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="left-column">
+      <!-- Cashflow Chart -->
+      <div class="card-section" id="cashflow-chart">
+        <div class="card-header">
+          <h3>{{ language.translate('overview.monthlyCashflow') }}</h3>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loadingCashflow" class="loading"><i class="fa fa-spinner fa-spin"></i></div>
+          <div id="cashflow-hc" class="hc-container" *ngIf="!loadingCashflow"></div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card-section">
+        <div class="card-header">
+          <h3>{{ language.translate('overview.recentTransactions') }}</h3>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loadingRecent" class="loading"><i class="fa fa-spinner fa-spin"></i></div>
+          <div *ngIf="!loadingRecent && recent.length===0" class="empty">{{ language.translate('overview.noRecent') }}</div>
+          <div *ngIf="!loadingRecent && recent.length>0" class="recent-list">
+            <div *ngFor="let t of recent" class="item" [class.income]="(t.amountIn||0)>0" [class.expense]="(t.amountOut||0)>0">
+              <div class="item-type-icon" [class.icon-income]="(t.amountIn||0)>0" [class.icon-expense]="(t.amountOut||0)>0">
+                <i class="fa" [class.fa-arrow-down]="(t.amountIn||0)>0" [class.fa-arrow-up]="(t.amountOut||0)>0"></i>
+              </div>
+              <div class="left">
+                <div class="title">{{ t.transactionContent || '-' }}</div>
+                <div class="sub">{{ t.bankBrandName || '' }} · {{ t.accountNumber || '' }}</div>
+                <div class="date">{{ formatDate(t.transactionDate) }}</div>
+              </div>
+              <div class="right">
+                <span class="amount">{{ formatCurrency((t.amountIn||0)>0 ? t.amountIn : (t.amountOut||0)) }}</span>
+                <span class="cat-badge" *ngIf="t.category && t.category !== 'không xác định'">{{ t.category }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="recent-footer" *ngIf="!loadingRecent && recent.length>0">
+            <a class="btn-view-more" routerLink="/transactions">{{ language.translate('overview.viewMore') }}</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spending Insights Widget -->
+      <div class="card-section insights-card">
+        <div class="card-header">
+          <h3><i class="fa fa-fire" style="color:#FF6B6B;margin-right:6px"></i> Chi tiêu nổi bật</h3>
+        </div>
+        <div class="card-body">
+          <ng-container *ngIf="categoryInsights.length > 0; else showQuickActions">
+            <p class="insights-subtitle">Top danh mục trong kỳ</p>
+            <div class="insight-item" *ngFor="let item of categoryInsights; let i = index">
+              <div class="insight-top">
+                <span class="insight-cat">
+                  <span class="insight-rank">#{{ i + 1 }}</span>
+                  {{ item.category }}
+                </span>
+                <span class="insight-pct">{{ item.pct }}%</span>
+              </div>
+              <div class="insight-bar-wrap">
+                <div class="insight-bar-fill" [style.width.%]="item.pct"></div>
+              </div>
+              <div class="insight-amount">{{ formatCurrency(item.amount) }}</div>
+            </div>
+          </ng-container>
+          <ng-template #showQuickActions>
+            <div class="quick-actions">
+              <p class="qa-title"><i class="fa fa-bolt"></i> Truy cập nhanh</p>
+              <a class="qa-btn" routerLink="/transactions"><i class="fa fa-exchange"></i> Giao dịch</a>
+              <a class="qa-btn" routerLink="/myAccount"><i class="fa fa-university"></i> Tài khoản</a>
+              <a class="qa-btn" routerLink="/planning"><i class="fa fa-calendar-check-o"></i> Kế hoạch</a>
+              <a class="qa-btn" routerLink="/statistics"><i class="fa fa-bar-chart"></i> Thống kê</a>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-column">
+      <!-- Dashboard image card -->
+      <div class="card-section image-card">
+        <img src="assets/images/dashboard.jpg" alt="Dashboard" />
+        <div class="image-caption">{{ language.translate('overview.imageCaption') || 'Hình ảnh minh họa' }}</div>
+      </div>
+    </div>
+  </div>
+</div>

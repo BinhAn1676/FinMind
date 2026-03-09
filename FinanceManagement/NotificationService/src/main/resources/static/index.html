@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket STOMP Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h2>WebSocket STOMP Test Client</h2>
+<button onclick="connect()">Connect</button>
+<button onclick="send()">Send Message</button>
+<pre id="log"></pre>
+
+<script>
+    let stompClient = null;
+
+    function log(message) {
+        document.getElementById("log").innerText += message + "\n";
+    }
+
+    function connect() {
+        const socket = new SockJS("http://localhost:8083/ws"); // Đổi lại nếu bạn dùng cổng hoặc domain khác
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, (frame) => {
+            log("Connected: " + frame);
+
+            // Sub đến user-specific queue
+            stompClient.subscribe("/user/queue/notifications-count", (message) => {
+                log("Received: " + message.body);
+            });
+        });
+    }
+
+    function send() {
+        stompClient.send("/app/notifications/count", {}, {});
+    }
+</script>
+</body>
+</html>

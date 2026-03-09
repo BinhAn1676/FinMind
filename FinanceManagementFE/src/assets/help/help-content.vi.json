@@ -1,0 +1,128 @@
+{
+  "overview": {
+    "title": "Tổng quan tài chính",
+    "description": "Trang tổng quan hiển thị toàn bộ bức tranh tài chính của bạn trong một màn hình.",
+    "tips": [
+      { "icon": "fa-eye", "text": "Xem tổng số dư, thu nhập và chi tiêu trong tháng hiện tại ở các thẻ thống kê phía trên." },
+      { "icon": "fa-bar-chart", "text": "Biểu đồ tròn/cột thể hiện phân bổ chi tiêu theo danh mục — hover vào để xem chi tiết." },
+      { "icon": "fa-list", "text": "Danh sách giao dịch gần đây cho thấy 5–10 giao dịch mới nhất. Nhấn vào để xem toàn bộ." },
+      { "icon": "fa-refresh", "text": "Dữ liệu tự động cập nhật khi bạn thêm giao dịch mới." }
+    ]
+  },
+  "transactions": {
+    "title": "Quản lý giao dịch",
+    "description": "Ghi lại và theo dõi toàn bộ thu chi của bạn.",
+    "tips": [
+      { "icon": "fa-bank", "text": "Nhấn 'Đồng bộ giao dịch Sepay' để tự động kéo toàn bộ lịch sử giao dịch ngân hàng về — không cần nhập tay từng khoản." },
+      { "icon": "fa-plus", "text": "Nhấn nút '+' hoặc 'Thêm giao dịch' để ghi lại thu nhập hoặc chi tiêu mới." },
+      { "icon": "fa-filter", "text": "Dùng bộ lọc (loại, danh mục, khoảng thời gian) để tìm kiếm giao dịch cụ thể." },
+      { "icon": "fa-tags", "text": "Mỗi giao dịch có thể gán danh mục — giúp báo cáo thống kê chính xác hơn." },
+      { "icon": "fa-paperclip", "text": "Đính kèm hóa đơn/ảnh vào giao dịch bằng nút upload ảnh." },
+      { "icon": "fa-pencil", "text": "Nhấn vào giao dịch để chỉnh sửa hoặc xóa bất kỳ lúc nào." },
+      { "icon": "fa-download", "text": "Xuất danh sách giao dịch ra file (nếu tính năng được hỗ trợ) qua nút Export." }
+    ]
+  },
+  "planning": {
+    "title": "Lập kế hoạch ngân sách",
+    "description": "Đặt hạn mức chi tiêu theo từng danh mục để kiểm soát tài chính tốt hơn.",
+    "tips": [
+      { "icon": "fa-plus-circle", "text": "Tạo kế hoạch bằng cách chọn danh mục, nhập số tiền dự kiến và chu kỳ lặp (Hàng ngày / Hàng tuần / Hàng tháng / Hàng năm)." },
+      { "icon": "fa-repeat", "text": "Chu kỳ 'Không lặp' (NO_REPEAT) dùng cho mục tiêu một lần, ví dụ: mua xe, du lịch." },
+      { "icon": "fa-tachometer", "text": "Thanh tiến độ màu xanh/vàng/đỏ cho biết bạn đã dùng bao nhiêu % so với hạn mức." },
+      { "icon": "fa-bell", "text": "Hệ thống tự gửi thông báo khi bạn sắp chạm hoặc vượt hạn mức." },
+      { "icon": "fa-users", "text": "Tab 'Kế hoạch nhóm' cho phép chia sẻ ngân sách chung với các thành viên trong nhóm." }
+    ]
+  },
+  "groups": {
+    "title": "Nhóm tài chính",
+    "description": "Quản lý tài chính chung với gia đình, bạn bè hoặc đồng nghiệp.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Tạo nhóm mới bằng nút '+' — đặt tên và mô tả cho nhóm." },
+      { "icon": "fa-user-plus", "text": "Mời thành viên qua email hoặc username — họ sẽ nhận được thông báo mời tham gia." },
+      { "icon": "fa-money", "text": "Trong trang chi tiết nhóm, bạn có thể xem các giao dịch chung và ngân sách nhóm." },
+      { "icon": "fa-comments", "text": "Nhấn icon chat để mở hộp chat nhóm — trao đổi về chi tiêu ngay trong app." },
+      { "icon": "fa-sign-out", "text": "Bạn có thể rời nhóm bất kỳ lúc nào từ trang chi tiết nhóm." }
+    ]
+  },
+  "statistics": {
+    "title": "Thống kê",
+    "description": "Phân tích xu hướng thu chi qua biểu đồ trực quan.",
+    "tips": [
+      { "icon": "fa-calendar", "text": "Chọn khoảng thời gian (tuần / tháng / quý / năm) để xem thống kê tương ứng." },
+      { "icon": "fa-pie-chart", "text": "Biểu đồ tròn thể hiện tỷ lệ chi tiêu theo từng danh mục." },
+      { "icon": "fa-line-chart", "text": "Biểu đồ đường hiển thị xu hướng thu/chi theo thời gian." },
+      { "icon": "fa-exchange", "text": "Chuyển đổi giữa chế độ xem 'Thu nhập' và 'Chi tiêu' bằng các tab." }
+    ]
+  },
+  "analytics": {
+    "title": "Phân tích nâng cao",
+    "description": "Phân tích chuyên sâu về hành vi chi tiêu với AI và dự báo tài chính.",
+    "tips": [
+      { "icon": "fa-magic", "text": "AI tự động phân tích mẫu chi tiêu của bạn và đưa ra nhận xét cá nhân hóa." },
+      { "icon": "fa-forward", "text": "Xem dự báo chi tiêu tháng tới dựa trên lịch sử của bạn." },
+      { "icon": "fa-exclamation-triangle", "text": "Các cảnh báo bất thường (chi tiêu đột biến) được đánh dấu màu đỏ." },
+      { "icon": "fa-lightbulb-o", "text": "Phần 'Gợi ý tiết kiệm' đề xuất cách tối ưu chi tiêu dựa trên dữ liệu của bạn." }
+    ]
+  },
+  "reports": {
+    "title": "Báo cáo",
+    "description": "Tạo và tự động gửi báo cáo tài chính định kỳ.",
+    "tips": [
+      { "icon": "fa-file-text", "text": "Chọn loại báo cáo (thu chi, ngân sách, nhóm) và khoảng thời gian muốn xuất." },
+      { "icon": "fa-clock-o", "text": "Thiết lập lịch gửi tự động (daily/weekly/monthly) — báo cáo sẽ được gửi qua email." },
+      { "icon": "fa-cog", "text": "Dùng Cron Builder để tùy chỉnh lịch gửi theo nhu cầu nếu cần lịch đặc biệt." }
+    ]
+  },
+  "myAccount": {
+    "title": "Tài khoản ngân hàng",
+    "description": "Quản lý các tài khoản ngân hàng và ví tiền của bạn.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Thêm tài khoản mới bằng cách nhập tên ngân hàng, số tài khoản và số dư ban đầu." },
+      { "icon": "fa-exchange", "text": "Khi tạo giao dịch, chọn đúng tài khoản để số dư được cập nhật chính xác." },
+      { "icon": "fa-pencil", "text": "Chỉnh sửa hoặc xóa tài khoản từ danh sách — xóa tài khoản không xóa giao dịch liên quan." }
+    ]
+  },
+  "myLoans": {
+    "title": "Quản lý khoản vay",
+    "description": "Theo dõi các khoản vay mượn cá nhân.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Thêm khoản vay mới — ghi rõ người vay/cho vay, số tiền, lãi suất và ngày đáo hạn." },
+      { "icon": "fa-check-circle", "text": "Đánh dấu một khoản là 'đã thanh toán' khi bạn trả/thu hồi xong." },
+      { "icon": "fa-sort", "text": "Lọc khoản vay theo trạng thái: đang nợ / đã thanh toán / quá hạn." }
+    ]
+  },
+  "myBalance": {
+    "title": "Số dư & Tổng tài sản",
+    "description": "Xem tổng hợp số dư từ tất cả tài khoản.",
+    "tips": [
+      { "icon": "fa-bank", "text": "Số dư tổng được tính bằng tổng của tất cả tài khoản đang hoạt động." },
+      { "icon": "fa-history", "text": "Biểu đồ lịch sử số dư giúp bạn thấy tài sản tăng/giảm theo thời gian." }
+    ]
+  },
+  "myCards": {
+    "title": "Quản lý thẻ",
+    "description": "Quản lý thẻ tín dụng và thẻ ghi nợ.",
+    "tips": [
+      { "icon": "fa-credit-card", "text": "Thêm thẻ với thông tin hạn mức, ngày sao kê và chu kỳ thanh toán." },
+      { "icon": "fa-warning", "text": "Hệ thống cảnh báo khi bạn sắp đến kỳ thanh toán hoặc gần chạm hạn mức thẻ." }
+    ]
+  },
+  "investment": {
+    "title": "Đầu tư & Thị trường",
+    "description": "Theo dõi danh mục đầu tư và giá thị trường.",
+    "tips": [
+      { "icon": "fa-line-chart", "text": "Xem biến động giá chứng khoán / crypto theo thời gian thực." },
+      { "icon": "fa-briefcase", "text": "Thêm tài sản đầu tư để theo dõi giá trị danh mục tổng thể của bạn." },
+      { "icon": "fa-info-circle", "text": "Ticker ở đầu trang hiển thị giá một số mã phổ biến — nhấn để xem chi tiết." }
+    ]
+  },
+  "profile": {
+    "title": "Hồ sơ cá nhân",
+    "description": "Cập nhật thông tin và cài đặt tài khoản của bạn.",
+    "tips": [
+      { "icon": "fa-user", "text": "Cập nhật ảnh đại diện bằng cách nhấn vào ảnh hiện tại và chọn ảnh mới." },
+      { "icon": "fa-globe", "text": "Chuyển đổi ngôn ngữ hiển thị (Tiếng Việt / English) tại mục Ngôn ngữ." },
+      { "icon": "fa-lock", "text": "Thay đổi mật khẩu qua Keycloak — nhấn nút 'Đổi mật khẩu' để được chuyển đến trang bảo mật." }
+    ]
+  }
+}

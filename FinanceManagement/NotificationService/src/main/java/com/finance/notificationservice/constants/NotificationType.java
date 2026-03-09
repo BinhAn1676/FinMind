@@ -1,0 +1,19 @@
+package com.finance.notificationservice.constants;
+
+public enum NotificationType {
+    ALERT,
+    INVITATION,
+    WARNING,
+    INFO,
+    GROUP_INVITATION,
+    CHAT_ROOM_INVITATION,
+    REPORT_SUCCESS,
+    REPORT_FAILURE,
+    GROUP_UPDATED,
+    GROUP_DELETED,
+    MEMBER_REMOVED,
+    MEMBER_LEFT,
+    MEMBER_ROLE_CHANGED,
+    GROUP_ACCOUNT_LINKED,
+    GROUP_ACCOUNT_UNLINKED
+}

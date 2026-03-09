@@ -1,0 +1,53 @@
+<div class="modal-backdrop" (click)="close()"></div>
+<div class="modal-shell">
+  <div class="modal-header">
+    <h3>{{ translate('groups.update.title') }}</h3>
+    <button type="button" class="close-btn" (click)="close()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <input #avatarInput type="file" accept="image/*" (change)="onFileChange($event)" hidden />
+    <div class="group-column">
+      <div class="avatar-circle"
+           [class.uploading]="avatarUploading"
+           (click)="triggerAvatarUpload()">
+        <ng-container *ngIf="avatarPreview; else avatarPlaceholder">
+          <img [src]="avatarPreview" alt="Group avatar preview" />
+        </ng-container>
+        <ng-template #avatarPlaceholder>
+          <div class="avatar-placeholder">
+            <span class="icon">📸</span>
+            <span class="text">{{ translate('groups.create.avatarAction') }}</span>
+          </div>
+        </ng-template>
+        <div class="spinner" *ngIf="avatarUploading"></div>
+      </div>
+      <div class="section-title">{{ translate('groups.create.infoTitle') }}</div>
+      <div class="field">
+        <label>{{ translate('groups.create.nameLabel') }}</label>
+        <input [(ngModel)]="name"
+               [placeholder]="translate('groups.create.namePlaceholder')" />
+      </div>
+      <div class="field">
+        <label>{{ translate('groups.create.descriptionLabel') }}</label>
+        <textarea rows="4"
+                  [(ngModel)]="description"
+                  [placeholder]="translate('groups.create.descriptionPlaceholder')"></textarea>
+      </div>
+      <small class="hint">{{ translate('groups.create.avatarHint') }}</small>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="secondary" (click)="close()">
+      {{ translate('planning.modal.cancel') }}
+    </button>
+    <button type="button" class="primary" [disabled]="loading" (click)="submit()">
+      {{ loading ? translate('groups.update.updating') : translate('groups.update.updateButton') }}
+    </button>
+  </div>
+
+  <div class="glow green"></div>
+  <div class="glow blue"></div>
+</div>
+

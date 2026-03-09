@@ -1,0 +1,318 @@
+<div class="planning-layout" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <div class="planning-panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <h1>{{ language.translate('planning.title') }}</h1>
+        <p>{{ language.translate('planning.subtitle') }}</p>
+      </div>
+      <button class="btn btn-primary" type="button" (click)="openCreateModal()">
+        <i class="fa fa-plus"></i> {{ language.translate('planning.addPlan') }}
+      </button>
+    </div>
+
+    <div class="summary-strip" *ngIf="budgets.length">
+      <div class="summary-card card-budget">
+        <div class="summary-icon icon-budget">
+          <i class="fa fa-flag"></i>
+        </div>
+        <div>
+          <div class="summary-label">{{ language.translate('planning.summary.totalBudget') }}</div>
+          <div class="summary-value">{{ totals.totalBudget | number:'1.0-0' }} đ</div>
+        </div>
+      </div>
+      <div class="summary-card card-spent">
+        <div class="summary-icon icon-spent">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div>
+          <div class="summary-label">{{ language.translate('planning.summary.totalSpent') }}</div>
+          <div class="summary-value">{{ totals.totalSpent | number:'1.0-0' }} đ</div>
+        </div>
+      </div>
+      <div class="summary-card card-remaining" [class.negative]="totals.totalRemaining < 0">
+        <div class="summary-icon icon-remaining">
+          <i class="fa fa-balance-scale"></i>
+        </div>
+        <div>
+          <div class="summary-label">{{ language.translate('planning.summary.totalRemaining') }}</div>
+          <div class="summary-value" [class.negative]="totals.totalRemaining < 0">{{ totals.totalRemaining | number:'1.0-0' }} đ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="loadingBudgets">
+      <i class="fa fa-spinner fa-spin"></i>
+      <span>{{ language.translate('planning.loading') }}</span>
+    </div>
+
+    <div class="empty-state" *ngIf="!loadingBudgets && budgets.length === 0">
+      <i class="fa fa-inbox"></i>
+      <p>{{ language.translate('planning.emptyState') }}</p>
+      <button class="btn btn-primary" type="button" (click)="openCreateModal()">
+        <i class="fa fa-plus"></i> {{ language.translate('planning.addPlan') }}
+      </button>
+    </div>
+
+    <div class="planning-grid" *ngIf="!loadingBudgets && budgets.length">
+      <div class="plan-card" *ngFor="let plan of budgets; trackBy: trackByPlan" [class.overspent]="isOverspent(plan)">
+        <div class="plan-header">
+          <div class="icon-circle">
+            <i class="fa" [ngClass]="iconFor(plan.category)"></i>
+          </div>
+          <div class="plan-title">
+            <h4>{{ plan.category || language.translate('planning.uncategorized') }}</h4>
+            <span>{{ formatRange(plan) }}</span>
+          </div>
+          <div class="plan-actions">
+            <button class="icon-btn" type="button" (click)="openEditModal(plan)" title="{{ language.translate('planning.edit') }}">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="icon-btn" type="button" (click)="delete(plan)" [disabled]="deletingId === plan.id" title="{{ language.translate('planning.delete') }}">
+              <i class="fa" [ngClass]="deletingId === plan.id ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="plan-progress">
+          <div class="progress-bar" [class.danger]="isOverspent(plan)" [style.width.%]="isOverspent(plan) ? 100 : progressPercent(plan)"></div>
+        </div>
+
+        <div class="plan-stats">
+          <div class="stat">
+            <label>{{ language.translate('planning.cards.spent') }}</label>
+            <span>{{ (plan.spentAmount || 0) | number:'1.0-0' }} đ</span>
+          </div>
+          <div class="divider"></div>
+          <div class="stat">
+            <label>{{ language.translate('planning.cards.budget') }}</label>
+            <span>{{ (plan.budgetAmount || 0) | number:'1.0-0' }} đ</span>
+          </div>
+        </div>
+
+        <div class="plan-status" [class.overspent]="isOverspent(plan)">
+          <ng-container *ngIf="!isOverspent(plan); else overspentTpl">
+            {{ language.translate('planning.cards.remaining') }}: {{ remainingAmount(plan) | number:'1.0-0' }} đ
+          </ng-container>
+          <ng-template #overspentTpl>
+            {{ language.translate('planning.cards.overspent') }}: {{ (remainingAmount(plan) * -1) | number:'1.0-0' }} đ
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create plan modal -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal-content planning-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingPlan ? language.translate('planning.modal.editTitle') : language.translate('planning.modal.title') }}</h3>
+      <button class="modal-close" type="button" (click)="closeCreateModal()">&times;</button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="createPlan()">
+      <div class="modal-body modal-two-column">
+        <!-- Left Column: Category Section -->
+        <div class="modal-column modal-column-left">
+          <div class="form-group">
+            <label>{{ language.translate('planning.modal.category') }}</label>
+            <select class="form-input" formControlName="category"
+                    [disabled]="loadingCategories || showNewCategoryInput"
+                    (change)="showNewCategoryInput = false">
+              <option value="">{{ language.translate('planning.modal.selectCategory') }}</option>
+              <option *ngFor="let cat of getCategoryNames()" [value]="cat">{{ cat }}</option>
+            </select>
+            <div class="loading-text" *ngIf="loadingCategories">{{ language.translate('planning.loadingCategories') }}</div>
+          </div>
+
+          <div class="form-group">
+            <button class="btn btn-link" type="button" (click)="toggleNewCategoryInput()">
+              <i class="fa" [class.fa-plus]="!showNewCategoryInput" [class.fa-minus]="showNewCategoryInput"></i>
+              {{ showNewCategoryInput ? language.translate('planning.modal.cancelNewCategory') : language.translate('planning.modal.addNewCategory') }}
+            </button>
+          </div>
+
+          <div class="form-group" *ngIf="showNewCategoryInput">
+            <label>{{ language.translate('planning.modal.newCategoryName') }}</label>
+            <input type="text" class="form-input"
+                   [(ngModel)]="newCategory"
+                   [ngModelOptions]="{standalone: true}"
+                   [placeholder]="language.translate('planning.modal.newCategoryPlaceholder')"
+                   (keyup.enter)="createPlan()">
+          </div>
+
+          <!-- Category Management Section -->
+          <div class="category-management">
+            <h4>{{ language.translate('planning.modal.manageCategories') }}</h4>
+            <div class="categories-list">
+              <div *ngFor="let category of categories" class="category-item">
+                <span class="category-name">{{ category.name }}</span>
+                <button class="btn-delete-category"
+                        type="button"
+                        (click)="deleteCategory(category.name)"
+                        [disabled]="category.isDefault"
+                        [title]="category.isDefault ? language.translate('planning.modal.cannotDeleteDefault') : language.translate('planning.modal.deleteCategory')">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Plan Information -->
+        <div class="modal-column modal-column-right">
+          <div class="form-group">
+            <label>{{ language.translate('planning.modal.planType') }}</label>
+            <select class="form-input" formControlName="planType">
+              <option value="SHORT_TERM">{{ language.translate('planning.modal.planTypeShortTerm') }}</option>
+              <option value="LONG_TERM">{{ language.translate('planning.modal.planTypeLongTerm') }}</option>
+              <option value="RECURRING">{{ language.translate('planning.modal.planTypeRecurring') }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>{{ language.translate('planning.modal.budget') }}</label>
+            <input class="form-input" type="text"
+                   [value]="formatNumberWithDots(form.get('budgetAmount')?.value)"
+                   (input)="onBudgetInput($event)"
+                   [placeholder]="language.translate('planning.modal.budgetPlaceholder')" />
+            <div class="error-text" *ngIf="form.get('budgetAmount')?.invalid && form.get('budgetAmount')?.touched">
+              {{ language.translate('planning.validation.budgetPositive') }}
+            </div>
+          </div>
+
+          <!-- SHORT_TERM and LONG_TERM: Show date fields -->
+          <div *ngIf="form.get('planType')?.value === 'SHORT_TERM' || form.get('planType')?.value === 'LONG_TERM'" class="form-grid">
+            <div class="form-group">
+              <label>{{ language.translate('planning.modal.startDate') }} <span *ngIf="form.get('planType')?.value === 'SHORT_TERM' || form.get('planType')?.value === 'LONG_TERM'" class="required">*</span></label>
+              <p-calendar formControlName="startDate"
+                          dateFormat="dd/mm/yy"
+                          [showIcon]="true"
+                          [showButtonBar]="true"
+                          styleClass="w-full">
+              </p-calendar>
+              <div class="error-text" *ngIf="form.get('startDate')?.invalid && form.get('startDate')?.touched">
+                {{ language.translate('planning.validation.startDateRequired') }}
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ language.translate('planning.modal.endDate') }} <span *ngIf="form.get('planType')?.value === 'SHORT_TERM'" class="required">*</span></label>
+              <p-calendar formControlName="endDate"
+                          dateFormat="dd/mm/yy"
+                          [showIcon]="true"
+                          [showButtonBar]="true"
+                          styleClass="w-full">
+              </p-calendar>
+              <div class="error-text" *ngIf="form.get('endDate')?.invalid && form.get('endDate')?.touched">
+                {{ language.translate('planning.validation.endDateRequired') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- LONG_TERM: Optional repeat cycle -->
+          <div *ngIf="form.get('planType')?.value === 'LONG_TERM'" class="form-group">
+            <label>{{ language.translate('planning.modal.repeatCycle') }} ({{ language.translate('planning.modal.optional') }})</label>
+            <select class="form-input" formControlName="repeatCycle">
+              <option value="">{{ language.translate('planning.modal.selectRepeatCycle') }}</option>
+              <option value="YEARLY">{{ language.translate('planning.modal.yearly') }}</option>
+            </select>
+          </div>
+
+          <!-- RECURRING: Show repeat cycle and day of month -->
+          <div *ngIf="form.get('planType')?.value === 'RECURRING'">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>{{ language.translate('planning.modal.repeatCycle') }} <span class="required">*</span></label>
+              <select class="form-input" formControlName="repeatCycle">
+                <option value="">{{ language.translate('planning.modal.selectRepeatCycle') }}</option>
+                <option value="MONTHLY">{{ language.translate('planning.modal.monthly') }}</option>
+                <option value="QUARTERLY">{{ language.translate('planning.modal.quarterly') }}</option>
+                <option value="YEARLY">{{ language.translate('planning.modal.yearly') }}</option>
+              </select>
+              <div class="error-text" *ngIf="form.get('repeatCycle')?.invalid && form.get('repeatCycle')?.touched">
+                {{ language.translate('planning.validation.repeatCycleRequired') }}
+              </div>
+            </div>
+            <div class="form-group" *ngIf="form.get('repeatCycle')?.value === 'QUARTERLY'">
+              <label>{{ language.translate('planning.modal.dayOfMonth') }} <span class="required">*</span></label>
+              <input class="form-input" type="number" formControlName="dayOfMonth" min="1" max="31" [placeholder]="language.translate('planning.modal.dayOfMonthPlaceholder')" />
+              <div class="helper-text">
+                <i class="fa fa-info-circle"></i> {{ language.translate('planning.modal.dayOfMonthHint') }}
+              </div>
+              <div class="error-text" *ngIf="form.get('dayOfMonth')?.invalid && form.get('dayOfMonth')?.touched">
+                {{ language.translate('planning.validation.dayOfMonthRequired') }}
+              </div>
+            </div>
+          </div>
+          <!-- For MONTHLY: Show checkbox for "apply for whole month" -->
+          <div class="form-group" *ngIf="form.get('repeatCycle')?.value === 'MONTHLY'">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="applyForWholeMonth" />
+              <span>{{ language.translate('planning.modal.applyForWholeMonth') }}</span>
+            </label>
+            <div class="helper-text">
+              <i class="fa fa-info-circle"></i> {{ language.translate('planning.modal.applyForWholeMonthHint') }}
+            </div>
+          </div>
+          <!-- For MONTHLY without "apply for whole month": Show day of month input -->
+          <div class="form-group" *ngIf="form.get('repeatCycle')?.value === 'MONTHLY' && !form.get('applyForWholeMonth')?.value">
+            <label>{{ language.translate('planning.modal.dayOfMonth') }} <span class="required">*</span></label>
+            <input class="form-input" type="number" formControlName="dayOfMonth" min="1" max="31" [placeholder]="language.translate('planning.modal.dayOfMonthPlaceholder')" />
+            <div class="helper-text">
+              <i class="fa fa-info-circle"></i> {{ language.translate('planning.modal.dayOfMonthHint') }}
+            </div>
+            <div class="error-text" *ngIf="form.get('dayOfMonth')?.invalid && form.get('dayOfMonth')?.touched">
+              {{ language.translate('planning.validation.dayOfMonthRequired') }}
+            </div>
+          </div>
+          <!-- For YEARLY: Show checkbox for "apply for whole year" -->
+          <div class="form-group" *ngIf="form.get('repeatCycle')?.value === 'YEARLY'">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="applyForWholeYear" />
+              <span>{{ language.translate('planning.modal.applyForWholeYear') }}</span>
+            </label>
+            <div class="helper-text">
+              <i class="fa fa-info-circle"></i> {{ language.translate('planning.modal.applyForWholeYearHint') }}
+            </div>
+          </div>
+          <!-- For YEARLY without "apply for whole year": Show day of month input -->
+          <div class="form-group" *ngIf="form.get('repeatCycle')?.value === 'YEARLY' && !form.get('applyForWholeYear')?.value">
+            <label>{{ language.translate('planning.modal.dayOfMonth') }} <span class="required">*</span></label>
+            <input class="form-input" type="number" formControlName="dayOfMonth" min="1" max="31" [placeholder]="language.translate('planning.modal.dayOfMonthPlaceholder')" />
+            <div class="helper-text">
+              <i class="fa fa-info-circle"></i> {{ language.translate('planning.modal.dayOfMonthHint') }}
+            </div>
+            <div class="error-text" *ngIf="form.get('dayOfMonth')?.invalid && form.get('dayOfMonth')?.touched">
+              {{ language.translate('planning.validation.dayOfMonthRequired') }}
+            </div>
+          </div>
+            <div class="form-group">
+              <label>{{ language.translate('planning.modal.startDate') }} ({{ language.translate('planning.modal.optional') }})</label>
+              <p-calendar formControlName="startDate"
+                          dateFormat="dd/mm/yy"
+                          [showIcon]="true"
+                          [showButtonBar]="true"
+                          styleClass="w-full">
+              </p-calendar>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" type="button" (click)="closeCreateModal()">
+          {{ language.translate('planning.modal.cancel') }}
+        </button>
+        <button class="btn btn-primary" type="submit" [disabled]="saving">
+          <span *ngIf="!saving">
+            {{ editingPlan ? language.translate('planning.modal.update') : language.translate('planning.modal.create') }}
+          </span>
+          <span *ngIf="saving">
+            <i class="fa fa-spinner fa-spin"></i> 
+            {{ editingPlan ? language.translate('planning.modal.updating') : language.translate('planning.modal.creating') }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+

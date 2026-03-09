@@ -1,0 +1,9 @@
+/environment/.data/minio/
+/environment/data/bitnami/
+/environment/keycloak-export/data/
+/environment/mongodb/keyfile
+KeyManagementService/src/main/resources/.env
+AIService/src/main/resources/.env
+# File .env thật trên VPS - không commit, chỉ commit .env.example
+/environment/.env
+.mcp.json

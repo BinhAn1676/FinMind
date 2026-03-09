@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: "notify"
+  threads:
+    virtual:
+      enabled: true
+  redis:
+    host: 127.0.0.1
+    port: 6379
+  data:
+    mongodb:
+      host: localhost
+      port: 27017  # Consolidated MongoDB instance
+      database: notifications
+      username: root
+      password: root
+      authentication-database: admin
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:7080/realms/finance/protocol/openid-connect/certs"
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+server:
+  port: 8083
+
+info:
+  app:
+    name: "notification-service"
+    description: "Notification Service Application"
+    version: "1.0.0"
+
+logging:
+  level:
+    com:
+      finance:
+        notificationservice: DEBUG
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"

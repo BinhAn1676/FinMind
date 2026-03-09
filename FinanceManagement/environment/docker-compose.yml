@@ -1,0 +1,758 @@
+version: '3.4'
+
+x-network-config: &network-deploy-service
+  networks:
+    - event-network
+
+networks:
+  event-network:
+    driver: bridge
+
+volumes:
+  # Consolidated MySQL - chứa tất cả MySQL databases
+  mysql_main_data:
+  # Consolidated MongoDB - chứa tất cả MongoDB databases
+  mongodb_main_data:
+  # PostgreSQL giữ riêng cho AIService
+  postgres_ai_data:
+
+services:
+
+  redis:
+    <<: *network-deploy-service
+    container_name: redis
+    image: redislabs/redismod:latest
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  minio:
+    <<: *network-deploy-service
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /data/loki-data && \
+        mkdir -p /data/loki-ruler && \
+        minio server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=loki
+      - MINIO_ROOT_PASSWORD=supersecret
+      - MINIO_PROMETHEUS_AUTH_TYPE=public
+      - MINIO_UPDATE=off
+    ports:
+      - 9000:9000  # S3 API
+      - 9001:9001  # MinIO Console
+    volumes:
+      - ./.data/minio:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 15s
+      timeout: 20s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  keycloak:
+    <<: *network-deploy-service
+    image: quay.io/keycloak/keycloak:26.0.7
+    container_name: keycloak
+    ports:
+      - "7080:7080"
+    volumes:
+      - ./keycloak-export/conf:/opt/keycloak/conf
+      - ./keycloak-export/data:/opt/keycloak/data
+      - ./keycloak-export/themes:/opt/keycloak/themes
+      - ./keycloak-export/providers:/opt/keycloak/providers
+    environment:
+      KEYCLOAK_ADMIN: "admin"
+      KEYCLOAK_ADMIN_PASSWORD: "admin"
+    command: "start-dev --http-port=7080"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ============================================
+  # Consolidated MySQL Instance
+  # Chứa tất cả MySQL databases: user, finance, key
+  # ============================================
+  mysql-main:
+    <<: *network-deploy-service
+    image: mysql:8.0
+    container_name: mysql_main
+    volumes:
+      - mysql_main_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    command: [
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci',
+      '--skip-character-set-client-handshake'
+    ]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      # Tạo databases ban đầu (sẽ được tạo bởi init script nếu chưa có)
+      MYSQL_DATABASE: user
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_ROOT_PASSWORD || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "3306:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 256M
+
+  # PostgreSQL for AIService (with pgvector for RAG)
+  postgres-ai:
+    <<: *network-deploy-service
+    image: pgvector/pgvector:pg16
+    container_name: postgres_ai
+    volumes:
+      - postgres_ai_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: finance_ai
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # ============================================
+  # Consolidated MongoDB Instance
+  # Chứa tất cả MongoDB databases:
+  # - finance (FinanceService - group planning)
+  # - files (FileService)
+  # - notifications (NotificationService)
+  # - chat (ChatService)
+  # - finance_ai_chat (AIService - chat history)
+  # ============================================
+  mongodb-main:
+    <<: *network-deploy-service
+    image: mongo:7
+    container_name: mongodb_main
+    # Không dùng replica set cho development để đơn giản và tiết kiệm RAM
+    command: ["--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongodb_main_data:/data/db
+    healthcheck:
+      test: [ "CMD-SHELL", "mongosh -u root -p root --authenticationDatabase admin --eval 'db.runCommand({ connectionStatus: 1 }).ok' | grep 1 || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 256M
+
+  # MongoDB init - tạo databases khi container khởi động
+  mongodb-main-init:
+    <<: *network-deploy-service
+    image: mongo:7
+    depends_on:
+      mongodb-main:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: >
+      bash -c "
+        mongosh --host mongodb-main:27017 -u root -p root --authenticationDatabase admin --eval '
+          db = db.getSiblingDB(\"finance\");
+          db.createCollection(\"_init\");
+          db = db.getSiblingDB(\"files\");
+          db.createCollection(\"_init\");
+          db = db.getSiblingDB(\"notifications\");
+          db.createCollection(\"_init\");
+          db = db.getSiblingDB(\"chat\");
+          db.createCollection(\"_init\");
+          db = db.getSiblingDB(\"finance_ai_chat\");
+          db.createCollection(\"_init\");
+          print(\"All MongoDB databases initialized\");
+        ' || true
+      "
+
+  kafka-ui:
+    <<: *network-deploy-service
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8080:8080"  # Map Kafka UI to port 8080 on the host
+    depends_on:
+      kafka1:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: env-ddd
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092  # Cluster bootstrap servers
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # Kafka cluster
+  kafka1:
+    <<: *network-deploy-service
+    image: "apache/kafka:3.8.0"
+    container_name: kafka1
+    ports:
+      - "9192:9092"  # Broker port
+      - "9193:9093"  # Controller port
+      - "9194:9094"  # External port
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "EXTERNAL://${HOST_IP}:9194,PLAINTEXT://kafka1:9092"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka1:9093"
+      CLUSTER_ID: "LelNs91FQk1UFvXCEcqRWA"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_MS: "604800000"
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms256M"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    volumes:
+      - ./data/apache/kafka1:/var/lib/kafka/data
+    healthcheck:
+      test: [ "CMD", "/opt/kafka/bin/kafka-topics.sh", "--list", "--bootstrap-server", "localhost:9092" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ============================================
+  # MICROSERVICES
+  # ============================================
+
+  # Config Server - Centralized configuration management
+#  configserver:
+#    <<: *network-deploy-service
+#    image: "configserver:1.0"
+#    container_name: configserver
+#    ports:
+#      - "8071:8071"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://configserver:8071/actuator/health/readiness | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 512M
+#        reservations:
+#          memory: 256M
+#
+#  # Eureka Server - Service discovery
+#  eurekaserver:
+#    <<: *network-deploy-service
+#    image: "eurekaserver:1.0"
+#    container_name: eurekaserver
+#    ports:
+#      - "8070:8070"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#    environment:
+#      SPRING_APPLICATION_NAME: "eurekaserver"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      JAVA_OPTS: "-Xmx512m -Xms256m -Dspring.config.import=configserver:http://configserver:8071/ -Dspring.cloud.config.uri=http://configserver:8071"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://eurekaserver:8070/actuator/health/readiness | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 512M
+#        reservations:
+#          memory: 256M
+#
+#  # User Service - User management and authentication
+#  users:
+#    <<: *network-deploy-service
+#    image: "users:1.0"
+#    container_name: users
+#    ports:
+#      - "8081:8081"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      mysql-main:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    environment:
+#      SPRING_APPLICATION_NAME: "users"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      SERVER_PORT: 8081
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # Database
+#      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-main:3306/user?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+#      SPRING_DATASOURCE_USERNAME: "root"
+#      SPRING_DATASOURCE_PASSWORD: "root"
+#      # Redis
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      # Keycloak
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      # MinIO
+#      MINIO_URL: "http://minio:9000"
+#      MINIO_ACCESS_KEY: "loki"
+#      MINIO_SECRET_KEY: "supersecret"
+#      JAVA_OPTS: "-Xmx512m -Xms256m -XX:MaxMetaspaceSize=256m -XX:+UseG1GC"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://users:8081/actuator/health/readiness | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 1G
+#        reservations:
+#          memory: 512M
+#
+#  # Finance Service - Transaction and financial operations
+#  finance:
+#    <<: *network-deploy-service
+#    image: "finance:1.0"
+#    container_name: finance
+#    ports:
+#      - "8082:8082"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      mysql-main:
+#        condition: service_healthy
+#      mongodb-main:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#      kafka1:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    environment:
+#      SPRING_APPLICATION_NAME: "finances"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      SERVER_PORT: 8082
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # MySQL Database
+#      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-main:3306/finance?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+#      SPRING_DATASOURCE_USERNAME: "root"
+#      SPRING_DATASOURCE_PASSWORD: "root"
+#      # MongoDB
+#      SPRING_DATA_MONGODB_HOST: mongodb-main
+#      SPRING_DATA_MONGODB_PORT: 27017
+#      SPRING_DATA_MONGODB_DATABASE: finance
+#      SPRING_DATA_MONGODB_USERNAME: root
+#      SPRING_DATA_MONGODB_PASSWORD: root
+#      SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+#      # Redis
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      # Kafka
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092"
+#      # Keycloak
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      # MinIO
+#      MINIO_URL: "http://minio:9000"
+#      MINIO_ACCESS_KEY: "loki"
+#      MINIO_SECRET_KEY: "supersecret"
+#      JAVA_OPTS: "-Xmx1g -Xms256m -XX:MaxMetaspaceSize=256m -XX:+UseG1GC"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://finance:8082/actuator/health/readiness | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 1536M
+#        reservations:
+#          memory: 512M
+#
+#  # Notification Service - Push notifications and alerts
+#  notification:
+#    <<: *network-deploy-service
+#    image: "notification:1.0"
+#    container_name: notification
+#    ports:
+#      - "8083:8083"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      mongodb-main:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#      kafka1:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    environment:
+#      SPRING_APPLICATION_NAME: "notify"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # MongoDB
+#      SPRING_DATA_MONGODB_URI: "mongodb://root:root@mongodb-main:27017/notifications?authSource=admin"
+#      # Redis
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      # Kafka
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092"
+#      # Keycloak
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      JAVA_OPTS: "-Xmx512m -Xms128m"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://notification:8083/actuator/health | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 640M
+#        reservations:
+#          memory: 256M
+#
+#  # File Service - File storage and management
+#  fileservice:
+#    <<: *network-deploy-service
+#    image: "fileservice:1.0"
+#    container_name: fileservice
+#    ports:
+#      - "8085:8085"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      mongodb-main:
+#        condition: service_healthy
+#      minio:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    environment:
+#      SPRING_APPLICATION_NAME: "files"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      SERVER_PORT: 8085
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # MongoDB
+#      SPRING_DATA_MONGODB_URI: "mongodb://root:root@mongodb-main:27017/files?authSource=admin"
+#      # Redis
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      # Keycloak
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      # MinIO
+#      MINIO_URL: "http://minio:9000"
+#      MINIO_PUBLIC_URL: "http://localhost:9000"
+#      MINIO_ACCESS_KEY: "loki"
+#      MINIO_SECRET_KEY: "supersecret"
+#      JAVA_OPTS: "-Xmx384m -Xms128m"
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -sf http://localhost:8085/actuator/health | grep UP || [ \"$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8085/actuator/health)\" = \"401\" ]"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 640M
+#        reservations:
+#          memory: 256M
+#
+#  # Key Management Service - Encryption key management
+#  keymanagement:
+#    <<: *network-deploy-service
+#    image: "keymanagement:1.0"
+#    container_name: keymanagement
+#    ports:
+#      - "8084:8084"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      mysql-main:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#    environment:
+#      SPRING_APPLICATION_NAME: "keys"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      SERVER_PORT: 8084
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # Database
+#      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-main:3306/key?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+#      SPRING_DATASOURCE_USERNAME: "root"
+#      SPRING_DATASOURCE_PASSWORD: "root"
+#      # Redis
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      # Google Cloud KMS
+#      GOOGLE_CLOUD_KMS_ENABLED: "true"
+#      GOOGLE_CLOUD_PROJECT_ID: "finance-1676"
+#      GOOGLE_CLOUD_KMS_LOCATION: "asia-southeast1"
+#      GOOGLE_CLOUD_KMS_KEY_RING: "annb-key-ring"
+#      GOOGLE_CLOUD_KMS_CRYPTO_KEY: "finance-key"
+#      GOOGLE_CLOUD_KMS_TIMEOUT_SECONDS: "120"
+#      GOOGLE_CLOUD_KMS_RETRY_ATTEMPTS: "3"
+#      GOOGLE_CLOUD_CREDENTIALS_FILE: "/app/credentials/gcp-credentials.json"
+#      # Keycloak
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      JAVA_OPTS: "-Xmx512m -Xms256m"
+#    volumes:
+#      - /home/annb/Documents/Importants/finance-1676-837813f67def.json:/app/credentials/gcp-credentials.json:ro
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -sf http://localhost:8084/actuator/health | grep UP || [ \"$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8084/actuator/health)\" = \"401\" ]"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 30s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 1G
+#        reservations:
+#          memory: 512M
+#
+#  # Chat Service - Real-time messaging
+#  chat:
+#    <<: *network-deploy-service
+#    image: "chat:1.0"
+#    container_name: chat
+#    ports:
+#      - "8086:8086"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      mongodb-main:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#      kafka1:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    environment:
+#      SPRING_APPLICATION_NAME: "chat"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # MongoDB
+#      SPRING_DATA_MONGODB_URI: "mongodb://root:root@mongodb-main:27017/chat?authSource=admin"
+#      # Redis
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      # Kafka
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092"
+#      # Keycloak
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      JAVA_OPTS: "-Xmx384m -Xms128m"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://chat:8086/actuator/health | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 640M
+#        reservations:
+#          memory: 256M
+#
+#  # Gateway Server - API Gateway
+#  gatewayserver:
+#    <<: *network-deploy-service
+#    image: "gatewayserver:1.0"
+#    container_name: gatewayserver
+#    ports:
+#      - "8072:8072"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#      users:
+#        condition: service_healthy
+#      finance:
+#        condition: service_healthy
+#    environment:
+#      SPRING_APPLICATION_NAME: "gatewayserver"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      # Eureka
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # Keycloak JWK - must use container name, not localhost
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      # Redis
+#      SPRING_DATA_REDIS_CONNECT_TIMEOUT: "2s"
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      SPRING_DATA_REDIS_TIMEOUT: "1s"
+#      JAVA_OPTS: "-Xmx384m -Xms128m"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://gatewayserver:8072/actuator/health | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 512M
+#        reservations:
+#          memory: 256M
+#
+#  # AI Service - Intelligent Financial Insights (Google Gemini)
+#  aiservice:
+#    <<: *network-deploy-service
+#    image: "aiservice:1.0"
+#    container_name: aiservice
+#    ports:
+#      - "8087:8087"
+#    depends_on:
+#      configserver:
+#        condition: service_healthy
+#      postgres-ai:
+#        condition: service_healthy
+#      mongodb-main:
+#        condition: service_healthy
+#      eurekaserver:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    environment:
+#      SPRING_APPLICATION_NAME: "ai"
+#      SPRING_PROFILES_ACTIVE: default
+#      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+#      SPRING_CLOUD_CONFIG_URI: "http://configserver:8071"
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eurekaserver:8070/eureka/"
+#      # PostgreSQL
+#      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-ai:5432/finance_ai?useSSL=false&serverTimezone=UTC"
+#      SPRING_DATASOURCE_USERNAME: "postgres"
+#      SPRING_DATASOURCE_PASSWORD: "postgres"
+#      # MongoDB (Chat History)
+#      SPRING_DATA_MONGODB_URI: "mongodb://root:root@mongodb-main:27017/finance_ai_chat?authSource=admin"
+#      # Redis
+#      SPRING_DATA_REDIS_HOST: redis
+#      SPRING_DATA_REDIS_PORT: 6379
+#      # Redis Vector Store
+#      SPRING_AI_VECTORSTORE_REDIS_URI: "redis://redis:6379"
+#      # Kafka (internal)
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092"
+#      SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: "kafka1:9092"
+#      # Keycloak
+#      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:7080/realms/finance/protocol/openid-connect/certs"
+#      # Google Gemini
+#      SPRING_AI_GOOGLE_GENAI_API_KEY: ${GEMINI_API_KEY}
+#      SPRING_AI_GOOGLE_GENAI_CHAT_OPTIONS_MODEL: "gemini-2.5-flash"
+#      SPRING_AI_GOOGLE_GENAI_EMBEDDING_API_KEY: ${GEMINI_API_KEY}
+#      SPRING_AI_GOOGLE_GENAI_EMBEDDING_TEXT_OPTIONS_MODEL: "text-embedding-004"
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget -q -O - http://localhost:8087/actuator/health/readiness | grep UP || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 15
+#      start_period: 60s
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 1G
+#        reservations:
+#          memory: 512M
+#
+#  # Frontend - Angular Application
+#  frontend:
+#    <<: *network-deploy-service
+#    image: "frontend:1.0"
+#    container_name: frontend
+#    ports:
+#      - "4200:80"
+#    depends_on:
+#      gatewayserver:
+#        condition: service_healthy
+#    environment:
+#      # API Gateway URL (accessed from browser, so use host)
+#      API_GATEWAY_URL: "http://localhost:8072"
+#      # Keycloak URL (accessed from browser, so use host)
+#      KEYCLOAK_URL: "http://localhost:7080"
+#      KEYCLOAK_REALM: "finance"
+#      KEYCLOAK_CLIENT_ID: "finance-auth-server"
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 128M
+#        reservations:
+#          memory: 64M
+
