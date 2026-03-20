@@ -11,7 +11,7 @@
 [![Kafka](https://img.shields.io/badge/Apache%20Kafka-3.8-black?logo=apachekafka)](https://kafka.apache.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Live Demo](#) · [API Docs](#api-documentation) · [Report Bug](https://github.com/your-username/FinMind/issues) · [Request Feature](https://github.com/your-username/FinMind/issues)
+[Live Demo](#) · [API Docs](#api-documentation) · [Report Bug](https://github.com/BinhAn1676/FinMind/issues) · [Request Feature](https://github.com/BinhAn1676/FinMind/issues)
 
 </div>
 
@@ -29,7 +29,6 @@
 - [Running the Project](#-running-the-project)
 - [API Documentation](#-api-documentation)
 - [Contributing](#-contributing)
-- [Roadmap](#-roadmap)
 - [License](#-license)
 
 ---
@@ -38,7 +37,7 @@
 
 FinMind is a **production-grade personal finance management platform** built on a microservices architecture. It enables individuals and groups to track income and expenses, manage budgets, monitor financial goals, and communicate in real-time — all secured with enterprise-grade authentication and end-to-end data encryption.
 
-The project demonstrates modern backend engineering practices including event-driven architecture, distributed configuration, circuit-breaking, observability, and AI-powered financial insights via a local LLM and RAG pipeline.
+The project demonstrates modern backend engineering practices including event-driven architecture, distributed configuration, circuit-breaking, observability, and AI-powered financial insights via Google Gemini and a RAG pipeline.
 
 > **Scope:** 9 business microservices · 1 API Gateway · Angular 16 SPA · Centralized YAML config · Full observability stack · GitHub Actions CI/CD
 
@@ -52,17 +51,22 @@ The project demonstrates modern backend engineering practices including event-dr
 - Auto-sync transactions from **SePay** (OAuth2 webhook integration)
 - Schedule recurring transactions (daily / weekly / monthly / yearly) via **Quartz Scheduler**
 - Export financial reports to Excel (Apache POI)
+- Savings Goals (personal & group) with auto-save scheduler
+- Bill Reminders with cron-based scheduling and financial calendar view
 
 ### 👥 Group Finance
 - Create shared finance groups with member invitations
 - Group budgeting and planning with per-category budget allocation
 - Real-time group activity feed and notifications
+- Group savings goals with contribution tracking
 
 ### 📊 Analytics & AI Insights
 - Visual dashboards with spending trends (ApexCharts / Highcharts)
-- **AI-powered financial advisor** using local LLM (`qwen2.5:3b` via Ollama)
-- RAG pipeline with `pgvector` + `nomic-embed-text` embeddings for context-aware advice
+- **AI-powered financial advisor** using **Google Gemini** (`gemini-2.5-flash`)
+- RAG pipeline with `pgvector` + `text-embedding-004` embeddings (Google) for context-aware advice
 - Automated spending anomaly detection and savings suggestions
+- Crypto/investment portfolio tracking with real-time profit calculation (CoinGecko API)
+- Light/dark theme support
 
 ### 💬 Real-Time Communication
 - Group and direct messaging with WebSocket / STOMP
@@ -114,14 +118,15 @@ graph TB
 
     subgraph Infra["Infrastructure"]
         KC["Keycloak :7080\nOAuth2 / OIDC"]
-        MY["MySQL :3306\nuser · finance · key"]
+        MY["MySQL :3316-3318\nuser · finance · key"]
         MG["MongoDB :27017\ntransactions · chat"]
         PG["PostgreSQL :5432\npgvector (AI)"]
         RD["Redis :6379\nCache · Sessions"]
         KF["Kafka :9092\nEvent Bus"]
         MN["MinIO :9000\nObject Storage"]
-        OL["Ollama :11434\nqwen2.5:3b LLM"]
     end
+
+    GM["Google Gemini API\ngemini-2.5-flash"]
 
     subgraph Observability["Observability"]
         PR["Prometheus :9090"]
@@ -140,7 +145,7 @@ graph TB
     KF -->|user-notification| NS
     NS -->|WebSocket| Client
     CS -->|WebSocket| Client
-    AI --> OL
+    AI --> GM
     AI --> PG
     Services --> PR --> GR
 ```
@@ -180,8 +185,8 @@ flowchart LR
     SP[SePay\nWebhook] -->|POST /sepay/webhooks/receive| FS[FinanceService]
     FS -->|Match account| DB[(MongoDB\ntransactions)]
     FS -->|Categorize via AI| AI[AIService]
-    AI -->|nomic-embed-text| VEC[(pgvector\nPostgreSQL)]
-    AI -->|qwen2.5:3b| OL[Ollama]
+    AI -->|text-embedding-004| VEC[(pgvector\nPostgreSQL)]
+    AI -->|gemini-2.5-flash| GM[Google Gemini API]
     FS -->|Publish event| KF[Kafka]
     KF --> NS[NotificationService]
     NS -->|WebSocket| FE[Angular SPA]
@@ -206,7 +211,7 @@ flowchart LR
 | Caching | Redisson | 3.47.0 |
 | Circuit Breaker | Resilience4J | – |
 | Scheduler | Quartz Scheduler | – |
-| AI / LLM | Spring AI + Ollama | – |
+| AI / LLM | Google Gemini API (gemini-2.5-flash + text-embedding-004) | – |
 | Observability | OpenTelemetry Java Agent | 2.11.0 |
 | Metrics | Micrometer + Prometheus | – |
 | Excel | Apache POI | – |
@@ -227,14 +232,13 @@ flowchart LR
 
 | Service | Role | Port |
 |---|---|---|
-| MySQL 8.0 | User accounts, finance accounts, encryption keys | 3306 |
+| MySQL 8.0 | user (3316) · finance (3317) · key (3318) | 3316–3318 |
 | MongoDB 7 | Transactions, chat messages, notifications, files | 27017 |
 | PostgreSQL 16 (pgvector) | AI vector embeddings (RAG) | 5432 |
 | Redis | Session cache, key cache, vector store | 6379 |
 | MinIO | S3-compatible file object storage | 9000 |
 | Kafka 3.8 | Async event bus (KRaft mode) | 9092 / 9194 |
 | Keycloak 26 | OAuth2 / OIDC identity provider | 7080 |
-| Ollama | Local LLM inference (`qwen2.5:3b`) | 11434 |
 
 ---
 
@@ -266,8 +270,8 @@ FinMind/
 ├── FinanceManagementFE/            # Frontend — Angular 16 SPA
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── components/         # 37 feature components
-│   │   │   ├── services/           # Business logic services
+│   │   │   ├── components/         # Feature components (transactions, budgets, savings-goals, bill-reminders, financial-calendar, analytics, chat, groups, profile, ...)
+│   │   │   ├── services/           # Business logic services (transaction, account, savings-goal, bill-reminder, investment-lot, portfolio-coin, market-data, theme, ...)
 │   │   │   ├── model/              # TypeScript domain models
 │   │   │   ├── routeguards/        # Keycloak auth guard
 │   │   │   ├── interceptors/       # HTTP loading interceptor
@@ -336,7 +340,7 @@ Ensure the following are installed on your machine:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/FinMind.git
+git clone https://github.com/BinhAn1676/FinMind.git
 cd FinMind
 ```
 
@@ -562,9 +566,10 @@ POST  /users/api/v1/groups/{id}/invite   # Invite member
 POST  /files/api/v1/upload               # Upload file (multipart)
 GET   /files/api/v1/{fileId}/url         # Get presigned download URL
 
-# AI
-POST  /ai/api/v1/chat                    # Chat with AI financial advisor
-GET   /ai/api/v1/insights                # Get AI-generated spending insights
+# AI — chat goes through ChatService (send message to AI_BOT_001 room)
+POST  /chat/api/v1/chat/rooms/{roomId}/messages   # Send message to AI_BOT_001
+GET   /ai/api/ai/analytics/dashboard              # AI analytics dashboard
+GET   /ai/api/ai/insights                         # AI-generated spending insights
 
 # WebSocket endpoints (via Gateway)
 ws://localhost:8072/ws                   # Notifications (STOMP)
@@ -589,12 +594,15 @@ curl -X POST http://localhost:8072/finances/api/v1/transactions \
 
 ### Example — AI Financial Advisor
 
+> Chat with AI is handled via ChatService. Send a message to a room that contains `AI_BOT_001` as a participant.
+
 ```bash
-curl -X POST http://localhost:8072/ai/api/v1/chat \
+curl -X POST http://localhost:8072/chat/api/v1/chat/rooms/{roomId}/messages \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "Tháng này tôi chi tiêu có hợp lý không? Gợi ý tiết kiệm cho tôi."
+    "content": "Tháng này tôi chi tiêu có hợp lý không? Gợi ý tiết kiệm cho tôi.",
+    "type": "TEXT"
   }'
 ```
 
@@ -609,7 +617,7 @@ Contributions are what make the open-source community such an amazing place to l
 ```bash
 # 1. Fork the repository
 # 2. Clone your fork
-git clone https://github.com/your-username/FinMind.git
+git clone https://github.com/BinhAn1676/FinMind.git
 cd FinMind
 
 # 3. Create a feature branch
@@ -662,50 +670,6 @@ docs: update environment configuration guide
 
 ---
 
-## 🗺 Roadmap
-
-### ✅ Phase 1 — Core Platform (Completed)
-- [x] Microservices architecture with Eureka + Config Server
-- [x] Keycloak OAuth2 / OIDC authentication
-- [x] User management, profiles, group management
-- [x] Financial account and transaction CRUD
-- [x] Real-time notifications via Kafka + WebSocket
-- [x] Real-time chat with STOMP
-- [x] MinIO file storage with presigned URLs
-- [x] Two-tier AES encryption via KeyManagementService
-- [x] SePay OAuth2 integration + webhook sync
-- [x] Quartz recurring transaction scheduler
-- [x] Budget planning (group + personal)
-- [x] Observability: OpenTelemetry + Grafana stack
-- [x] GitHub Actions CI/CD pipeline
-
-### 🚧 Phase 2 — AI & Intelligence (In Progress)
-- [x] AI financial advisor with local LLM (Ollama `qwen2.5:3b`)
-- [x] RAG pipeline with `pgvector` + `nomic-embed-text`
-- [x] Analytics dashboard with AI-generated insights
-- [ ] Predictive spending forecasting (ML model)
-- [ ] Automatic transaction categorization (NLP)
-- [ ] Personalized saving goal recommendations
-
-### 📋 Phase 3 — Scale & UX
-- [ ] Mobile application (Angular + Capacitor, iOS + Android)
-- [ ] Multi-language support (EN / VI — framework ready)
-- [ ] Dark mode and theme customization
-- [ ] Loan management with amortization schedules
-- [ ] Investment portfolio tracking (stocks, crypto)
-- [ ] Multi-currency support with real-time FX rates
-- [ ] Bank statement import (PDF / CSV parsing)
-
-### 🔮 Phase 4 — Enterprise
-- [ ] Multi-tenant support
-- [ ] Kubernetes deployment with Helm charts
-- [ ] Google Cloud KMS full integration (production key management)
-- [ ] Advanced RBAC (Owner / Admin / Member / Viewer roles per group)
-- [ ] Audit log and compliance reporting
-- [ ] Open Banking API integration
-
----
-
 ## 📄 License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
@@ -714,10 +678,10 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information
 
 <div align="center">
 
-**Built with ❤️ by [Nguyen Binh An](https://github.com/your-username)**
+**Built with ❤️ by [Nguyen Binh An](https://github.com/BinhAn1676)**
 
 *If you found this project helpful, please consider giving it a ⭐*
 
-[![GitHub stars](https://img.shields.io/github/stars/your-username/FinMind?style=social)](https://github.com/your-username/FinMind)
+[![GitHub stars](https://img.shields.io/github/stars/BinhAn1676/FinMind?style=social)](https://github.com/BinhAn1676/FinMind)
 
 </div>
