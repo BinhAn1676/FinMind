@@ -51,6 +51,12 @@ public class GroupPlanning {
     @Field("day_of_month")
     private Integer dayOfMonth; // 1-31, used for RECURRING plans (when to reset budget)
 
+    @Field("icon")
+    private String icon; // Optional emoji icon for the planning
+
+    @Field("color")
+    private String color; // Optional hex color for the planning
+
     @Field("description")
     private String description; // Optional description for the planning
 

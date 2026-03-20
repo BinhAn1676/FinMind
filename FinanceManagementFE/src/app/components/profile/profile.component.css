@@ -53,7 +53,7 @@
 }
 
 .profile-subtitle {
-  color: #adb5bd;
+  color: var(--text-muted);
   font-size: 1.1rem;
   margin: 0;
   font-weight: 400;
@@ -1003,4 +1003,206 @@
 ::ng-deep .dob-calendar.p-calendar-disabled .p-datepicker-trigger {
   color: #adb5bd;
   cursor: not-allowed;
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .profile-container {
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .profile-header h1 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .profile-subtitle {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .profile-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .avatar-info h2 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .profile-email {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .form-card,
+:host-context(html[data-theme="light"]) .settings-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .form-group label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input,
+:host-context(html[data-theme="light"]) .form-textarea {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input:read-only,
+:host-context(html[data-theme="light"]) .form-textarea:read-only {
+  background: rgba(224,240,249,0.8) !important;
+  border-color: #CBD5E1 !important;
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input.readonly {
+  background: rgba(224,240,249,0.8) !important;
+  border-color: #CBD5E1 !important;
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-hint {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-section h4 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .setting-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .setting-item:hover {
+  background: rgba(215,235,245,0.9) !important;
+  border-color: rgba(255,107,107,0.2) !important;
+}
+
+:host-context(html[data-theme="light"]) .setting-info h4 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .setting-info p {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  background: rgba(255,255,255,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header h3 {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-close {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+  background: rgba(255,255,255,0.2) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer .btn-cancel {
+  background: rgba(215,235,245,0.9) !important;
+  color: #475569 !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer .btn-cancel:hover {
+  background: #F1F5F9 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-body .form-input {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-body .form-input::placeholder {
+  color: #94A3B8 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-body label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-body .form-hint {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .security-notice {
+  background: linear-gradient(135deg, rgba(255,193,7,0.08), rgba(255,107,107,0.08)) !important;
+  border: 1px solid rgba(255,193,7,0.25) !important;
+}
+
+:host-context(html[data-theme="light"]) .security-text p {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .guide-step {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(78,205,196,0.2) !important;
+}
+
+:host-context(html[data-theme="light"]) .guide-step-header {
+  background: linear-gradient(135deg, rgba(78,205,196,0.06), rgba(255,107,107,0.04)) !important;
+}
+
+:host-context(html[data-theme="light"]) .guide-step-title {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .guide-step-desc {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .guide-step-img {
+  background: rgba(224,240,249,0.8) !important;
+  border-top: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .dob-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .dob-calendar .p-datepicker-trigger {
+  background: rgba(248,250,252,0.9) !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #4ECDC4 !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-datepicker-header {
+  background: #F1F5F9 !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker table {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker table td > span {
+  color: #1E293B !important;
 }

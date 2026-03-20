@@ -719,7 +719,8 @@ services:
       SPRING_AI_GOOGLE_GENAI_API_KEY: "${GEMINI_API_KEY}"
       SPRING_AI_GOOGLE_GENAI_CHAT_OPTIONS_MODEL: "gemini-2.5-flash"
       SPRING_AI_GOOGLE_GENAI_EMBEDDING_API_KEY: "${GEMINI_API_KEY}"
-      SPRING_AI_GOOGLE_GENAI_EMBEDDING_TEXT_OPTIONS_MODEL: "text-embedding-004"
+      SPRING_AI_GOOGLE_GENAI_EMBEDDING_TEXT_OPTIONS_MODEL: "gemini-embedding-001"
+      SPRING_AI_GOOGLE_GENAI_EMBEDDING_TEXT_OPTIONS_DIMENSIONS: "768"
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://localhost:8087/actuator/health/readiness | grep UP || exit 1"]
       interval: 10s

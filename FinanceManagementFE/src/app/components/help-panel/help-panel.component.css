@@ -54,7 +54,7 @@
   bottom: 0;
   width: 320px;
   max-width: 92vw;
-  background: #0b1a2b;
+  background: var(--sidebar-bg);
   border-left: 1px solid rgba(78, 205, 196, 0.15);
   z-index: 1049;
   display: flex;
@@ -182,6 +182,68 @@
   color: #c8d8e4;
   line-height: 1.6;
   padding-top: 4px;
+}
+
+/* ─── Light Theme ─── */
+:host-context(html[data-theme="light"]) .help-fab {
+  background: #ffffff;
+  border-color: rgba(78,163,196,0.4);
+  color: #0D7A8A;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+:host-context(html[data-theme="light"]) .help-fab:hover {
+  background: rgba(78,163,196,0.1);
+}
+:host-context(html[data-theme="light"]) .help-fab.active {
+  background: rgba(78,163,196,0.12);
+  border-color: rgba(78,163,196,0.5);
+  color: #0D7A8A;
+}
+
+:host-context(html[data-theme="light"]) .help-panel {
+  background: #ffffff;
+  border-left-color: rgba(78,163,196,0.2);
+  box-shadow: -6px 0 32px rgba(0,0,0,0.12);
+}
+:host-context(html[data-theme="light"]) .help-panel-header {
+  border-bottom-color: rgba(78,163,196,0.15);
+}
+:host-context(html[data-theme="light"]) .help-panel-title {
+  color: #0D7A8A;
+}
+:host-context(html[data-theme="light"]) .help-close-btn {
+  color: #4A6B80;
+}
+:host-context(html[data-theme="light"]) .help-close-btn:hover {
+  color: #1E293B;
+  background: rgba(0,0,0,0.06);
+}
+:host-context(html[data-theme="light"]) .help-description {
+  color: #475569;
+  background: rgba(78,163,196,0.06);
+  border-color: rgba(78,163,196,0.15);
+}
+:host-context(html[data-theme="light"]) .help-tips-label {
+  color: rgba(13,122,138,0.7);
+}
+:host-context(html[data-theme="light"]) .help-tip-item {
+  background: #f8fafc;
+  border-color: rgba(78,163,196,0.15);
+  border-left-color: rgba(78,163,196,0.5);
+}
+:host-context(html[data-theme="light"]) .help-tip-item:hover {
+  background: rgba(78,163,196,0.06);
+  border-left-color: #0D7A8A;
+}
+:host-context(html[data-theme="light"]) .tip-icon {
+  background: rgba(78,163,196,0.12);
+  color: #0D7A8A;
+}
+:host-context(html[data-theme="light"]) .tip-text {
+  color: #334155;
+}
+:host-context(html[data-theme="light"]) .help-backdrop {
+  background: rgba(0,0,0,0.25);
 }
 
 /* Scrollbar */

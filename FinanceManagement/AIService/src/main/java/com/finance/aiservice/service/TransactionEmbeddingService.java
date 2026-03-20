@@ -139,8 +139,8 @@ public class TransactionEmbeddingService {
                 .transactionDate(transactionDate)
                 .transactionType(transactionType)
                 .embedding(embedding)
-                .embeddingModel("nomic-embed-text")
-                .embeddingVersion("1.5")
+                .embeddingModel("gemini-embedding-001")
+                .embeddingVersion("1.0")
                 .build();
 
             // Save to database

@@ -4,7 +4,9 @@ import { LayoutService } from '../../services/layout.service';
 import { TransactionService, CashflowPoint, TransactionSummary } from '../../services/transaction.service';
 import { AccountService } from '../../services/account.service';
 import { UserService } from '../../services/user.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ThemeService } from '../../services/theme.service';
 import * as Highcharts from 'highcharts';
 import * as ExportingMod from 'highcharts/modules/exporting';
 import * as ExportDataMod from 'highcharts/modules/export-data';
@@ -91,13 +93,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   // Subscriptions
   languageSub!: Subscription;
+  private destroy$ = new Subject<void>();
 
   constructor(
     public language: LanguageService,
     public layout: LayoutService,
     private transactionService: TransactionService,
     private accountService: AccountService,
-    private userService: UserService
+    private userService: UserService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -107,10 +111,15 @@ export class OverviewComponent implements OnInit, OnDestroy {
       this.refreshAll();
     });
     this.languageSub = this.language.currentLanguage$.subscribe(() => {});
+    this.themeService.theme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      setTimeout(() => this.renderHighcharts(), 50);
+    });
   }
 
   ngOnDestroy(): void {
     this.languageSub?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   refreshAll() {
@@ -409,22 +418,27 @@ export class OverviewComponent implements OnInit, OnDestroy {
     const expenseNegative = this.months.map(m => -Math.abs(m.expense || 0));
     const income = this.months.map(m => m.income || 0);
     const balance = this.months.map(m => m.balance || 0);
+    const isDark = this.themeService.isDark();
+    const chartText = isDark ? '#94a3b8' : '#64748B';
+    const chartGrid = isDark ? 'rgba(255,255,255,0.18)' : '#E2E8F0';
+    const tooltipBg = isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.97)';
+    const tooltipColor = isDark ? '#e2e8f0' : '#1E293B';
 
     const self = this;
     this.hcChart = H.chart('cashflow-hc', {
       chart: { type: 'column', backgroundColor: 'transparent', style: { fontFamily: 'Be Vietnam Pro, sans-serif' } },
       title: { text: undefined },
-      xAxis: { categories, lineColor: '#334155', labels: { style: { color: '#94a3b8' } } },
+      xAxis: { categories, lineColor: chartGrid, labels: { style: { color: chartText } } },
       yAxis: {
         title: { text: undefined },
-        gridLineColor: 'rgba(255,255,255,0.18)',
+        gridLineColor: chartGrid,
         gridLineWidth: 1,
-        minorGridLineColor: 'rgba(255,255,255,0.12)',
+        minorGridLineColor: chartGrid,
         minorTickInterval: 'auto',
         plotLines: [{ value: 0, color: '#a3b1c6', width: 2, zIndex: 5 }],
-        labels: { style: { color: '#94a3b8' }, formatter: function(this: any){ return H.numberFormat(this.value, 0, '.', ',') + '₫'; } }
+        labels: { style: { color: chartText }, formatter: function(this: any){ return H.numberFormat(this.value, 0, '.', ',') + '₫'; } }
       },
-      legend: { itemStyle: { color: '#cbd5e1' } },
+      legend: { itemStyle: { color: chartText } },
       credits: { enabled: false },
       exporting: {
         enabled: true,
@@ -456,7 +470,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
         sourceHeight: 420,
         scale: 1
       },
-      tooltip: { shared: false, backgroundColor: 'rgba(15,23,42,0.95)', borderColor: '#93c5fd', style: { color: '#e2e8f0' },
+      tooltip: { shared: false, backgroundColor: tooltipBg, borderColor: '#93c5fd', style: { color: tooltipColor },
         pointFormatter: function(this: any){ return '<span style="color:'+ this.color +'">●</span> ' + this.series.name + ': <b>' + H.numberFormat(this.y, 0, '.', ',') + '₫</b>'; }
       },
       plotOptions: {

@@ -40,41 +40,45 @@ import { SepayCallbackComponent } from './components/sepay-callback/sepay-callba
 import { InvestmentComponent } from './components/investment/investment.component';
 import { MarketTickerComponent } from './components/market-ticker/market-ticker.component';
 import { HelpPanelComponent } from './components/help-panel/help-panel.component';
+import { FinancialCalendarComponent } from './components/financial-calendar/financial-calendar.component';
+import { BillRemindersComponent } from './components/bill-reminders/bill-reminders.component';
 import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
 import { LanguageService } from './services/language.service';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
 import { NgApexchartsModule } from "ng-apexcharts";
 import { CalendarModule } from 'primeng/calendar';
-
-// function initializeKeycloak(keycloak: KeycloakService) {
-//   return () =>
-//     keycloak.init({
-//       config: {
-//         url: 'https://auth.finmind.pro.vn/',
-//         realm: 'finance',
-//         clientId: 'finance-auth-server',
-//       },
-//       initOptions: {
-//         pkceMethod: 'S256',
-//         redirectUri: 'https://finmind.pro.vn/overview',
-//       },loadUserProfileAtStartUp: false
-//     });
-// }
+import { InputNumberModule } from 'primeng/inputnumber';
+import { DropdownModule } from 'primeng/dropdown';
 
 function initializeKeycloak(keycloak: KeycloakService) {
   return () =>
     keycloak.init({
       config: {
-        url: 'http://localhost:7080/',
+        url: 'https://auth.finmind.pro.vn/',
         realm: 'finance',
         clientId: 'finance-auth-server',
       },
       initOptions: {
         pkceMethod: 'S256',
-        redirectUri: 'http://localhost:4200/overview',
+        redirectUri: 'https://finmind.pro.vn/overview',
       },loadUserProfileAtStartUp: false
     });
 }
+
+// function initializeKeycloak(keycloak: KeycloakService) {
+//   return () =>
+//     keycloak.init({
+//       config: {
+//         url: 'http://localhost:7080/',
+//         realm: 'finance',
+//         clientId: 'finance-auth-server',
+//       },
+//       initOptions: {
+//         pkceMethod: 'S256',
+//         redirectUri: 'http://localhost:4200/overview',
+//       },loadUserProfileAtStartUp: false
+//     });
+// }
 @NgModule({
   declarations: [
     AppComponent,
@@ -112,7 +116,9 @@ function initializeKeycloak(keycloak: KeycloakService) {
     SepayCallbackComponent,
     InvestmentComponent,
     MarketTickerComponent,
-    HelpPanelComponent
+    HelpPanelComponent,
+    FinancialCalendarComponent,
+    BillRemindersComponent
   ],
   imports: [
     NgApexchartsModule,
@@ -128,6 +134,8 @@ function initializeKeycloak(keycloak: KeycloakService) {
       headerName: 'X-XSRF-TOKEN',
     }),
     CalendarModule,
+    InputNumberModule,
+    DropdownModule,
   ],
   providers: [
     {

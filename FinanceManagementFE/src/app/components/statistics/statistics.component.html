@@ -14,9 +14,29 @@
           <option *ngFor="let f of timeFilters" [value]="f">{{ f }}</option>
         </select>
         <div class="custom-range" *ngIf="selectedTimeFilter === 'Tùy chọn'">
-          <input type="date" [(ngModel)]="customStartDate" (change)="applyTimeFilter()">
-          <span>→</span>
-          <input type="date" [(ngModel)]="customEndDate" (change)="applyTimeFilter()">
+          <p-calendar
+            inputId="statsCustomStart"
+            [(ngModel)]="customStartDate"
+            (onSelect)="applyTimeFilter()"
+            (onClearClick)="applyTimeFilter()"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            [showButtonBar]="true"
+            [placeholder]="translate('transactions.startDate') || 'Từ ngày'"
+            styleClass="stats-date-picker">
+          </p-calendar>
+          <span class="range-sep">→</span>
+          <p-calendar
+            inputId="statsCustomEnd"
+            [(ngModel)]="customEndDate"
+            (onSelect)="applyTimeFilter()"
+            (onClearClick)="applyTimeFilter()"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            [showButtonBar]="true"
+            [placeholder]="translate('transactions.endDate') || 'Đến ngày'"
+            styleClass="stats-date-picker">
+          </p-calendar>
         </div>
       </div>
     </div>

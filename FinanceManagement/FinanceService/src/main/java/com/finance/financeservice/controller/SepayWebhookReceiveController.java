@@ -1,7 +1,7 @@
 package com.finance.financeservice.controller;
 
 import com.finance.financeservice.dto.sepay.oauth2.SepayWebhookEvent;
-import com.finance.financeservice.service.SepayWebhookService;
+import com.finance.financeservice.service.sepay.SepayWebhookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

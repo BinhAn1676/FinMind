@@ -1,108 +1,316 @@
 <div class="planning-layout" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
   <div class="planning-panel">
+
+    <!-- Header -->
     <div class="panel-header">
       <div class="panel-title">
         <h1>{{ language.translate('planning.title') }}</h1>
         <p>{{ language.translate('planning.subtitle') }}</p>
       </div>
-      <button class="btn btn-primary" type="button" (click)="openCreateModal()">
-        <i class="fa fa-plus"></i> {{ language.translate('planning.addPlan') }}
+      <button class="btn btn-primary" type="button"
+        (click)="activeTab === 'budgets' ? openCreateModal() : openCreateGoal()">
+        <i class="fa fa-plus"></i>
+        {{ activeTab === 'budgets' ? language.translate('planning.addPlan') : language.translate('savings.newGoal') }}
       </button>
     </div>
 
-    <div class="summary-strip" *ngIf="budgets.length">
-      <div class="summary-card card-budget">
-        <div class="summary-icon icon-budget">
-          <i class="fa fa-flag"></i>
-        </div>
-        <div>
-          <div class="summary-label">{{ language.translate('planning.summary.totalBudget') }}</div>
-          <div class="summary-value">{{ totals.totalBudget | number:'1.0-0' }} đ</div>
-        </div>
-      </div>
-      <div class="summary-card card-spent">
-        <div class="summary-icon icon-spent">
-          <i class="fa fa-arrow-up"></i>
-        </div>
-        <div>
-          <div class="summary-label">{{ language.translate('planning.summary.totalSpent') }}</div>
-          <div class="summary-value">{{ totals.totalSpent | number:'1.0-0' }} đ</div>
-        </div>
-      </div>
-      <div class="summary-card card-remaining" [class.negative]="totals.totalRemaining < 0">
-        <div class="summary-icon icon-remaining">
-          <i class="fa fa-balance-scale"></i>
-        </div>
-        <div>
-          <div class="summary-label">{{ language.translate('planning.summary.totalRemaining') }}</div>
-          <div class="summary-value" [class.negative]="totals.totalRemaining < 0">{{ totals.totalRemaining | number:'1.0-0' }} đ</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="loading-state" *ngIf="loadingBudgets">
-      <i class="fa fa-spinner fa-spin"></i>
-      <span>{{ language.translate('planning.loading') }}</span>
-    </div>
-
-    <div class="empty-state" *ngIf="!loadingBudgets && budgets.length === 0">
-      <i class="fa fa-inbox"></i>
-      <p>{{ language.translate('planning.emptyState') }}</p>
-      <button class="btn btn-primary" type="button" (click)="openCreateModal()">
-        <i class="fa fa-plus"></i> {{ language.translate('planning.addPlan') }}
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn" [class.active]="activeTab === 'budgets'" (click)="switchTab('budgets')">
+        <i class="fa fa-tasks"></i>
+        {{ language.translate('planning.tabs.budgets') || 'Kế hoạch ngân sách' }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'savings'" (click)="switchTab('savings')">
+        <span>🎯</span>
+        {{ language.translate('planning.tabs.savings') || 'Mục tiêu tiết kiệm' }}
       </button>
     </div>
 
-    <div class="planning-grid" *ngIf="!loadingBudgets && budgets.length">
-      <div class="plan-card" *ngFor="let plan of budgets; trackBy: trackByPlan" [class.overspent]="isOverspent(plan)">
-        <div class="plan-header">
-          <div class="icon-circle">
-            <i class="fa" [ngClass]="iconFor(plan.category)"></i>
+    <!-- ═══════════════ BUDGET TAB ═══════════════ -->
+    <div class="tab-content" *ngIf="activeTab === 'budgets'">
+
+      <!-- Summary strip -->
+      <div class="summary-strip" *ngIf="budgets.length">
+        <div class="summary-card card-budget">
+          <div class="summary-icon icon-budget">
+            <i class="fa fa-flag"></i>
           </div>
-          <div class="plan-title">
-            <h4>{{ plan.category || language.translate('planning.uncategorized') }}</h4>
-            <span>{{ formatRange(plan) }}</span>
-          </div>
-          <div class="plan-actions">
-            <button class="icon-btn" type="button" (click)="openEditModal(plan)" title="{{ language.translate('planning.edit') }}">
-              <i class="fa fa-edit"></i>
-            </button>
-            <button class="icon-btn" type="button" (click)="delete(plan)" [disabled]="deletingId === plan.id" title="{{ language.translate('planning.delete') }}">
-              <i class="fa" [ngClass]="deletingId === plan.id ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
-            </button>
+          <div>
+            <div class="summary-label">{{ language.translate('planning.summary.totalBudget') }}</div>
+            <div class="summary-value">{{ totals.totalBudget | number:'1.0-0' }} đ</div>
           </div>
         </div>
-
-        <div class="plan-progress">
-          <div class="progress-bar" [class.danger]="isOverspent(plan)" [style.width.%]="isOverspent(plan) ? 100 : progressPercent(plan)"></div>
-        </div>
-
-        <div class="plan-stats">
-          <div class="stat">
-            <label>{{ language.translate('planning.cards.spent') }}</label>
-            <span>{{ (plan.spentAmount || 0) | number:'1.0-0' }} đ</span>
+        <div class="summary-card card-spent">
+          <div class="summary-icon icon-spent">
+            <i class="fa fa-arrow-up"></i>
           </div>
-          <div class="divider"></div>
-          <div class="stat">
-            <label>{{ language.translate('planning.cards.budget') }}</label>
-            <span>{{ (plan.budgetAmount || 0) | number:'1.0-0' }} đ</span>
+          <div>
+            <div class="summary-label">{{ language.translate('planning.summary.totalSpent') }}</div>
+            <div class="summary-value">{{ totals.totalSpent | number:'1.0-0' }} đ</div>
           </div>
         </div>
+        <div class="summary-card card-remaining" [class.negative]="totals.totalRemaining < 0">
+          <div class="summary-icon icon-remaining">
+            <i class="fa fa-balance-scale"></i>
+          </div>
+          <div>
+            <div class="summary-label">{{ language.translate('planning.summary.totalRemaining') }}</div>
+            <div class="summary-value" [class.negative]="totals.totalRemaining < 0">{{ totals.totalRemaining | number:'1.0-0' }} đ</div>
+          </div>
+        </div>
+      </div>
 
-        <div class="plan-status" [class.overspent]="isOverspent(plan)">
-          <ng-container *ngIf="!isOverspent(plan); else overspentTpl">
-            {{ language.translate('planning.cards.remaining') }}: {{ remainingAmount(plan) | number:'1.0-0' }} đ
-          </ng-container>
-          <ng-template #overspentTpl>
-            {{ language.translate('planning.cards.overspent') }}: {{ (remainingAmount(plan) * -1) | number:'1.0-0' }} đ
-          </ng-template>
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="loadingBudgets">
+        <i class="fa fa-spinner fa-spin"></i>
+        <span>{{ language.translate('planning.loading') }}</span>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="!loadingBudgets && budgets.length === 0">
+        <i class="fa fa-inbox"></i>
+        <p>{{ language.translate('planning.emptyState') }}</p>
+        <button class="btn btn-primary" type="button" (click)="openCreateModal()">
+          <i class="fa fa-plus"></i> {{ language.translate('planning.addPlan') }}
+        </button>
+      </div>
+
+      <!-- Budget grid -->
+      <div class="planning-grid" *ngIf="!loadingBudgets && budgets.length">
+        <div class="plan-card" *ngFor="let plan of budgets; trackBy: trackByPlan" [class.overspent]="isOverspent(plan)">
+          <!-- Top accent bar -->
+          <div class="card-accent" [style.background]="isOverspent(plan) ? '#f87171' : (plan.color || '#4ecdc4')"></div>
+
+          <div class="card-body">
+            <!-- Header row -->
+            <div class="card-header-row">
+              <span class="goal-icon">{{ plan.icon || '📦' }}</span>
+              <div class="goal-meta">
+                <h3 class="goal-name">{{ plan.category || language.translate('planning.uncategorized') }}</h3>
+                <span class="goal-desc">{{ formatRange(plan) }}</span>
+              </div>
+              <div class="card-actions">
+                <span class="status-badge"
+                  [class.status-cancelled]="isOverspent(plan)"
+                  [class.status-active]="!isOverspent(plan)">
+                  {{ isOverspent(plan) ? '⚠️ Vượt ngân sách' : '✅ Trong ngân sách' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-section">
+              <div class="progress-row">
+                <span class="current-amount">{{ (plan.spentAmount || 0) | number:'1.0-0' }}đ</span>
+                <span class="progress-pct"
+                  [style.color]="isOverspent(plan) ? '#f87171' : (plan.color || '#4ecdc4')">
+                  {{ progressPercent(plan) }}%
+                </span>
+                <span class="target-amount">{{ (plan.budgetAmount || 0) | number:'1.0-0' }}đ</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill"
+                  [style.width.%]="progressPercent(plan)"
+                  [style.background]="isOverspent(plan) ? '#f87171' : (plan.color || '#4ecdc4')">
+                </div>
+              </div>
+              <div class="progress-labels">
+                <span class="remaining-label" [style.color]="isOverspent(plan) ? '#f87171' : '#94a3b8'">
+                  <ng-container *ngIf="!isOverspent(plan)">
+                    {{ language.translate('planning.cards.remaining') }}: {{ remainingAmount(plan) | number:'1.0-0' }}đ
+                  </ng-container>
+                  <ng-container *ngIf="isOverspent(plan)">
+                    {{ language.translate('planning.cards.overspent') }}: {{ (remainingAmount(plan) * -1) | number:'1.0-0' }}đ
+                  </ng-container>
+                </span>
+              </div>
+            </div>
+
+            <!-- Footer actions -->
+            <div class="card-footer">
+              <button class="btn-icon" type="button" (click)="openEditModal(plan)" title="{{ language.translate('planning.edit') }}">
+                <i class="fa fa-pencil"></i>
+              </button>
+              <button class="btn-icon danger" type="button" (click)="delete(plan)"
+                [disabled]="deletingId === plan.id" title="{{ language.translate('planning.delete') }}">
+                <i class="fa" [ngClass]="deletingId === plan.id ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- ═══════════════ SAVINGS TAB ═══════════════ -->
+    <div class="tab-content" *ngIf="activeTab === 'savings'">
+
+      <!-- Budget Surplus Banner -->
+      <div class="surplus-banner" *ngIf="budgetSurplus > 0 && goals.length > 0">
+        <div class="surplus-banner-icon">💡</div>
+        <div class="surplus-banner-text">
+          <span class="surplus-title">
+            {{ language.translate('planning.surplus.prefix') }}
+            <strong>{{ formatVnd(budgetSurplus) }}</strong>
+            {{ language.translate('planning.surplus.suffix') }}
+          </span>
+          <span class="surplus-sub">{{ language.translate('planning.surplus.subtitle') }}</span>
+        </div>
+        <div class="surplus-actions">
+          <select class="surplus-select" [(ngModel)]="surplusGoalId" [ngModelOptions]="{standalone: true}">
+            <option value="">{{ language.translate('planning.surplus.selectGoal') }}</option>
+            <option *ngFor="let g of goals" [value]="g.id">{{ g.icon }} {{ g.name }}</option>
+          </select>
+          <button class="btn-transfer" (click)="openContributeFromSurplus()" [disabled]="!surplusGoalId || budgetSurplus <= 0">
+            <i class="fa fa-arrow-right"></i>
+            {{ language.translate('planning.surplus.transfer') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-row" *ngIf="goals.length > 0">
+        <div class="stat-card">
+          <span class="stat-icon">💰</span>
+          <div class="stat-info">
+            <span class="stat-label">{{ language.translate('savings.totalSaved') }}</span>
+            <span class="stat-value green">{{ formatVnd(totalSaved) }}</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🎯</span>
+          <div class="stat-info">
+            <span class="stat-label">{{ language.translate('savings.totalTarget') }}</span>
+            <span class="stat-value">{{ formatVnd(totalTarget) }}</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">📋</span>
+          <div class="stat-info">
+            <span class="stat-label">{{ language.translate('savings.activeGoals') }}</span>
+            <span class="stat-value blue">{{ activeGoals }}</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">✅</span>
+          <div class="stat-info">
+            <span class="stat-label">{{ language.translate('savings.completedGoals') }}</span>
+            <span class="stat-value teal">{{ completedGoals }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="loadingGoals">
+        <i class="fa fa-spinner fa-spin"></i> {{ language.translate('common.loading') }}
+      </div>
+
+      <!-- Empty state -->
+      <div class="sg-empty-state" *ngIf="!loadingGoals && goals.length === 0">
+        <span class="sg-empty-icon">🎯</span>
+        <h3>{{ language.translate('savings.emptyTitle') }}</h3>
+        <p>{{ language.translate('savings.emptyDesc') }}</p>
+        <button class="btn btn-primary" (click)="openCreateGoal()">
+          <i class="fa fa-plus"></i> {{ language.translate('savings.createFirst') }}
+        </button>
+      </div>
+
+      <!-- Goals grid -->
+      <div class="goals-grid" *ngIf="!loadingGoals && goals.length > 0">
+        <div class="goal-card" *ngFor="let goal of goals"
+          [class.completed]="goal.status === 'COMPLETED'"
+          [class.cancelled]="goal.status === 'CANCELLED'">
+
+          <!-- Card top accent bar -->
+          <div class="card-accent" [style.background]="goal.color || '#4ecdc4'"></div>
+
+          <div class="card-body">
+            <div class="card-header-row">
+              <span class="goal-icon">{{ goal.icon || '🎯' }}</span>
+              <div class="goal-meta">
+                <h3 class="goal-name">{{ goal.name }}</h3>
+                <span class="goal-desc" *ngIf="goal.description">{{ goal.description }}</span>
+              </div>
+              <div class="card-actions">
+                <span class="status-badge" [class]="'status-' + (goal.status || 'ACTIVE').toLowerCase()">
+                  {{ goal.status === 'COMPLETED' ? '✅' : goal.status === 'CANCELLED' ? '❌' : '🔄' }}
+                  {{ goal.status === 'COMPLETED' ? 'Hoàn thành' : goal.status === 'CANCELLED' ? 'Đã hủy' : 'Đang tiết kiệm' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-section">
+              <div class="progress-row">
+                <span class="current-amount">{{ formatVnd(goal.currentAmount || 0) }}</span>
+                <span class="progress-pct" [style.color]="goal.color || '#4ecdc4'">{{ goalProgress(goal) }}%</span>
+                <span class="target-amount">{{ formatVnd(goal.targetAmount) }}</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill"
+                  [style.width.%]="goalProgress(goal)"
+                  [style.background]="goal.color || '#4ecdc4'">
+                </div>
+              </div>
+              <div class="progress-labels">
+                <span class="remaining-label">Còn thiếu: {{ formatVnd(goalRemaining(goal)) }}</span>
+                <span class="days-label" *ngIf="daysLeft(goal) !== null">
+                  <i class="fa fa-clock-o"></i> {{ daysLeft(goal) }} ngày
+                </span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card-footer">
+              <button class="btn-contribute" [style.background]="goal.color || '#4ecdc4'"
+                *ngIf="goal.status === 'ACTIVE'"
+                (click)="openContributeModal(goal)">
+                <i class="fa fa-plus"></i> Tiết kiệm thêm
+              </button>
+              <span class="auto-save-badge" *ngIf="goal.autoSaveEnabled">
+                🔄 {{ formatVnd(goal.autoSaveAmount || 0) }}/{{ goal.autoSaveCycle === 'DAILY' ? 'ngày' : goal.autoSaveCycle === 'WEEKLY' ? 'tuần' : 'tháng' }}
+              </span>
+              <button class="btn-icon" (click)="openEditGoal(goal)" title="Chỉnh sửa">
+                <i class="fa fa-pencil"></i>
+              </button>
+              <button class="btn-icon danger" (click)="deleteGoal(goal)"
+                [disabled]="deletingGoalId === goal.id" title="Xoá">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+
+            <!-- Toggle contributions history -->
+            <button class="btn-history-toggle" type="button" (click)="toggleContributions(goal.id!)">
+              <i class="fa" [ngClass]="expandedGoalId === goal.id ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              {{ (goal.contributions?.length || 0) }} lần nạp
+            </button>
+
+            <!-- Contribution history -->
+            <div class="contribution-history" *ngIf="expandedGoalId === goal.id">
+              <div *ngIf="!goal.contributions?.length" class="no-contributions">
+                Chưa có lần nạp nào
+              </div>
+              <div class="contribution-item" *ngFor="let c of (goal.contributions || []).slice().reverse()">
+                <div class="contribution-info">
+                  <span class="contribution-amount">+{{ formatVnd(c.amount || 0) }}</span>
+                  <span class="contribution-note">{{ c.note || 'Không có ghi chú' }}</span>
+                  <span class="contribution-date">{{ formatContribDate(c.createdAt) }}</span>
+                </div>
+                <button class="btn-delete-contrib" type="button"
+                  [disabled]="removingContributionId === c.id"
+                  (click)="removeContribution(goal, c.id!)">
+                  <i class="fa" [ngClass]="removingContributionId === c.id ? 'fa-spinner fa-spin' : 'fa-times'"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- Create plan modal -->
+<!-- ═══════════════ BUDGET PLAN MODAL ═══════════════ -->
 <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
   <div class="modal-content planning-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -138,6 +346,29 @@
                    [ngModelOptions]="{standalone: true}"
                    [placeholder]="language.translate('planning.modal.newCategoryPlaceholder')"
                    (keyup.enter)="createPlan()">
+          </div>
+
+          <!-- Icon picker -->
+          <div class="form-group">
+            <label>Icon</label>
+            <div class="icon-picker">
+              <button *ngFor="let ic of planIcons" class="picker-icon-btn"
+                type="button"
+                [class.selected]="selectedPlanIcon === ic"
+                (click)="selectedPlanIcon = ic">{{ ic }}</button>
+            </div>
+          </div>
+
+          <!-- Color picker -->
+          <div class="form-group">
+            <label>Màu sắc</label>
+            <div class="color-picker">
+              <button *ngFor="let cl of planColors" class="picker-color-btn"
+                type="button"
+                [style.background]="cl"
+                [class.selected]="selectedPlanColor === cl"
+                (click)="selectedPlanColor = cl"></button>
+            </div>
           </div>
 
           <!-- Category Management Section -->
@@ -306,7 +537,7 @@
             {{ editingPlan ? language.translate('planning.modal.update') : language.translate('planning.modal.create') }}
           </span>
           <span *ngIf="saving">
-            <i class="fa fa-spinner fa-spin"></i> 
+            <i class="fa fa-spinner fa-spin"></i>
             {{ editingPlan ? language.translate('planning.modal.updating') : language.translate('planning.modal.creating') }}
           </span>
         </button>
@@ -315,4 +546,143 @@
   </div>
 </div>
 
+<!-- ═══════════════ SAVINGS GOAL CREATE/EDIT MODAL ═══════════════ -->
+<div class="modal-backdrop" *ngIf="showGoalModal" (click)="closeGoalModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingGoal ? language.translate('savings.editGoal') : language.translate('savings.newGoal') }}</h2>
+      <button class="close-btn" (click)="closeGoalModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>{{ language.translate('savings.form.name') }} *</label>
+        <input type="text" [(ngModel)]="goalForm.name" placeholder="VD: Mua xe máy, Du lịch Nhật..." class="goal-form-input">
+      </div>
+      <div class="form-row">
+        <label>{{ language.translate('savings.form.description') }}</label>
+        <input type="text" [(ngModel)]="goalForm.description" placeholder="Mô tả mục tiêu..." class="goal-form-input">
+      </div>
+      <div class="form-row-2">
+        <div class="form-row">
+          <label>{{ language.translate('savings.form.target') }} (VNĐ) *</label>
+          <input type="text" class="goal-form-input"
+            [value]="formatNumberWithDots(goalForm.targetAmount)"
+            (input)="onGoalAmountInput($event)"
+            placeholder="0">
+        </div>
+        <div class="form-row">
+          <label>{{ language.translate('savings.form.deadline') }}</label>
+          <p-calendar [(ngModel)]="goalTargetDate"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            styleClass="goal-calendar"
+            [ngModelOptions]="{standalone: true}">
+          </p-calendar>
+        </div>
+      </div>
 
+      <!-- Icon picker -->
+      <div class="form-row">
+        <label>{{ language.translate('savings.form.icon') }}</label>
+        <div class="goal-icon-picker">
+          <button *ngFor="let ic of goalIcons" class="goal-icon-btn"
+            type="button"
+            [class.selected]="goalForm.icon === ic"
+            (click)="goalForm.icon = ic">{{ ic }}</button>
+        </div>
+      </div>
+
+      <!-- Color picker -->
+      <div class="form-row">
+        <label>{{ language.translate('savings.form.color') }}</label>
+        <div class="goal-color-picker">
+          <button *ngFor="let cl of goalColors" class="goal-color-btn"
+            type="button"
+            [style.background]="cl"
+            [class.selected]="goalForm.color === cl"
+            (click)="goalForm.color = cl"></button>
+        </div>
+      </div>
+
+      <!-- Auto-save section -->
+      <div class="form-row auto-save-section">
+        <div class="auto-save-toggle-row">
+          <span class="auto-save-label">🔄 Tự động tiết kiệm định kỳ</span>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="goalForm.autoSaveEnabled" [ngModelOptions]="{standalone: true}">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="auto-save-options" *ngIf="goalForm.autoSaveEnabled">
+          <div class="form-row-2">
+            <div class="form-row">
+              <label>Số tiền mỗi kỳ (VNĐ)</label>
+              <input type="text" class="goal-form-input"
+                [value]="formatNumberWithDots(goalForm.autoSaveAmount || 0)"
+                (input)="onAutoSaveAmountInput($event)"
+                placeholder="500,000">
+            </div>
+            <div class="form-row">
+              <label>Chu kỳ</label>
+              <select class="goal-form-input" [(ngModel)]="goalForm.autoSaveCycle" [ngModelOptions]="{standalone: true}">
+                <option *ngFor="let c of autoSaveCycles" [value]="c.value">{{ c.label }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeGoalModal()">{{ language.translate('common.cancel') }}</button>
+      <button class="btn btn-primary" (click)="saveGoal()" [disabled]="savingGoal">
+        <i class="fa fa-spinner fa-spin" *ngIf="savingGoal"></i>
+        {{ savingGoal ? '' : language.translate('common.save') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONTRIBUTE MODAL ═══════════════ -->
+<div class="modal-backdrop" *ngIf="showContributeModal" (click)="closeGoalModal()">
+  <div class="modal-box small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>💰 {{ language.translate('savings.contribute.title') }}</h2>
+      <button class="close-btn" (click)="closeGoalModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Quick amount buttons -->
+      <div class="form-row">
+        <label>Nạp nhanh</label>
+        <div class="quick-amounts">
+          <button type="button" class="quick-btn" (click)="quickFillAmount(100000)">100k</button>
+          <button type="button" class="quick-btn" (click)="quickFillAmount(500000)">500k</button>
+          <button type="button" class="quick-btn" (click)="quickFillAmount(1000000)">1M</button>
+          <button type="button" class="quick-btn" (click)="quickFillAmount(2000000)">2M</button>
+          <button type="button" class="quick-btn surplus-quick-btn" *ngIf="budgetSurplus > 0"
+            (click)="quickFillAmount(budgetSurplus)">
+            💰 Dư ngân sách: {{ formatVnd(budgetSurplus) }}
+          </button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>{{ language.translate('savings.contribute.amount') }} (VNĐ) *</label>
+        <input type="text" class="goal-form-input"
+          [value]="formatNumberWithDots(contributeAmount)"
+          (input)="onContributeAmountInput($event)"
+          placeholder="0">
+      </div>
+      <div class="form-row">
+        <label>{{ language.translate('savings.contribute.note') }}</label>
+        <input type="text" [(ngModel)]="contributeNote" class="goal-form-input" placeholder="Ghi chú...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeGoalModal()">{{ language.translate('common.cancel') }}</button>
+      <button class="btn btn-primary" (click)="submitContribution()" [disabled]="savingGoal">
+        <i class="fa fa-spinner fa-spin" *ngIf="savingGoal"></i>
+        {{ savingGoal ? '' : '✅ ' + language.translate('savings.contribute.submit') }}
+      </button>
+    </div>
+  </div>
+</div>

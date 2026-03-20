@@ -7,8 +7,8 @@ spring:
     config:
       server:
         git:
-          username: "${GITHUB_USERNAME}"
-          password: "${GITHUB_PAT}"
+          username: "${GIT_USERNAME}"
+          password: "${GIT_PASSWORD}"
           uri: "https://github.com/BinhAn1676/FinancesConfig.git"
           default-label: master
           timeout: 5
@@ -17,7 +17,7 @@ spring:
     bus:
       enabled: true
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka1:9092}
+    bootstrap-servers: 192.168.0.101:9194
 
 server:
   port: 8071

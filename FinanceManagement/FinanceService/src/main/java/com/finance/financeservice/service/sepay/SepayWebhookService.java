@@ -1,4 +1,4 @@
-package com.finance.financeservice.service;
+package com.finance.financeservice.service.sepay;
 
 import com.finance.financeservice.config.SepayApiProperties;
 import com.finance.financeservice.config.SepayOAuth2Properties;
@@ -9,11 +9,11 @@ import com.finance.financeservice.mongo.document.Transaction;
 import com.finance.financeservice.mongo.repository.TransactionRepository;
 import com.finance.financeservice.mysql.entity.Account;
 import com.finance.financeservice.mysql.repository.AccountRepository;
+import com.finance.financeservice.service.PlanningBudgetService;
 import com.finance.financeservice.service.client.KeyManagementServiceClient;
 import com.finance.financeservice.util.HashUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -164,7 +164,7 @@ public class SepayWebhookService {
             transactionRepository.save(t);
 
             // Update account accumulated balance
-            if (event.getAccumulated() != null) {
+            if (event.getAccumulated() != null && event.getAccumulated() != 0.0) {
                 account.setAccumulated(String.format("%.2f", event.getAccumulated()));
                 accountRepository.save(account);
             }

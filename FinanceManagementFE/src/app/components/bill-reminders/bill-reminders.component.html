@@ -1,0 +1,200 @@
+<div class="bills-layout" [class.sidebar-visible]="!layout.isSidebarCollapsed" [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+  <div class="bills-panel">
+
+    <!-- Header -->
+    <div class="panel-header">
+      <div class="panel-title">
+        <h1>⏰ Nhắc nhở hóa đơn</h1>
+        <p>Quản lý các hóa đơn định kỳ, không bao giờ quên thanh toán.</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <i class="fa fa-plus"></i> Thêm hóa đơn
+      </button>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-strip" *ngIf="bills.length > 0">
+      <div class="stat-card-main">
+        <div class="stat-icon-box blue"><i class="fa fa-calendar-check-o"></i></div>
+        <div>
+          <div class="stat-lbl">Tổng chi hàng tháng</div>
+          <div class="stat-val">{{ formatVnd(totalMonthly) }}</div>
+        </div>
+      </div>
+      <div class="stat-card-main">
+        <div class="stat-icon-box orange"><i class="fa fa-clock-o"></i></div>
+        <div>
+          <div class="stat-lbl">Chưa thanh toán</div>
+          <div class="stat-val">{{ unpaidCount }} hóa đơn</div>
+        </div>
+      </div>
+      <div class="stat-card-main" [class.urgent]="urgentCount > 0">
+        <div class="stat-icon-box red"><i class="fa fa-exclamation-triangle"></i></div>
+        <div>
+          <div class="stat-lbl">Sắp đến hạn</div>
+          <div class="stat-val" [style.color]="urgentCount > 0 ? '#f87171' : '#f8fafc'">{{ urgentCount }} hóa đơn</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+      <i class="fa fa-spinner fa-spin"></i>
+      <span>Đang tải...</span>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!loading && bills.length === 0">
+      <div class="empty-icon">⏰</div>
+      <h3>Chưa có hóa đơn nào</h3>
+      <p>Thêm hóa đơn định kỳ để nhận nhắc nhở trước khi đến hạn</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <i class="fa fa-plus"></i> Thêm hóa đơn đầu tiên
+      </button>
+    </div>
+
+    <!-- Bills grid -->
+    <div class="bills-grid" *ngIf="!loading && bills.length > 0">
+      <div class="bill-card" *ngFor="let bill of bills"
+        [class.urgent]="isUrgent(bill)"
+        [class.paid]="isPaid(bill)"
+        [class.inactive]="!bill.isActive">
+
+        <div class="card-accent" [style.background]="isPaid(bill) ? '#4ade80' : isUrgent(bill) ? '#f87171' : (bill.color || '#4ecdc4')"></div>
+
+        <div class="card-body">
+          <div class="bill-header">
+            <span class="bill-icon">{{ bill.icon || '💡' }}</span>
+            <div class="bill-meta">
+              <h3 class="bill-name">{{ bill.name }}</h3>
+              <span class="bill-cycle">{{ bill.cycle === 'MONTHLY' ? 'Hàng tháng' : bill.cycle === 'QUARTERLY' ? 'Hàng quý' : 'Hàng năm' }} • ngày {{ bill.dayOfMonth }}</span>
+            </div>
+            <div class="bill-amount-box">
+              <span class="bill-amount" [style.color]="bill.color || '#4ecdc4'">{{ formatVnd(bill.amount || 0) }}</span>
+            </div>
+          </div>
+
+          <div class="bill-status-row">
+            <span class="due-badge"
+              [class.badge-paid]="isPaid(bill)"
+              [class.badge-urgent]="isUrgent(bill)"
+              [class.badge-normal]="!isPaid(bill) && !isUrgent(bill)">
+              {{ isPaid(bill) ? '✅ Đã trả tháng này' : dueDateLabel(bill) }}
+            </span>
+            <span class="inactive-badge" *ngIf="!bill.isActive">Tắt</span>
+          </div>
+
+          <div class="bill-footer">
+            <button class="btn-pay"
+              [class.btn-pay-undo]="isPaid(bill)"
+              [style.background]="isPaid(bill) ? 'rgba(74,222,128,0.15)' : (bill.color || '#4ecdc4')"
+              [style.color]="isPaid(bill) ? '#4ade80' : '#0f2030'"
+              (click)="togglePaid(bill)"
+              [disabled]="togglingId === bill.id">
+              <i class="fa" [ngClass]="togglingId === bill.id ? 'fa-spinner fa-spin' : isPaid(bill) ? 'fa-undo' : 'fa-check'"></i>
+              {{ isPaid(bill) ? 'Huỷ đã trả' : 'Đánh dấu đã trả' }}
+            </button>
+            <button class="btn-icon-sm" (click)="openEditModal(bill)" title="Chỉnh sửa">
+              <i class="fa fa-pencil"></i>
+            </button>
+            <button class="btn-icon-sm danger" (click)="deleteBill(bill)" [disabled]="deletingId === bill.id" title="Xóa">
+              <i class="fa" [ngClass]="deletingId === bill.id ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CREATE/EDIT MODAL -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingBill ? '✏️ Sửa hóa đơn' : '➕ Thêm hóa đơn' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Name -->
+      <div class="form-row">
+        <label>Tên hóa đơn *</label>
+        <input type="text" [(ngModel)]="form.name" class="form-input" placeholder="VD: Netflix, Tiền điện...">
+      </div>
+
+      <!-- Amount + Day -->
+      <div class="form-row-2">
+        <div class="form-row">
+          <label>Số tiền (VNĐ) *</label>
+          <input type="text" class="form-input"
+            [value]="formatNumberWithDots(form.amount)"
+            (input)="onAmountInput($event)"
+            placeholder="0">
+        </div>
+        <div class="form-row">
+          <label>Ngày trong tháng *</label>
+          <input type="number" [(ngModel)]="form.dayOfMonth" class="form-input" min="1" max="31" placeholder="1-31">
+        </div>
+      </div>
+
+      <!-- Cycle + Remind before -->
+      <div class="form-row-2">
+        <div class="form-row">
+          <label>Chu kỳ</label>
+          <select [(ngModel)]="form.cycle" class="form-input">
+            <option *ngFor="let c of cycles" [value]="c.value">{{ c.label }}</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Nhắc trước (ngày)</label>
+          <input type="number" [(ngModel)]="form.remindDaysBefore" class="form-input" min="1" max="14">
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-row">
+        <label>Ghi chú</label>
+        <input type="text" [(ngModel)]="form.notes" class="form-input" placeholder="Ghi chú thêm...">
+      </div>
+
+      <!-- Icon picker -->
+      <div class="form-row">
+        <label>Biểu tượng</label>
+        <div class="icon-picker">
+          <button *ngFor="let ic of billIcons" type="button"
+            class="picker-icon-btn" [class.selected]="selectedIcon === ic"
+            (click)="selectedIcon = ic">{{ ic }}</button>
+        </div>
+      </div>
+
+      <!-- Color picker -->
+      <div class="form-row">
+        <label>Màu sắc</label>
+        <div class="color-picker">
+          <button *ngFor="let cl of billColors" type="button"
+            class="picker-color-btn" [class.selected]="selectedColor === cl"
+            [style.background]="cl"
+            (click)="selectedColor = cl"></button>
+        </div>
+      </div>
+
+      <!-- Active toggle -->
+      <div class="form-row">
+        <label class="toggle-row">
+          <span>Kích hoạt nhắc nhở</span>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="form.isActive">
+            <span class="toggle-slider"></span>
+          </label>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="closeModal()">Hủy</button>
+      <button class="btn btn-primary" (click)="saveBill()" [disabled]="saving">
+        <i class="fa fa-spinner fa-spin" *ngIf="saving"></i>
+        {{ saving ? '' : (editingBill ? 'Cập nhật' : 'Tạo hóa đơn') }}
+      </button>
+    </div>
+  </div>
+</div>

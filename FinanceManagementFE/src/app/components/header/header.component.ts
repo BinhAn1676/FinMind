@@ -9,6 +9,7 @@ import { FileService } from '../../services/file.service';
 import { ChatService } from '../../services/chat.service';
 import { ChatRoom } from '../../model/chat.model';
 import { Subscription } from 'rxjs';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -34,8 +35,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private languageService: LanguageService,
     private userService: UserService,
     private fileService: FileService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private themeService: ThemeService
   ) { }
+
+  get isDark(): boolean { return this.themeService.isDark(); }
+  toggleTheme(): void { this.themeService.toggle(); }
 
   public async ngOnInit() {
     this.isLoggedIn = await this.keycloak.isLoggedIn();

@@ -53,8 +53,11 @@
   "menuGroups": "Nhóm",
   "menuPlanning": "Kế hoạch",
   "menuStatistics": "Thống kê",
-  "menuAnalysis": "Phân tích",
+  "menuAnalysis": "AI Phân tích",
   "menuReports": "Báo cáo",
+  "menuCalendar": "Lịch tài chính",
+  "menuBills": "Nhắc nhở hóa đơn",
+  "menuSavings": "Mục tiêu tiết kiệm",
   "menuInvestment": "Đầu tư",
   "invest": {
     "title": "Đầu Tư & Thị Trường",
@@ -116,7 +119,81 @@
     "goldKg": "kilogram",
     "goldDisclaimer": "* Tỷ giá: 1 USD ≈ tỷ giá ước tính. Giá thực tế có thể khác với giá vàng SJC trong nước.",
     "silverTitle": "Bạc XAG/USD",
-    "goldRatio": "Tỷ lệ Vàng/Bạc"
+    "goldRatio": "Tỷ lệ Vàng/Bạc",
+    "portfolio": "Danh mục",
+    "addLot": "Thêm vị thế",
+    "editLot": "Sửa vị thế",
+    "assetType": "Loại tài sản",
+    "assetCrypto": "Crypto",
+    "assetGold": "Vàng",
+    "assetVnStock": "CP Việt Nam",
+    "symbol": "Tài sản",
+    "selectSymbol": "Chọn",
+    "buyDate": "Ngày mua",
+    "quantity": "Số lượng",
+    "quantityPlaceholder": "VD: 0.5",
+    "buyPriceCrypto": "Giá mua (VND/coin)",
+    "buyPriceGold": "Giá mua (VND/lượng)",
+    "buyPriceStock": "Giá mua (VND/cổ phiếu)",
+    "pricePlaceholder": "VNĐ",
+    "note": "Ghi chú",
+    "notePlaceholder": "Tùy chọn",
+    "save": "Lưu",
+    "saving": "Đang lưu...",
+    "cancel": "Hủy",
+    "asset": "Tài sản",
+    "buyPrice": "Giá mua",
+    "curPrice": "Giá hiện tại",
+    "cost": "Tổng vốn",
+    "currentValue": "Giá trị HT",
+    "pnlVnd": "Lãi/Lỗ (VNĐ)",
+    "pnlPct": "Lãi/Lỗ %",
+    "totalCost": "Tổng vốn",
+    "priceUnavail": "Không có giá",
+    "loadingPortfolio": "Đang tải danh mục...",
+    "portfolioEmpty": "Chưa có vị thế nào. Thêm khoản đầu tư đầu tiên.",
+    "portfolioDisclaimer": "Lãi/lỗ được tính theo giá thị trường hiện tại. Crypto quy đổi ~25.400 VNĐ/USD. Chỉ mang tính tham khảo.",
+    "addTransaction": "Thêm giao dịch",
+    "txBuy": "Mua",
+    "txSell": "Bán",
+    "selectCoin": "Chọn tiền ảo",
+    "totalSpent": "Tổng tiêu",
+    "totalReceived": "Tổng nhận",
+    "pricePerCoin": "Giá mỗi coin",
+    "useMarketPrice": "Giá thị trường",
+    "maxQty": "TỐI ĐA",
+    "transactionDate": "Ngày & giờ",
+    "feesAndNotes": "Phí & ghi chú (Không bắt buộc)",
+    "fees": "Phí giao dịch",
+    "feeOptional": "tùy chọn",
+    "addTransactionBtn": "Thêm giao dịch",
+    "currencyUSD": "USD",
+    "currencyVND": "VNĐ",
+    "toggleCurrency": "Đổi tiền tệ",
+    "balance": "Số dư hiện tại",
+    "change24h": "Thay đổi 24h",
+    "totalPnl": "Tổng Lãi/Lỗ",
+    "topPerformer": "Hiệu suất tốt nhất",
+    "totalAssets": "Phân bổ tài sản",
+    "performance": "Hiệu suất",
+    "holdings": "Danh mục",
+    "change1h": "1g",
+    "change7d": "7n",
+    "totalHoldings": "Tổng tài sản",
+    "addCoin": "Thêm tiền ảo",
+    "searchToAddCoin": "Tìm kiếm tiền ảo để thêm vào danh mục...",
+    "coinName": "Tiền ảo",
+    "price": "Giá",
+    "totalAssetValue": "Tổng tài sản",
+    "pnlLabel": "Lãi/Lỗ",
+    "viewTransactions": "Xem giao dịch",
+    "removeCoin": "Xóa khỏi danh mục",
+    "transactions": "Giao dịch",
+    "noTransactions": "Chưa có giao dịch nào. Thêm giao dịch đầu tiên.",
+    "txType": "Loại",
+    "income": "Thu nhập",
+    "totalQty": "Tổng SL",
+    "avgNetCost": "Chi phí TB"
   },
   "navAccount": "Tài khoản cá nhân",
   "navLanguage": "Đổi ngôn ngữ",
@@ -247,7 +324,6 @@
   "bankTutorialStep4": "Copy token và dán vào form bên trên",
   "bankTutorialStep5": "Nhấn \"Lưu token\" để hoàn tất",
   "bankTutorialGotIt": "Đã hiểu",
-
   "sepayOAuth2Title": "Kết nối tài khoản SePay",
   "sepayOAuth2Desc": "Kết nối tài khoản SePay để tự động đồng bộ tài khoản ngân hàng và nhận thông báo giao dịch theo thời gian thực",
   "sepayOAuth2ConnectedDesc": "Tài khoản SePay đã được kết nối. Giao dịch sẽ được nhận theo thời gian thực qua webhook.",
@@ -268,7 +344,6 @@
   "sepayCallbackError": "Kết nối thất bại",
   "sepayCallbackGoToProfile": "Đi đến Hồ sơ",
   "sepayCallbackRetry": "Quay lại Hồ sơ",
-
   "accountTab": {
     "bank": "Tài khoản ngân hàng",
     "external": "Tài khoản ngoài"
@@ -371,6 +446,17 @@
     "loadingCategories": "Đang tải phân loại...",
     "emptyState": "Chưa có kế hoạch nào. Hãy tạo kế hoạch để bắt đầu theo dõi.",
     "uncategorized": "Không xác định",
+    "tabs": {
+      "budgets": "Kế hoạch ngân sách",
+      "savings": "Mục tiêu tiết kiệm"
+    },
+    "surplus": {
+      "prefix": "Bạn đang dư",
+      "suffix": "từ kế hoạch ngân sách",
+      "subtitle": "Chuyển vào mục tiêu tiết kiệm ngay?",
+      "selectGoal": "-- Chọn mục tiêu --",
+      "transfer": "Nạp tiền"
+    },
     "summary": {
       "totalBudget": "Tổng ngân sách",
       "totalSpent": "Đã chi",
@@ -735,17 +821,17 @@
       "deleteGroup": "Xóa Nhóm",
       "leaveGroup": "Rời nhóm",
       "deleteConfirm": "Bạn có chắc chắn muốn xóa nhóm này? Hành động này không thể hoàn tác.",
-        "deleteNotImplemented": "Tính năng xóa nhóm chưa được triển khai.",
-        "deleteSuccess": "Đã xóa nhóm thành công.",
-        "deleteError": "Không thể xóa nhóm. Vui lòng thử lại.",
-        "deleteModal": {
-          "title": "Xóa nhóm",
-          "message": "Bạn có chắc chắn muốn xóa nhóm này?",
-          "warning": "Hành động này không thể hoàn tác.",
-          "confirm": "Xóa nhóm",
-          "deleting": "Đang xóa...",
-          "cancel": "Hủy"
-        },
+      "deleteNotImplemented": "Tính năng xóa nhóm chưa được triển khai.",
+      "deleteSuccess": "Đã xóa nhóm thành công.",
+      "deleteError": "Không thể xóa nhóm. Vui lòng thử lại.",
+      "deleteModal": {
+        "title": "Xóa nhóm",
+        "message": "Bạn có chắc chắn muốn xóa nhóm này?",
+        "warning": "Hành động này không thể hoàn tác.",
+        "confirm": "Xóa nhóm",
+        "deleting": "Đang xóa...",
+        "cancel": "Hủy"
+      },
       "leave": {
         "confirm": "Bạn chắc chắn muốn rời nhóm này?",
         "success": "Bạn đã rời nhóm thành công.",
@@ -761,7 +847,8 @@
         "members": "Thành viên",
         "analysis": "Thống kê",
         "activity": "Hoạt động",
-        "chat": "Chat"
+        "chat": "Chat",
+        "calendar": "Lịch tài chính"
       },
       "overview": {
         "summary": "Tổng quan",
@@ -1351,7 +1438,11 @@
     },
     "cronBuilder": {
       "simpleMode": "Chế Độ Đơn Giản",
-      "advancedMode": "Chế Độ Nâng Cao",
+      "advancedMode": {
+        "label": "Biểu Thức Cron",
+        "placeholder": "0 0 9 * * ?",
+        "formatHint": "Định dạng: giây phút giờ ngày-trong-tháng tháng ngày-trong-tuần"
+      },
       "presets": {
         "label": "Chọn Mẫu Có Sẵn",
         "placeholder": "-- Chọn lịch mẫu --"
@@ -1382,11 +1473,6 @@
           "hourLabel": "Giờ",
           "minuteLabel": "Phút"
         }
-      },
-      "advancedMode": {
-        "label": "Biểu Thức Cron",
-        "placeholder": "0 0 9 * * ?",
-        "formatHint": "Định dạng: giây phút giờ ngày-trong-tháng tháng ngày-trong-tuần"
       },
       "validation": {
         "valid": "Biểu thức cron hợp lệ",
@@ -1492,6 +1578,40 @@
     "charts": {
       "spendingByCategory": "Chi Tiêu Theo Danh Mục",
       "incomeVsExpense": "Xu Hướng Thu Chi"
+    }
+  },
+  "calendar": {
+    "subtitle": "Xem giao dịch theo từng ngày trong tháng",
+    "income": "Thu nhập",
+    "expense": "Chi tiêu",
+    "net": "Còn lại",
+    "transactions": "giao dịch",
+    "noTransactions": "Không có giao dịch"
+  },
+  "savings": {
+    "subtitle": "Theo dõi và đạt các mục tiêu tiết kiệm của bạn",
+    "newGoal": "Thêm mục tiêu",
+    "editGoal": "Chỉnh sửa mục tiêu",
+    "totalSaved": "Tổng đã tiết kiệm",
+    "totalTarget": "Tổng mục tiêu",
+    "activeGoals": "Đang tiết kiệm",
+    "completedGoals": "Đã hoàn thành",
+    "emptyTitle": "Chưa có mục tiêu tiết kiệm",
+    "emptyDesc": "Hãy tạo mục tiêu đầu tiên của bạn!",
+    "createFirst": "Tạo mục tiêu ngay",
+    "form": {
+      "name": "Tên mục tiêu",
+      "description": "Mô tả",
+      "target": "Số tiền mục tiêu",
+      "deadline": "Ngày đạt mục tiêu",
+      "icon": "Biểu tượng",
+      "color": "Màu sắc"
+    },
+    "contribute": {
+      "title": "Thêm tiết kiệm",
+      "amount": "Số tiền",
+      "note": "Ghi chú",
+      "submit": "Xác nhận"
     }
   }
 }

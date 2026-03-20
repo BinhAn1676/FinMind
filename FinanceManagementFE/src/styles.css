@@ -1,10 +1,110 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* ─── DARK default ─── */
+:root {
+  --bg-page:         #0A192F;
+  --bg-page-alt:     #071525;
+  --bg-secondary:    #0b1a2b;
+  --bg-card:         #1b4458;
+  --bg-card-alt:     #173a4a;
+  --bg-card-inner:   #142e3d;
+  --bg-panel:        rgba(17, 24, 39, 0.85);
+  --bg-input:        rgba(11, 37, 63, 0.9);
+  --bg-input-hover:  rgba(30, 41, 59, 0.9);
+  --bg-chip:         rgba(255, 255, 255, 0.08);
+  --bg-overlay:      rgba(0, 0, 0, 0.8);
+
+  --text-primary:    #FFFFFF;
+  --text-secondary:  #e2e8f0;
+  --text-muted:      #adb5bd;
+  --text-subtle:     #94a3b8;
+  --text-dim:        #9fb2d4;
+  --text-body:       #e9edf5;
+  --text-heading:    #dce5f3;
+
+  --border-default:  rgba(255, 255, 255, 0.1);
+  --border-subtle:   rgba(255, 255, 255, 0.06);
+  --border-teal:     rgba(78, 205, 196, 0.25);
+  --border-teal-strong: rgba(78, 205, 196, 0.45);
+  --border-input:    rgba(30, 41, 59, 0.9);
+
+  --accent-teal:     #4ECDC4;
+  --accent-coral:    #FF6B6B;
+  --accent-coral-dim:#FF8A8A;
+  --accent-blue:     #4E89FF;
+  --accent-green:    #22c55e;
+  --accent-amber:    #FFC107;
+
+  --sidebar-bg:      #0b1a2b;
+  --sidebar-label:   #a0b4c0;
+
+  --header-bg:       #0A192F;
+  --header-border:   rgba(255, 255, 255, 0.1);
+
+  --shadow-card:     20px 20px 40px #0a1a21, -20px -20px 40px #286683;
+  --shadow-panel:    0 12px 45px rgba(10,26,33,0.65), 0 2px 18px rgba(78,205,255,0.25);
+  --shadow-dropdown: 0 8px 32px rgba(0,0,0,0.4);
+
+  --chart-text:      #94a3b8;
+  --chart-grid:      #334155;
+  --chart-tooltip-bg:#0f172a;
+  --chart-tooltip-color: #e2e8f0;
+
+  --badge-border:    #0A192F;
+}
+
+/* ─── LIGHT override ─── */
+html[data-theme="light"] {
+  --bg-page:         #E4F0F7;
+  --bg-page-alt:     #DBE9F2;
+  --bg-secondary:    #D0E4EE;
+  --bg-card:         #E9F4F9;
+  --bg-card-alt:     #DFF0F7;
+  --bg-card-inner:   #D4EAF5;
+  --bg-panel:        rgba(240, 248, 252, 0.97);
+  --bg-input:        #F7FBFD;
+  --bg-input-hover:  #E8F3F9;
+  --bg-chip:         rgba(78, 163, 196, 0.10);
+  --bg-overlay:      rgba(0, 0, 0, 0.5);
+
+  --text-primary:    #0F172A;
+  --text-secondary:  #1E293B;
+  --text-muted:      #475569;
+  --text-subtle:     #64748B;
+  --text-dim:        #64748B;
+  --text-body:       #334155;
+  --text-heading:    #1E293B;
+
+  --border-default:  rgba(0, 0, 0, 0.10);
+  --border-subtle:   rgba(0, 0, 0, 0.06);
+  --border-teal:     rgba(78, 205, 196, 0.40);
+  --border-teal-strong: rgba(78, 205, 196, 0.65);
+  --border-input:    #CBD5E1;
+
+  --sidebar-bg:      #D6E8F2;
+  --sidebar-label:   #4A7A96;
+
+  --header-bg:       #F7FBFD;
+  --header-border:   rgba(78, 163, 196, 0.18);
+
+  --shadow-card:     0 4px 20px rgba(78,163,196,0.10), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-panel:    0 8px 32px rgba(78,163,196,0.12), 0 2px 8px rgba(78,205,196,0.08);
+  --shadow-dropdown: 0 8px 32px rgba(0,0,0,0.10);
+
+  --chart-text:      #4A6B80;
+  --chart-grid:      #C8DDE8;
+  --chart-tooltip-bg:#F7FBFD;
+  --chart-tooltip-color: #1E293B;
+
+  --badge-border:    #E2EEF5;
+}
+
 body {
-  background: #0A192F !important;
+  background: var(--bg-page) !important;
   background-size: cover;
   text-align: left;
   font-family: 'Be Vietnam Pro', sans-serif;
-  color: #FFFFFF !important;
+  color: var(--text-primary) !important;
 }
 
 .container{
@@ -73,43 +173,83 @@ transition: 0.5s all;
 }
 /*-- //Login-form --*/
 
-/* ===== Global PrimeNG Datepicker (dark theme) ===== */
+/* ===== Global PrimeNG Datepicker ===== */
 .p-datepicker {
+  z-index: 1200 !important;
   background: linear-gradient(135deg, rgba(14, 42, 62, 0.98), rgba(20, 58, 78, 0.98)) !important;
-  border: 1px solid rgba(78, 205, 196, 0.5) !important;
+  border: 1px solid var(--border-teal-strong) !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
-  color: #fff !important;
+  color: var(--text-primary) !important;
   font-family: 'Be Vietnam Pro', sans-serif !important;
 }
 .p-datepicker .p-datepicker-header {
   background: linear-gradient(135deg, rgba(78, 205, 196, 0.25), rgba(14, 42, 62, 0.95)) !important;
   border-bottom: 1px solid rgba(78, 205, 196, 0.4) !important;
-  color: #fff !important;
+  color: var(--text-primary) !important;
   padding: 0.8rem 1rem !important;
 }
-.p-datepicker .p-datepicker-header .p-datepicker-title { color: #fff !important; }
+.p-datepicker .p-datepicker-header .p-datepicker-title { color: var(--text-primary) !important; }
 .p-datepicker .p-datepicker-header .p-datepicker-prev,
 .p-datepicker .p-datepicker-header .p-datepicker-next { color: #4ECDC4 !important; transition: all 0.2s; }
 .p-datepicker .p-datepicker-header .p-datepicker-prev:hover,
-.p-datepicker .p-datepicker-header .p-datepicker-next:hover { color: #fff !important; background: rgba(78, 205, 196, 0.2) !important; }
-.p-datepicker table { color: #fff !important; }
+.p-datepicker .p-datepicker-header .p-datepicker-next:hover { color: var(--text-primary) !important; background: rgba(78, 205, 196, 0.2) !important; }
+.p-datepicker table { color: var(--text-primary) !important; }
 .p-datepicker table td { padding: 0.2rem !important; }
-.p-datepicker table td > span { width: 2.3rem !important; height: 2.3rem !important; border-radius: 8px !important; color: #fff !important; transition: all 0.2s; }
+.p-datepicker table td > span { width: 2.3rem !important; height: 2.3rem !important; border-radius: 8px !important; color: var(--text-primary) !important; transition: all 0.2s; }
 .p-datepicker table td > span:hover { background: rgba(78, 205, 196, 0.25) !important; color: #4ECDC4 !important; }
 .p-datepicker table td.p-datepicker-today > span { background: rgba(78, 205, 196, 0.3) !important; color: #4ECDC4 !important; font-weight: 700 !important; border: 1px solid rgba(78, 205, 196, 0.6) !important; }
 .p-datepicker table td > span.p-highlight { background: linear-gradient(135deg, #4ECDC4, #FF6B6B) !important; color: #fff !important; font-weight: 700 !important; }
-.p-datepicker table th { color: #94a3b8 !important; font-size: 0.85rem !important; }
+.p-datepicker table th { color: var(--text-subtle) !important; font-size: 0.85rem !important; }
 .p-datepicker .p-datepicker-buttonbar { border-top: 1px solid rgba(78, 205, 196, 0.4) !important; background: rgba(14, 42, 62, 0.9) !important; padding: 0.6rem !important; }
 .p-datepicker .p-datepicker-buttonbar .p-button { background: rgba(78, 205, 196, 0.15) !important; border: 1px solid rgba(78, 205, 196, 0.35) !important; color: #4ECDC4 !important; border-radius: 8px !important; font-family: 'Be Vietnam Pro', sans-serif !important; }
 .p-datepicker .p-datepicker-buttonbar .p-button:hover { background: rgba(78, 205, 196, 0.28) !important; color: #fff !important; }
 .p-datepicker .p-monthpicker .p-monthpicker-month,
-.p-datepicker .p-yearpicker .p-yearpicker-year { color: #fff !important; border-radius: 8px !important; transition: all 0.2s; }
+.p-datepicker .p-yearpicker .p-yearpicker-year { color: var(--text-primary) !important; border-radius: 8px !important; transition: all 0.2s; }
 .p-datepicker .p-monthpicker .p-monthpicker-month:hover,
 .p-datepicker .p-yearpicker .p-yearpicker-year:hover { background: rgba(78, 205, 196, 0.25) !important; color: #4ECDC4 !important; }
 .p-datepicker .p-monthpicker .p-monthpicker-month.p-highlight,
 .p-datepicker .p-yearpicker .p-yearpicker-year.p-highlight { background: linear-gradient(135deg, #4ECDC4, #FF6B6B) !important; color: #fff !important; }
+
+html[data-theme="light"] .p-datepicker {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.98)) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+}
+html[data-theme="light"] .p-datepicker .p-datepicker-header {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(241, 245, 249, 0.95)) !important;
+}
+html[data-theme="light"] .p-datepicker .p-datepicker-buttonbar {
+  background: rgba(241, 245, 249, 0.9) !important;
+}
 /* ===== End Global PrimeNG Datepicker ===== */
+
+/* ===== Global PrimeNG Dropdown (transaction modal) ===== */
+.p-dropdown-panel {
+  z-index: 1200 !important;
+  background: #0f2038 !important;
+  border: 1px solid rgba(78,205,196,0.25) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+}
+.p-dropdown-panel .p-dropdown-items-wrapper { background: #0f2038 !important; border-radius: 10px !important; }
+.p-dropdown-panel .p-dropdown-item { color: #e0e6ef !important; padding: 8px 14px !important; font-size: 0.9rem; }
+.p-dropdown-panel .p-dropdown-item:hover { background: rgba(78,205,196,0.12) !important; color: #4ECDC4 !important; }
+.p-dropdown-panel .p-dropdown-item.p-highlight { background: rgba(78,205,196,0.18) !important; color: #4ECDC4 !important; }
+.p-dropdown-panel .p-dropdown-filter-container { padding: 8px 10px !important; }
+.p-dropdown-panel .p-dropdown-filter { background: #1a3a4a !important; border: 1px solid rgba(255,255,255,0.15) !important; color: #e0e6ef !important; border-radius: 7px !important; padding: 6px 10px !important; width: 100% !important; }
+/* ===== End Global PrimeNG Dropdown ===== */
+
+/* ===== Global Select Fix for Light Theme ===== */
+/* Prevent SVG arrow from tiling — always enforce no-repeat + position + size */
+html[data-theme="light"] select {
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 1.2em !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+/* ===== End Global Select Fix ===== */
 
 .w3l-main-2 form {
   width: 60%;

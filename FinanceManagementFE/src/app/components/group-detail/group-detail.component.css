@@ -1,6 +1,6 @@
 .group-detail {
   padding: 24px;
-  color: #f9fafb;
+  color: var(--text-primary);
   overflow-y: auto;
   height: 100%;
   box-sizing: border-box;
@@ -1635,29 +1635,16 @@
   gap: 1.8rem;
 }
 
+/* Plan card - new sidebar-style layout */
 .plan-tab .plan-card {
   position: relative;
   background: linear-gradient(140deg, rgba(14, 30, 46, 0.95), rgba(16, 45, 66, 0.95));
   border-radius: 20px;
   border: 1px solid rgba(148, 210, 255, 0.15);
-  padding: 1.6rem;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.plan-tab .plan-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(650px 120px at 10% -5%, rgba(59, 130, 246, 0.18), transparent 60%);
-  opacity: 0.9;
-  pointer-events: none;
-}
-
-.plan-tab .plan-card > * {
-  position: relative;
-  z-index: 1;
+  padding: 0;
 }
 
 .plan-tab .plan-card:hover {
@@ -1670,158 +1657,237 @@
   border-color: rgba(239, 68, 68, 0.45);
 }
 
-.plan-tab .plan-header {
+.plan-tab .card-accent {
+  height: 4px;
+}
+
+.plan-tab .card-body {
+  padding: 1.25rem 1.5rem;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1.3rem;
 }
 
-.plan-tab .plan-actions {
+.plan-tab .card-header-row {
   display: flex;
-  gap: 0.5rem;
-  margin-left: auto;
+  align-items: flex-start;
+  gap: 0.75rem;
 }
 
-.plan-tab .icon-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #2563eb, #38bdf8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: #fff;
+.plan-tab .goal-icon {
+  font-size: 2rem;
   flex-shrink: 0;
 }
 
-.plan-tab .plan-title h4 {
-  margin: 0;
-  font-weight: 700;
-  color: #f8fafc;
-  font-size: 1.25rem;
+.plan-tab .goal-meta {
+  flex: 1;
 }
 
-.plan-tab .plan-title span {
+.plan-tab .goal-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.plan-tab .goal-desc {
   color: #94a3b8;
   font-size: 0.85rem;
 }
 
-.plan-tab .icon-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  color: #e2e8f0;
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.05rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.plan-tab .icon-btn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
-}
-
-.plan-tab .icon-btn:first-child:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  color: #93c5fd;
-}
-
-.plan-tab .icon-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.plan-tab .plan-progress {
-  height: 10px;
-  background: rgba(148, 163, 184, 0.2);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-bottom: 1.2rem;
-}
-
-.plan-tab .progress-bar {
-  height: 100%;
-  background: linear-gradient(135deg, #38bdf8, #4ade80);
-  border-radius: 999px;
-  transition: width 0.35s ease;
-}
-
-.plan-tab .progress-bar.danger {
-  background: linear-gradient(135deg, #f97316, #ef4444);
-}
-
-.plan-tab .plan-stats {
+.plan-tab .card-actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.1rem;
-  color: #cbd5e1;
+  align-items: flex-start;
 }
 
-.plan-tab .plan-stats .stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.plan-tab .plan-stats label {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #94a3b8;
-}
-
-.plan-tab .plan-stats span {
-  font-size: 1.2rem;
+.plan-tab .status-badge {
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #f8fafc;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
-.plan-tab .plan-stats .divider {
-  width: 1px;
-  height: 42px;
-  background: rgba(148, 163, 184, 0.25);
+.plan-tab .status-active {
+  background: rgba(78, 205, 196, 0.15);
+  color: #4ecdc4;
 }
 
-.plan-tab .plan-status {
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  background: rgba(56, 189, 248, 0.12);
-  color: #38d39f;
-}
-
-.plan-tab .plan-status.overspent {
+.plan-tab .status-cancelled {
   background: rgba(248, 113, 113, 0.15);
   color: #f87171;
 }
 
-.plan-tab .plan-description {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
-  font-size: 0.85rem;
+.plan-tab .progress-section {
   display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.plan-tab .plan-description i {
-  margin-top: 0.2rem;
-  color: #60a5fa;
+.plan-tab .progress-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.plan-tab .current-amount,
+.plan-tab .target-amount {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.plan-tab .progress-pct {
+  font-weight: 700;
+}
+
+.plan-tab .progress-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.plan-tab .progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  min-width: 4px;
+}
+
+.plan-tab .progress-labels {
+  font-size: 0.8rem;
+}
+
+.plan-tab .card-footer {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.plan-tab .btn-icon {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #e2e8f0;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plan-tab .btn-icon:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+.plan-tab .btn-icon.danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+.plan-tab .btn-icon:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Plan modal icon/color pickers */
+:host ::ng-deep .icon-picker {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+:host ::ng-deep .picker-icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: all 0.15s;
+}
+
+:host ::ng-deep .picker-icon-btn:hover,
+:host ::ng-deep .picker-icon-btn.selected {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.15);
+}
+
+:host ::ng-deep .color-picker {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+:host ::ng-deep .picker-color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+:host ::ng-deep .picker-color-btn:hover {
+  transform: scale(1.15);
+}
+
+:host ::ng-deep .picker-color-btn.selected {
+  border-color: #f8fafc;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Savings goal modal pickers */
+.goal-icon-picker {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.goal-icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: all 0.15s;
+}
+
+.goal-icon-btn:hover,
+.goal-icon-btn.selected {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.15);
+}
+
+.goal-color-picker {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.goal-color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.goal-color-btn:hover {
+  transform: scale(1.15);
+}
+
+.goal-color-btn.selected {
+  border-color: #f8fafc;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 /* Planning Modal Styles - Global (not scoped to .plan-tab because modal is overlay) */
@@ -5064,4 +5130,2305 @@
   .analysis-tab .cards-grid {
     grid-template-columns: 1fr;
   }
+}
+/* ===== PLAN SUB-NAVIGATION ===== */
+.plan-subnav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+  padding-bottom: 0;
+}
+
+.plan-subnav-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #94a3b8;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+  border-radius: 0;
+}
+
+.plan-subnav-btn:hover {
+  color: #e2e8f0;
+}
+
+.plan-subnav-btn.active {
+  color: #4ecdc4;
+  border-bottom-color: #4ecdc4;
+}
+
+/* ===== SAVINGS GOALS (inside Plan tab) ===== */
+.savings-panel {
+  background: linear-gradient(145deg, #1b4458, #173a4a);
+  border-radius: 26px;
+  box-shadow: 0 12px 45px rgba(10, 26, 33, 0.65), 0 2px 18px rgba(78, 205, 255, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  padding: 2.5rem 3rem;
+  color: #f8fafc;
+  min-height: 70vh;
+}
+
+/* Surplus Banner */
+.surplus-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(78, 205, 196, 0.05));
+  border: 1px solid rgba(78, 205, 196, 0.35);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.surplus-banner-icon { font-size: 1.5rem; flex-shrink: 0; }
+.surplus-banner-text { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 0.15rem; }
+.surplus-title { font-size: 0.9rem; color: #e2e8f0; }
+.surplus-title strong { color: #4ecdc4; }
+.surplus-sub { font-size: 0.75rem; color: #94a3b8; }
+.surplus-actions { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.surplus-select {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(78, 205, 196, 0.4);
+  border-radius: 10px;
+  color: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.surplus-select option { background: #1b4458; }
+.btn-transfer {
+  background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+  border: none;
+  border-radius: 10px;
+  color: #0f2030;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.btn-transfer:hover:not(:disabled) { opacity: 0.85; }
+.btn-transfer:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.savings-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.savings-stats {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.savings-stat {
+  flex: 1;
+  min-width: 160px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.savings-stat-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.savings-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.savings-stat-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.savings-stat-value.blue { color: #60a5fa; }
+.savings-stat-value.teal { color: #4ecdc4; }
+
+.savings-stat-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+.savings-header > .btn-add-goal {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.btn-add-goal {
+  background: linear-gradient(135deg, #ff6b6b, #f4978e);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 0.9rem 1.8rem;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 6px 18px rgba(255, 107, 107, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+.btn-add-goal:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(255, 107, 107, 0.45);
+}
+
+.savings-loading { color: #94a3b8; text-align: center; padding: 3rem; font-size: 1rem; }
+
+.savings-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 1.5rem;
+  color: #94a3b8;
+  gap: 0.6rem;
+}
+.savings-empty-icon { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.savings-empty-title { font-size: 1.15rem; font-weight: 700; color: #f8fafc; }
+.savings-empty-desc { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 1.2rem; }
+
+/* Goal Grid */
+.savings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.8rem;
+  align-items: start;
+}
+
+.goal-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 0;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.goal-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3); }
+.goal-card.completed { opacity: 0.85; }
+.goal-card.cancelled { opacity: 0.5; }
+
+/* Savings grid card footer: contribute button takes full width */
+.savings-grid .card-footer {
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Status badge completed (active + cancelled already in plan-tab section) */
+.plan-tab .status-completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+/* Progress labels for savings goals */
+.plan-tab .remaining-label { color: #94a3b8; }
+.plan-tab .days-label { color: #94a3b8; display: flex; align-items: center; gap: 0.3rem; }
+
+/* Contribute button */
+.plan-tab .btn-contribute {
+  flex: 1;
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 10px;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.plan-tab .btn-contribute:hover { opacity: 0.85; transform: scale(1.03); }
+
+/* Toggle contributions button */
+.plan-tab .btn-history-toggle {
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  padding: 0.6rem 0;
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+}
+.plan-tab .btn-history-toggle:hover { color: #f8fafc; }
+
+/* Contribution history */
+.plan-tab .contribution-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.4rem;
+}
+.plan-tab .no-contributions { font-size: 0.8rem; color: #64748b; text-align: center; padding: 0.4rem 0; }
+.plan-tab .contribution-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  gap: 0.5rem;
+}
+.plan-tab .contribution-info { display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 0; }
+.plan-tab .contribution-amount { font-weight: 700; color: #4ecdc4; white-space: nowrap; }
+.plan-tab .contribution-note { color: #94a3b8; font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-tab .contribution-right { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.plan-tab .contribution-date { color: #64748b; font-size: 0.75rem; white-space: nowrap; }
+.plan-tab .contribution-delete {
+  background: transparent; border: none; color: #64748b;
+  cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 2px; transition: color 0.2s;
+}
+.plan-tab .contribution-delete:hover { color: #f87171; }
+
+/* Savings grid btn-icon: match planning style */
+.savings-grid .btn-icon {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #94a3b8;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+}
+.savings-grid .btn-icon:hover:not(:disabled) {
+  background: rgba(78, 205, 196, 0.2);
+  color: #4ecdc4;
+}
+.savings-grid .btn-icon.danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+/* Savings Modals */
+.savings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.savings-modal-box {
+  background: linear-gradient(145deg, #1b4458, #173a4a);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(10, 26, 33, 0.65), 0 2px 18px rgba(78, 205, 255, 0.2);
+  animation: savingsModalIn 0.32s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+@keyframes savingsModalIn {
+  from { opacity: 0; transform: scale(0.88) translateY(24px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);     }
+}
+
+.savings-modal-sm { max-width: 380px; }
+
+.savings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 1.8rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.savings-modal-header h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #f8fafc; }
+
+.savings-modal-close {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 10px;
+  transition: all 0.2s;
+}
+.savings-modal-close:hover { color: #f8fafc; background: rgba(255,255,255,0.12); }
+
+.savings-modal-body { padding: 1.4rem 1.8rem; overflow-y: auto; flex: 1; }
+.savings-modal-footer {
+  padding: 1rem 1.8rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.sform-row { margin-bottom: 1.2rem; }
+.sform-row label { display: block; font-size: 0.82rem; font-weight: 600; color: #94a3b8; margin-bottom: 6px; letter-spacing: 0.3px; }
+.sform-row-inline { display: flex; gap: 12px; }
+.sform-half { flex: 1; }
+.sform-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.sform-control {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: #f8fafc;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.sform-control:focus { border-color: #4ecdc4; box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.15); }
+.sform-color { padding: 4px; height: 40px; cursor: pointer; }
+
+/* p-calendar override inside savings modal */
+.savings-modal-body ::ng-deep .savings-calendar { width: 100%; }
+.savings-modal-body ::ng-deep .savings-calendar > span { width: 100%; display: flex; }
+.savings-modal-body ::ng-deep .savings-calendar .p-inputtext {
+  width: 100%; flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px 0 0 10px;
+  color: #f8fafc;
+  padding: 10px 14px;
+  font-size: 14px;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+.savings-modal-body ::ng-deep .savings-calendar .p-inputtext:enabled:focus {
+  border-color: #4ecdc4;
+  box-shadow: 0 0 0 3px rgba(78,205,196,0.15);
+  outline: none;
+}
+.savings-modal-body ::ng-deep .savings-calendar .p-datepicker-trigger {
+  background: rgba(78,205,196,0.15);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  color: #4ecdc4;
+  padding: 10px 12px;
+  transition: all 0.2s;
+}
+.savings-modal-body ::ng-deep .savings-calendar .p-datepicker-trigger:hover {
+  background: rgba(78,205,196,0.3);
+  color: #f8fafc;
+}
+
+/* Quick amount buttons */
+.quick-amounts { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.quick-btn {
+  padding: 0.35rem 0.8rem;
+  background: rgba(78,205,196,0.1);
+  border: 1px solid rgba(78,205,196,0.3);
+  border-radius: 8px;
+  color: #4ecdc4;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.quick-btn:hover { background: rgba(78,205,196,0.22); }
+
+.contribute-goal-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4ecdc4;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .savings-grid { grid-template-columns: 1fr; }
+  .savings-stats { gap: 16px; }
+  .savings-panel { padding: 1.5rem; }
+  .plan-subnav-btn { padding: 8px 12px; font-size: 0.85rem; }
+}
+
+/* ===== CALENDAR TAB ===== */
+.calendar-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Summary chips row */
+.gcal-summary-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.gcal-summary-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 0.65rem 1.1rem;
+  min-width: 140px;
+  flex: 1;
+}
+.gcal-summary-chip i { font-size: 1.1rem; opacity: 0.85; }
+.gcal-summary-chip.income i { color: #4ade80; }
+.gcal-summary-chip.expense i { color: #f87171; }
+.gcal-summary-chip.net-positive i { color: #4ade80; }
+.gcal-summary-chip.net-negative i { color: #f87171; }
+.gcal-chip-label { display: block; font-size: 0.72rem; color: #94a3b8; }
+.gcal-chip-value { display: block; font-size: 0.95rem; font-weight: 700; }
+.gcal-summary-chip.income .gcal-chip-value { color: #4ade80; }
+.gcal-summary-chip.expense .gcal-chip-value { color: #f87171; }
+.gcal-summary-chip.net-positive .gcal-chip-value { color: #4ade80; }
+.gcal-summary-chip.net-negative .gcal-chip-value { color: #f87171; }
+
+/* Body: calendar + detail panel side by side */
+.gcal-body {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+/* Calendar panel */
+.gcal-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Navigation */
+.gcal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.gcal-nav-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #f8fafc;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+.gcal-nav-btn:hover { background: rgba(78,205,196,0.3); }
+.gcal-month-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  min-width: 180px;
+  text-align: center;
+}
+
+.gcal-loading {
+  text-align: center;
+  padding: 3rem;
+  color: #94a3b8;
+}
+
+/* Grid */
+.gcal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.gcal-week-header {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  padding: 0.4rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.gcal-day-cell {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  min-height: 78px;
+  padding: 6px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  overflow: hidden;
+}
+.gcal-day-cell:hover { background: rgba(78,205,196,0.1); border-color: rgba(78,205,196,0.3); }
+.gcal-day-cell.other-month { opacity: 0.22; cursor: default; }
+.gcal-day-cell.other-month:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
+.gcal-day-cell.today { border-color: #4ecdc4 !important; background: rgba(78,205,196,0.1) !important; }
+.gcal-day-cell.selected { border-color: #ff6b6b !important; background: rgba(255,107,107,0.1) !important; }
+.gcal-day-cell.has-tx { background: rgba(255,255,255,0.06); }
+
+.gcal-day-num {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  line-height: 1;
+}
+.gcal-day-cell.today .gcal-day-num {
+  background: #4ecdc4;
+  color: #0f2030;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+}
+.gcal-day-income { font-size: 0.65rem; color: #4ade80; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gcal-day-expense { font-size: 0.65rem; color: #f87171; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gcal-tx-count { font-size: 0.58rem; color: #64748b; margin-top: auto; }
+
+/* Detail panel */
+.gcal-detail-panel {
+  width: 340px;
+  flex-shrink: 0;
+  background: linear-gradient(145deg, #1b4458, #173a4a);
+  border-radius: 18px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 30px rgba(10,26,33,0.5);
+  color: #f8fafc;
+  overflow: hidden;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.gcal-detail-panel.open {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.gcal-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.1rem 1.25rem;
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.gcal-detail-header h3 { margin: 0; font-size: 0.95rem; font-weight: 700; text-transform: capitalize; }
+.gcal-detail-count { font-size: 0.75rem; color: #94a3b8; }
+.gcal-close-btn {
+  background: rgba(255,255,255,0.1); border: none; color: #f8fafc;
+  border-radius: 8px; width: 28px; height: 28px; cursor: pointer;
+  font-size: 0.8rem; flex-shrink: 0;
+}
+
+.gcal-detail-summary {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.gcal-ds-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; font-weight: 700; }
+.gcal-ds-item.income { color: #4ade80; }
+.gcal-ds-item.expense { color: #f87171; }
+
+.gcal-tx-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.gcal-tx-list::-webkit-scrollbar { width: 4px; }
+.gcal-tx-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+.gcal-tx-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+}
+.gcal-tx-icon {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; flex-shrink: 0;
+}
+.gcal-tx-icon.income-icon { background: rgba(74,222,128,0.18); color: #4ade80; }
+.gcal-tx-icon.expense-icon { background: rgba(248,113,113,0.18); color: #f87171; }
+.gcal-tx-info { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.gcal-tx-content { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gcal-tx-sub { font-size: 0.7rem; color: #94a3b8; }
+.gcal-tx-amount { font-size: 0.82rem; font-weight: 700; flex-shrink: 0; }
+.gcal-tx-amount.income-amt { color: #4ade80; }
+.gcal-tx-amount.expense-amt { color: #f87171; }
+
+.gcal-no-tx {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.5rem; padding: 1.5rem; color: #64748b; font-size: 0.85rem;
+}
+.gcal-no-tx i { font-size: 1.6rem; }
+
+@media (max-width: 900px) {
+  .gcal-body { flex-direction: column; }
+  .gcal-detail-panel { width: 100%; max-height: none; }
+}
+@media (max-width: 600px) {
+  .gcal-day-cell { min-height: 56px; padding: 4px; }
+  .gcal-day-income, .gcal-day-expense { display: none; }
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .group-detail-page {
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .group-header {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .group-header h1,
+:host-context(html[data-theme="light"]) .group-header .group-name {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .group-header .group-desc,
+:host-context(html[data-theme="light"]) .group-header .group-meta {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .card {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .card-title,
+:host-context(html[data-theme="light"]) .card h2,
+:host-context(html[data-theme="light"]) .card h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .card-subtitle,
+:host-context(html[data-theme="light"]) .card .label,
+:host-context(html[data-theme="light"]) .card .sub-label {
+  color: #64748B !important;
+}
+
+/* Overview date filter */
+:host-context(html[data-theme="light"]) .overview-date-filter .preset-btn {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .overview-date-filter .preset-btn:hover,
+:host-context(html[data-theme="light"]) .overview-date-filter .preset-btn.active {
+  background: #d4eaf3 !important;
+  border-color: #7ec8e3 !important;
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .preset-menu {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .preset-menu-item {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .preset-menu-item:hover {
+  background: #e8f4f8 !important;
+  color: #0F172A !important;
+}
+
+/* Tabs */
+:host-context(html[data-theme="light"]) .tab-navigation {
+  border-bottom: 1px solid #CBD5E1 !important;
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn:hover {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn.active {
+  color: #0F172A !important;
+  border-bottom-color: #2563eb !important;
+}
+
+/* Accounts tab */
+:host-context(html[data-theme="light"]) .accounts-tab .account-item,
+:host-context(html[data-theme="light"]) .account-item {
+  background: rgba(233,246,252,0.8) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .account-item .account-name,
+:host-context(html[data-theme="light"]) .account-item .acc-name {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .account-item .account-bank,
+:host-context(html[data-theme="light"]) .account-item .acc-bank {
+  color: #64748B !important;
+}
+
+/* Plan tab */
+:host-context(html[data-theme="light"]) .plan-tab .planning-panel {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-subnav {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-subnav-btn {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-subnav-btn.active {
+  background: #d4eaf3 !important;
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-item {
+  background: rgba(255,255,255,0.75) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-item .plan-name,
+:host-context(html[data-theme="light"]) .plan-item .plan-category {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-item .plan-meta,
+:host-context(html[data-theme="light"]) .plan-item .plan-period {
+  color: #64748B !important;
+}
+
+/* Analysis tab */
+:host-context(html[data-theme="light"]) .analysis-tab {
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .summary-card,
+:host-context(html[data-theme="light"]) .analysis-tab .stat-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .card-header h3,
+:host-context(html[data-theme="light"]) .analysis-tab .stat-label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .stat-value {
+  color: #0F172A !important;
+}
+
+/* Members tab */
+:host-context(html[data-theme="light"]) .members-tab .transactions-card {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-name {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-role,
+:host-context(html[data-theme="light"]) .members-tab .member-email {
+  color: #64748B !important;
+}
+
+/* Activity tab */
+:host-context(html[data-theme="light"]) .activity-tab {
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-timeline-card {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-item .activity-title {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-item .activity-meta,
+:host-context(html[data-theme="light"]) .activity-item .activity-time {
+  color: #64748B !important;
+}
+
+/* Transactions tab */
+:host-context(html[data-theme="light"]) .transactions-tab .transaction-item,
+:host-context(html[data-theme="light"]) .transaction-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-item .tx-desc {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-item .tx-date,
+:host-context(html[data-theme="light"]) .transaction-item .tx-category {
+  color: #64748B !important;
+}
+
+/* Savings panel */
+:host-context(html[data-theme="light"]) .savings-panel {
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-stat {
+  background: rgba(255,255,255,0.75) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-stat-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-stat-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-empty-title {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-empty-desc {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-loading {
+  color: #64748B !important;
+}
+
+/* Goal cards */
+:host-context(html[data-theme="light"]) .goal-card {
+  background: rgba(255,255,255,0.85) !important;
+  border: 1px solid rgba(0,0,0,0.09) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-grid .card-footer {
+  border-top: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .contribution-item {
+  background: rgba(0,0,0,0.04) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .contribution-note,
+:host-context(html[data-theme="light"]) .plan-tab .contribution-date {
+  color: #64748B !important;
+}
+
+/* Surplus banner */
+:host-context(html[data-theme="light"]) .surplus-banner {
+  background: linear-gradient(135deg, rgba(78,205,196,0.12), rgba(78,205,196,0.05)) !important;
+  border: 1px solid rgba(78,205,196,0.3) !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-title {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-sub {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-select {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-select option {
+  background: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+/* Savings grid icon buttons */
+:host-context(html[data-theme="light"]) .savings-grid .btn-icon {
+  background: rgba(0,0,0,0.06) !important;
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-grid .btn-icon:hover:not(:disabled) {
+  background: rgba(78,205,196,0.15) !important;
+}
+
+/* Savings modals */
+:host-context(html[data-theme="light"]) .savings-modal-backdrop {
+  background: rgba(0,0,0,0.5) !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-box {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-close {
+  background: rgba(0,0,0,0.05) !important;
+  border: 1px solid rgba(0,0,0,0.1) !important;
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-close:hover {
+  background: rgba(0,0,0,0.1) !important;
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .sform-row label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .sform-control {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .sform-control:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-body ::ng-deep .savings-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-modal-body ::ng-deep .savings-calendar .p-datepicker-trigger {
+  background: rgba(56,189,248,0.12) !important;
+  border: 1px solid #CBD5E1 !important;
+  border-left: none !important;
+  color: #0e7490 !important;
+}
+
+/* Modal content (planning modal) */
+:host-context(html[data-theme="light"]) .modal-content {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content h3,
+:host-context(html[data-theme="light"]) .modal-content h4 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content input,
+:host-context(html[data-theme="light"]) .modal-content select,
+:host-context(html[data-theme="light"]) .modal-content textarea {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-content.planning-modal {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+/* Confirm modal */
+:host-context(html[data-theme="light"]) .confirm-modal {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .confirm-modal h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .confirm-modal p {
+  color: #475569 !important;
+}
+
+/* Calendar tab */
+:host-context(html[data-theme="light"]) .gcal-summary-chip {
+  background: rgba(255,255,255,0.75) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-chip-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-nav-btn {
+  background: rgba(0,0,0,0.07) !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-nav-btn:hover {
+  background: rgba(14,116,144,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-month-label {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-week-header {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-day-cell {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-day-cell:hover {
+  background: rgba(56,189,248,0.1) !important;
+  border-color: rgba(56,189,248,0.3) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-day-cell.other-month {
+  background: rgba(0,0,0,0.03) !important;
+  border-color: rgba(0,0,0,0.04) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-day-num {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-tx-count {
+  color: #94a3b8 !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-detail-panel {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-detail-header {
+  background: rgba(0,0,0,0.04) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-detail-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-detail-count {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-close-btn {
+  background: rgba(0,0,0,0.07) !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-detail-summary {
+  border-bottom: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-tx-item {
+  background: rgba(255,255,255,0.7) !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-tx-content {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-tx-sub {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .gcal-no-tx {
+  color: #94a3b8 !important;
+}
+
+/* ─── Additional Dark Box Fixes ─── */
+:host-context(html[data-theme="light"]) .asset-stat {
+  background: rgba(209,235,248,0.8) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .stat-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .stat-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .trend-item {
+  background: rgba(209,235,248,0.75) !important;
+  border-radius: 12px !important;
+}
+
+:host-context(html[data-theme="light"]) .trend-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .trend-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .trend-change {
+  background: rgba(209,235,248,0.6) !important;
+}
+
+:host-context(html[data-theme="light"]) .trend-arrow {
+  color: #1A7A9A !important;
+}
+
+:host-context(html[data-theme="light"]) .card h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .card-heading h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .card-subtitle {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-item {
+  background: rgba(209,235,248,0.6) !important;
+  border-left-color: #1A7A9A !important;
+}
+
+/* Date filter inputs in overview tab */
+:host-context(html[data-theme="light"]) .date-input-group input,
+:host-context(html[data-theme="light"]) .period-select {
+  background: #DFF0F8 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li {
+  background: rgba(209,235,248,0.5) !important;
+  border: 1px solid rgba(78,163,196,0.15) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li:hover {
+  background: rgba(209,235,248,0.8) !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li span,
+:host-context(html[data-theme="light"]) .category-legend li strong {
+  color: #1A3A50 !important;
+}
+
+/* ─── Additional Light Theme Overrides (Pass 2) ─── */
+
+/* 1. Tab container backgrounds */
+:host-context(html[data-theme="light"]) .accounts-tab,
+:host-context(html[data-theme="light"]) .plan-tab,
+:host-context(html[data-theme="light"]) .members-tab,
+:host-context(html[data-theme="light"]) .analysis-tab,
+:host-context(html[data-theme="light"]) .activity-tab,
+:host-context(html[data-theme="light"]) .chat-tab {
+  background: rgba(216,236,246,0.85) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+  color: #1A3A50 !important;
+}
+
+/* 2. Accounts tab — manage list items and search */
+:host-context(html[data-theme="light"]) .manage-list .account-item {
+  background: rgba(209,235,248,0.7) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .accounts-tab-header p {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .search-box.inline input {
+  background: rgba(209,235,248,0.8) !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .search-box.inline input::placeholder {
+  color: #4A7A96 !important;
+}
+
+/* 3. Members tab — transactions card and table rows */
+:host-context(html[data-theme="light"]) .members-tab .transactions-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .card-header {
+  border-bottom-color: rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .transaction-row.header-row {
+  background: rgba(195,225,240,0.8) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .transaction-row:not(.header-row) {
+  background: rgba(225,242,250,0.6) !important;
+  border-color: rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .transaction-row:not(.header-row):hover {
+  background: rgba(195,225,240,0.85) !important;
+  border-color: rgba(78,163,196,0.30) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-avatar {
+  background: rgba(78,163,196,0.18) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-avatar-fallback {
+  background: rgba(78,163,196,0.18) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-name {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .col-date {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .contact-line {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .contact-line.muted {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .transaction-count {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .col-content {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .col-amount {
+  color: #1A3A50 !important;
+}
+
+/* 4. Date inputs in overview tab */
+:host-context(html[data-theme="light"]) .overview-date-filter .date-range ::ng-deep .p-calendar .p-inputtext {
+  background: #DFF0F8 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .overview-date-filter .date-range ::ng-deep .p-calendar .p-inputtext:hover,
+:host-context(html[data-theme="light"]) .overview-date-filter .date-range ::ng-deep .p-calendar .p-inputtext:focus {
+  border-color: rgba(78,163,196,0.55) !important;
+}
+
+:host-context(html[data-theme="light"]) .date-range-inputs input,
+:host-context(html[data-theme="light"]) .date-range-inputs ::ng-deep .p-inputtext {
+  background: #DFF0F8 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #1A3A50 !important;
+}
+
+/* 5. Transactions tab filter section */
+:host-context(html[data-theme="light"]) .transactions-tab .filters-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .transactions-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+/* 6. Plan tab planning panel (already partially covered — add deeper override) */
+:host-context(html[data-theme="light"]) .plan-tab .planning-panel {
+  background: linear-gradient(145deg, #cce4ef, #bfd9e8) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .panel-title p,
+:host-context(html[data-theme="light"]) .plan-tab .panel-title h1 {
+  color: #0F172A !important;
+}
+
+/* 7. Activity tab filters card */
+:host-context(html[data-theme="light"]) .activity-tab .filters-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+/* 8. Analysis tab glass panels and summary cards */
+:host-context(html[data-theme="light"]) .analysis-tab .summary-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .glass-panel {
+  background: linear-gradient(145deg, #cce4ef, #bfd9e8) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+/* 9. Savings panel (inside plan tab) */
+:host-context(html[data-theme="light"]) .savings-panel {
+  background: linear-gradient(145deg, #cce4ef, #bfd9e8) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+/* 10. Savings modal box */
+:host-context(html[data-theme="light"]) .savings-modal-box {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+/* 11. Modal content (planning modal ng-deep) */
+:host-context(html[data-theme="light"]) ::ng-deep .modal-content.planning-modal {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+/* 12. gcal detail panel */
+:host-context(html[data-theme="light"]) .gcal-detail-panel {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+/* 13. Remaining generic dark rgba containers — inner items */
+:host-context(html[data-theme="light"]) .transactions-tab .transaction-row.header-row {
+  background: rgba(195,225,240,0.8) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .transaction-row:not(.header-row) {
+  background: rgba(225,242,250,0.6) !important;
+  border-color: rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .transaction-row:not(.header-row):hover {
+  background: rgba(195,225,240,0.85) !important;
+}
+
+/* 14. Plans card */
+:host-context(html[data-theme="light"]) .plans-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .plans-card .plan-row {
+  background: rgba(209,235,248,0.7) !important;
+  border-color: rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .plans-card .plan-row:hover {
+  background: rgba(195,225,240,0.85) !important;
+}
+
+/* 15. surplus-select option dark background */
+:host-context(html[data-theme="light"]) .surplus-select option {
+  background: #DFF0F8 !important;
+  color: #1A3A50 !important;
+}
+
+/* 16. Members tab — planning modal dark input calendar */
+:host-context(html[data-theme="light"]) ::ng-deep .planning-modal .modal-body .form-group .p-calendar .p-inputtext {
+  background: #DFF0F8 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #1A3A50 !important;
+}
+
+/* ─── Pass 3: Overview tab text + Transactions tab comprehensive fix ─── */
+
+/* === Overview tab: balance card text === */
+:host-context(html[data-theme="light"]) .asset-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .asset-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .asset-meta {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .asset-meta strong {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .card.asset-overview-card,
+:host-context(html[data-theme="light"]) .card.cashflow-card,
+:host-context(html[data-theme="light"]) .card.recent-transactions-card,
+:host-context(html[data-theme="light"]) .card.bank-accounts-card,
+:host-context(html[data-theme="light"]) .card.plans-overview-card,
+:host-context(html[data-theme="light"]) .card.activities-card,
+:host-context(html[data-theme="light"]) .card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.12) !important;
+  color: #1A3A50 !important;
+}
+
+/* Overview: recent transaction items */
+:host-context(html[data-theme="light"]) .transaction-item {
+  background: rgba(209,235,248,0.6) !important;
+  border-radius: 8px !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-item:hover {
+  background: rgba(195,225,240,0.85) !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-content {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-meta {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-date,
+:host-context(html[data-theme="light"]) .transaction-account {
+  color: #4A7A96 !important;
+}
+
+/* Overview: cashflow/trend section */
+:host-context(html[data-theme="light"]) .trend-comparison {
+  background: rgba(209,235,248,0.5) !important;
+  border-radius: 12px !important;
+}
+
+:host-context(html[data-theme="light"]) .trend-income {
+  color: #1A7A9A !important;
+}
+
+:host-context(html[data-theme="light"]) .trend-expense {
+  color: #C0392B !important;
+}
+
+/* Overview: activities sidebar */
+:host-context(html[data-theme="light"]) .activities-card .activity-item {
+  background: rgba(209,235,248,0.5) !important;
+  border-left-color: #1A7A9A !important;
+}
+
+:host-context(html[data-theme="light"]) .activities-card .activity-text {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .activities-card .activity-date {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .activities-card .activity-icon i {
+  color: #1A7A9A !important;
+}
+
+/* Overview: account items */
+:host-context(html[data-theme="light"]) .account-item {
+  background: rgba(209,235,248,0.6) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .account-label {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .account-bank,
+:host-context(html[data-theme="light"]) .account-number,
+:host-context(html[data-theme="light"]) .account-meta {
+  color: #4A7A96 !important;
+}
+
+/* Overview: side panel headings */
+:host-context(html[data-theme="light"]) .overview-side .card-heading h3 {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .link-tab-btn {
+  color: #1A7A9A !important;
+}
+
+/* Transactions tab: summary stats bar */
+:host-context(html[data-theme="light"]) .transactions-tab .summary-card {
+  background: linear-gradient(135deg, rgba(78,163,196,0.12), rgba(209,235,248,0.85)) !important;
+  border: 1px solid rgba(78,163,196,0.25) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .summary-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .summary-value {
+  color: #1A3A50 !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .summary-divider {
+  background: rgba(78,163,196,0.30) !important;
+}
+
+/* Transactions tab: list rows text */
+:host-context(html[data-theme="light"]) .transactions-tab .col-date {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .content-main {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .content-sub {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .account-number {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .bank-name {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .category-label {
+  color: #1A3A50 !important;
+  background: rgba(209,235,248,0.7) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .icon-btn {
+  background: rgba(209,235,248,0.7) !important;
+  border: 1px solid rgba(78,163,196,0.25) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .icon-btn:hover {
+  background: rgba(78,163,196,0.25) !important;
+  color: #0D2D42 !important;
+  border-color: rgba(78,163,196,0.50) !important;
+}
+
+/* Filter labels */
+:host-context(html[data-theme="light"]) .transactions-tab .filter-group label,
+:host-context(html[data-theme="light"]) .activity-tab .filter-group label {
+  color: #4A7A96 !important;
+}
+
+/* ─── Pass 3: Remaining Issues ─── */
+
+/* 17. Transactions tab — select dropdowns ("Loại giao dịch", "Số tiền") */
+:host-context(html[data-theme="light"]) .transactions-tab select.form-input {
+  background-color: #DFF0F8 !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231A3A50'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 1.2em !important;
+  color: #1A3A50 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab select.form-input option {
+  background-color: #DFF0F8 !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-tab .form-input {
+  background: rgba(223,240,248,0.8) !important;
+  border: 1px solid rgba(78,163,196,0.25) !important;
+  color: #1A3A50 !important;
+}
+
+/* 18. Members tab — action icon buttons (edit/remove) */
+:host-context(html[data-theme="light"]) .members-tab .icon-btn {
+  background: rgba(209,235,248,0.7) !important;
+  border: 1px solid rgba(78,163,196,0.25) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .icon-btn:hover {
+  background: rgba(78,163,196,0.25) !important;
+  color: #0D2D42 !important;
+  border-color: rgba(78,163,196,0.50) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-action-remove {
+  color: #C0392B !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-action-remove:hover {
+  color: #7B1919 !important;
+  border-color: rgba(192,57,43,0.50) !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .member-action-edit {
+  color: #1A7A9A !important;
+}
+
+/* 19. Statistics/Analysis tab — period select dropdown */
+:host-context(html[data-theme="light"]) .analysis-tab .inline-filter select,
+:host-context(html[data-theme="light"]) .analysis-tab .custom-range input {
+  background: #DFF0F8 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .inline-filter select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231A3A50'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 1.1em !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .inline-filter select option {
+  background: #DFF0F8 !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .month-select,
+:host-context(html[data-theme="light"]) .analysis-tab .year-select {
+  background: #DFF0F8 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .month-select option,
+:host-context(html[data-theme="light"]) .analysis-tab .year-select option {
+  background: #DFF0F8 !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .inline-filter label {
+  color: #4A7A96 !important;
+}
+
+/* 20. Activity tab — "Danh sách hoạt động" container dark background */
+:host-context(html[data-theme="light"]) .activity-tab .activities-list-section .activities-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activities-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activities-card .card-heading h3 {
+  color: #0F172A !important;
+  -webkit-text-fill-color: #0F172A !important;
+  background: none !important;
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-group-date {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-entry {
+  background: rgba(209,235,248,0.7) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-entry:hover {
+  background: rgba(195,225,240,0.85) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-entry .entry-title {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-entry .entry-meta,
+:host-context(html[data-theme="light"]) .activity-tab .activity-entry .entry-time {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-count,
+:host-context(html[data-theme="light"]) .activity-tab .activity-count span {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .form-input {
+  background: rgba(223,240,248,0.8) !important;
+  border: 1px solid rgba(78,163,196,0.25) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab select.form-input {
+  background-color: #DFF0F8 !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231A3A50'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 1.2em !important;
+  color: #1A3A50 !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab select.form-input option {
+  background-color: #DFF0F8 !important;
+  color: #1A3A50 !important;
+}
+
+/* ─── Pass 4: Savings goals, analysis cards, plan tab text ─── */
+
+/* Plan tab — savings goal card text */
+:host-context(html[data-theme="light"]) .plan-tab .goal-name {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .goal-desc {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .remaining-label,
+:host-context(html[data-theme="light"]) .plan-tab .days-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .summary-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .summary-value {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .plan-row-name,
+:host-context(html[data-theme="light"]) .plan-tab .plan-name {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .plan-row-meta,
+:host-context(html[data-theme="light"]) .plan-tab .plan-meta {
+  color: #4A7A96 !important;
+}
+
+/* Analysis tab — summary cards text */
+:host-context(html[data-theme="light"]) .analysis-tab .summary-card {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .summary-card::before {
+  opacity: 0.3 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .summary-card .card-header-summary {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .summary-card h3 {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .summary-card .trend {
+  color: #4A7A96 !important;
+}
+
+/* Analysis tab: glass panels and general text */
+:host-context(html[data-theme="light"]) .analysis-tab .glass-panel {
+  background: linear-gradient(145deg, #cce4ef, #bfd9e8) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab h3,
+:host-context(html[data-theme="light"]) .analysis-tab h4,
+:host-context(html[data-theme="light"]) .analysis-tab p,
+:host-context(html[data-theme="light"]) .analysis-tab label,
+:host-context(html[data-theme="light"]) .analysis-tab span:not(.badge):not([class*="color"]) {
+  color: #1A3A50 !important;
+}
+
+/* Analysis tab: calendar week labels */
+:host-context(html[data-theme="light"]) .analysis-tab .week-day {
+  color: #4A7A96 !important;
+}
+
+/* Members tab: general text */
+:host-context(html[data-theme="light"]) .members-tab h3,
+:host-context(html[data-theme="light"]) .members-tab p {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .role-badge {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .members-tab .col-date,
+:host-context(html[data-theme="light"]) .members-tab .col-account,
+:host-context(html[data-theme="light"]) .members-tab .col-amount {
+  color: #1A3A50 !important;
+}
+
+/* Activity tab: filter section */
+:host-context(html[data-theme="light"]) .activity-tab .filters-card h3 {
+  color: #1A3A50 !important;
+  -webkit-text-fill-color: #1A3A50 !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab label {
+  color: #4A7A96 !important;
+}
+
+/* Activity tab: activity list items (different class from overview) */
+:host-context(html[data-theme="light"]) .activity-tab .activity-item {
+  background: rgba(209,235,248,0.6) !important;
+  border-left-color: #1A7A9A !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-text,
+:host-context(html[data-theme="light"]) .activity-tab .activity-content {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-date {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-icon i {
+  color: #1A7A9A !important;
+}
+
+
+
+/* ─── Pass 5: Activity timeline cards, category stats, analysis chart toggles ─── */
+
+/* === Activity tab: timeline items === */
+:host-context(html[data-theme="light"]) .activity-day-header {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-timeline-card {
+  background: linear-gradient(135deg, rgba(209,235,248,0.85), rgba(195,225,240,0.75)) !important;
+  border: 1px solid rgba(78,163,196,0.25) !important;
+  box-shadow: 0 4px 16px rgba(78,163,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-actor {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-type-pill {
+  background: rgba(78,163,196,0.18) !important;
+  color: #1A7A9A !important;
+  border-color: rgba(78,163,196,0.40) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-time {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-title {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-message {
+  color: #2D4A60 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-dot {
+  border-color: #d8ecf4 !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-line {
+  background: linear-gradient(to bottom, rgba(78,163,196,0.4), rgba(78,163,196,0)) !important;
+}
+
+:host-context(html[data-theme="light"]) .activity-tab .activity-count {
+  color: #4A7A96 !important;
+}
+
+/* === Overview: category stats section === */
+:host-context(html[data-theme="light"]) .chart-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-value {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-hover-info {
+  color: #1A7A9A !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-hover-info .hover-name {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-hover-info .muted {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .breakdown-header h4 {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li {
+  background: rgba(209,235,248,0.5) !important;
+  border-color: rgba(78,163,196,0.15) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li span {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li strong {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend .percent {
+  color: #4A7A96 !important;
+}
+
+/* === Analysis tab: chart panels and toggle buttons === */
+:host-context(html[data-theme="light"]) .analysis-tab .glass-panel,
+:host-context(html[data-theme="light"]) .analysis-tab .chart-card.glass-panel {
+  background: linear-gradient(145deg, #d8ecf4, #cce6f0) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 4px 20px rgba(78,163,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .chart-header {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .chart-header h4 {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .chart-header span {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .pill-toggle {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .pill-toggle button {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .pill-toggle button:hover {
+  color: #0D2D42 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .pill-toggle button.active {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4) !important;
+  color: #fff !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .legend {
+  color: #4A7A96 !important;
+}
+
+/* Analysis tab: chart info (total, hover) */
+:host-context(html[data-theme="light"]) .analysis-tab .chart-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .chart-value {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .chart-hover-info .hover-name {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .chart-hover-info .muted {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .category-legend li {
+  background: rgba(209,235,248,0.5) !important;
+  border-color: rgba(78,163,196,0.15) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .category-legend li span,
+:host-context(html[data-theme="light"]) .analysis-tab .category-legend li strong {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .analysis-tab .category-legend .percent {
+  color: #4A7A96 !important;
+}
+
+
+/* ─── Pass 6: Plan tab cards + planning modal ─── */
+
+/* === Plan tab: summary strip (Tổng ngân sách / Đã chi / Còn lại) === */
+:host-context(html[data-theme="light"]) .plan-tab .summary-card {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 6px 20px rgba(78,163,196,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .card-budget,
+:host-context(html[data-theme="light"]) .plan-tab .card-spent,
+:host-context(html[data-theme="light"]) .plan-tab .card-remaining {
+  background-image: none !important;
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  box-shadow: 0 6px 20px rgba(78,163,196,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .summary-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .summary-value {
+  color: #1A3A50 !important;
+  text-shadow: none !important;
+}
+
+/* === Plan tab: plan cards === */
+:host-context(html[data-theme="light"]) .plan-tab .plan-card {
+  background: linear-gradient(140deg, rgba(232,244,248,0.98), rgba(216,236,244,0.98)) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 6px 20px rgba(78,163,196,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .goal-name {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .goal-desc {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .progress-row {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .current-amount,
+:host-context(html[data-theme="light"]) .plan-tab .target-amount {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .remaining-label,
+:host-context(html[data-theme="light"]) .plan-tab .days-label {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .progress-bar-bg {
+  background: rgba(78,163,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .btn-icon {
+  background: rgba(209,235,248,0.7) !important;
+  border: 1px solid rgba(78,163,196,0.25) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .btn-icon:hover {
+  background: rgba(78,163,196,0.25) !important;
+  color: #0D2D42 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-tab .card-footer {
+  border-top: 1px solid rgba(78,163,196,0.15) !important;
+}
+
+/* === Planning modal: category list and cancel button === */
+:host-context(html[data-theme="light"]) ::ng-deep .category-management {
+  border-top: 1px solid rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .category-management h4 {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .category-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(78,163,196,0.18) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .category-item:hover {
+  background: rgba(209,235,248,0.8) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .category-name {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .btn.btn-cancel {
+  background: rgba(0,0,0,0.07) !important;
+  color: #334155 !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .btn.btn-cancel:hover {
+  background: rgba(0,0,0,0.12) !important;
+}
+
+/* === Planning modal: form inputs === */
+:host-context(html[data-theme="light"]) ::ng-deep .modal-content.planning-modal {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-header {
+  background: rgba(78,163,196,0.08) !important;
+  border-bottom: 1px solid rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-header h3 {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-close {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-body .form-group label {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-body .form-input {
+  background: #FFFFFF !important;
+  border: 1.5px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-body select.form-input {
+  background-color: #FFFFFF !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231A3A50'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 1.2em !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-body select.form-input option {
+  background: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .modal-column-left {
+  border-right: 1px solid rgba(78,163,196,0.18) !important;
+}
+
+/* Picker icon buttons in modal */
+:host-context(html[data-theme="light"]) ::ng-deep .picker-icon-btn {
+  background: rgba(0,0,0,0.05) !important;
+  border-color: rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .picker-icon-btn.selected {
+  background: rgba(78,163,196,0.25) !important;
+  border-color: rgba(78,163,196,0.50) !important;
 }

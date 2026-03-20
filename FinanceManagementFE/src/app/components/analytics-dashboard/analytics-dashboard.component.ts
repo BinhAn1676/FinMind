@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AIAnalyticsService, CompleteDashboard, HealthScore, BudgetForecast, SpendingCategory, AnomalyAlert } from '../../services/ai-analytics.service';
 import { LanguageService } from '../../services/language.service';
 import { Subject, takeUntil } from 'rxjs';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-analytics-dashboard',
@@ -28,7 +29,8 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private analyticsService: AIAnalyticsService,
-    public language: LanguageService
+    public language: LanguageService,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +42,10 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
     this.currentMonth = this.selectedMonth;
 
     this.loadDashboard();
+
+    this.themeService.theme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      // Analytics dashboard uses CSS vars and Angular templates - no explicit chart redraw needed
+    });
   }
 
   ngOnDestroy(): void {

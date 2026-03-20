@@ -33,6 +33,39 @@
       { "icon": "fa-users", "text": "Tab 'Kế hoạch nhóm' cho phép chia sẻ ngân sách chung với các thành viên trong nhóm." }
     ]
   },
+  "savings-goals": {
+    "title": "Mục tiêu tiết kiệm",
+    "description": "Đặt mục tiêu tiết kiệm và theo dõi tiến độ tích lũy theo thời gian.",
+    "tips": [
+      { "icon": "fa-plus-circle", "text": "Tạo mục tiêu mới: đặt tên, số tiền cần đạt và ngày mục tiêu. Hệ thống tự tính số tiền cần tiết kiệm mỗi tháng." },
+      { "icon": "fa-money", "text": "Nạp tiền vào mục tiêu bằng nút 'Nạp tiền' — mỗi lần nạp được ghi lại thành lịch sử đóng góp." },
+      { "icon": "fa-bar-chart", "text": "Thanh tiến độ và % hoàn thành giúp bạn thấy mình đang đi đúng hướng hay cần tăng tốc." },
+      { "icon": "fa-users", "text": "Tab 'Nhóm' cho phép cùng cả nhóm đóng góp vào một mục tiêu chung (mua đồ, du lịch, v.v.)." },
+      { "icon": "fa-history", "text": "Xem lịch sử đóng góp chi tiết: ai nạp bao nhiêu, ngày nào — bằng cách nhấn vào mục tiêu." }
+    ]
+  },
+  "bills": {
+    "title": "Nhắc nhở hóa đơn",
+    "description": "Quản lý và nhận thông báo trước khi các hóa đơn định kỳ đến hạn.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Thêm hóa đơn mới: tên, số tiền, danh mục và ngày đến hạn. Hệ thống sẽ nhắc bạn trước khi đến hạn." },
+      { "icon": "fa-repeat", "text": "Chọn chu kỳ lặp (hàng tuần / tháng / năm) cho các hóa đơn định kỳ như điện, nước, thuê nhà." },
+      { "icon": "fa-bell", "text": "Nhận thông báo trước N ngày — tùy chỉnh số ngày nhắc trước trong phần cài đặt hóa đơn." },
+      { "icon": "fa-check", "text": "Đánh dấu hóa đơn là 'Đã thanh toán' sau khi thanh toán xong để cập nhật trạng thái." },
+      { "icon": "fa-calendar", "text": "Các hóa đơn sắp đến hạn cũng xuất hiện trên Lịch tài chính để dễ theo dõi tổng thể." }
+    ]
+  },
+  "calendar": {
+    "title": "Lịch tài chính",
+    "description": "Xem toàn bộ các sự kiện tài chính — hóa đơn, nhắc nhở — trên một lịch trực quan.",
+    "tips": [
+      { "icon": "fa-calendar", "text": "Mỗi ô ngày hiển thị các hóa đơn/nhắc nhở đến hạn — màu đỏ là quá hạn, vàng là sắp đến hạn, xanh là đã thanh toán." },
+      { "icon": "fa-chevron-left", "text": "Dùng mũi tên trái/phải để chuyển tháng, hoặc nhấn 'Hôm nay' để quay về tháng hiện tại." },
+      { "icon": "fa-mouse-pointer", "text": "Nhấn vào một ngày để xem danh sách chi tiết các sự kiện trong ngày đó." },
+      { "icon": "fa-plus", "text": "Nhấn vào ngày bất kỳ để nhanh chóng tạo hóa đơn mới với ngày đến hạn được điền sẵn." },
+      { "icon": "fa-filter", "text": "Lọc theo loại sự kiện (hóa đơn / nhắc nhở) để tập trung vào những gì quan trọng." }
+    ]
+  },
   "groups": {
     "title": "Nhóm tài chính",
     "description": "Quản lý tài chính chung với gia đình, bạn bè hoặc đồng nghiệp.",
@@ -109,11 +142,16 @@
   },
   "investment": {
     "title": "Đầu tư & Thị trường",
-    "description": "Theo dõi danh mục đầu tư và giá thị trường.",
+    "description": "Theo dõi giá thị trường thời gian thực và quản lý danh mục đầu tư đa loại tài sản.",
     "tips": [
-      { "icon": "fa-line-chart", "text": "Xem biến động giá chứng khoán / crypto theo thời gian thực." },
-      { "icon": "fa-briefcase", "text": "Thêm tài sản đầu tư để theo dõi giá trị danh mục tổng thể của bạn." },
-      { "icon": "fa-info-circle", "text": "Ticker ở đầu trang hiển thị giá một số mã phổ biến — nhấn để xem chi tiết." }
+      { "icon": "fa-bitcoin", "text": "Tab 'Tiền điện tử': xem bảng giá coin thời gian thực. Tìm coin và nhấn ⭐ hoặc dùng ô tìm kiếm trong Danh mục để thêm vào danh mục." },
+      { "icon": "fa-plus", "text": "Trong Danh mục, nhấn nút '+' trên dòng coin/vàng/cổ phiếu để ghi lại giao dịch Mua/Bán kèm giá, số lượng và ngày." },
+      { "icon": "fa-briefcase", "text": "Tab 'Danh mục' chia thành 3 loại tài sản: 🪙 Tiền điện tử / 🥇 Vàng / 🇻🇳 Cổ phiếu VN — nhấn để chuyển đổi." },
+      { "icon": "fa-bar-chart", "text": "Mỗi dòng tài sản hiển thị tổng giá trị hiện tại và Lãi/Lỗ (P&L) so với giá vốn bình quân." },
+      { "icon": "fa-list", "text": "Nhấn vào biểu tượng ⋮ hoặc 'Xem giao dịch' để vào trang chi tiết coin — thấy toàn bộ lịch sử mua/bán và P&L từng lệnh." },
+      { "icon": "fa-gold", "text": "Tab 'Vàng': xem giá mua/bán vàng SJC và các nhà cung cấp trong nước theo thời gian thực." },
+      { "icon": "fa-flag", "text": "Tab 'CP Việt Nam': bảng giá cổ phiếu HOSE/HNX cập nhật liên tục. Nhấn vào cổ phiếu để xem thông tin chi tiết." },
+      { "icon": "fa-exchange", "text": "Chuyển đổi hiển thị USD ↔ VND bằng nút toggle ở góc trên danh mục." }
     ]
   },
   "profile": {

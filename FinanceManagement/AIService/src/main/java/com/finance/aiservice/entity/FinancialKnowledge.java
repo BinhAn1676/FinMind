@@ -39,7 +39,7 @@ public class FinancialKnowledge {
     private String content;
 
     /**
-     * Vector embedding (768 dimensions for nomic-embed-text)
+     * Vector embedding (768 dimensions for gemini-embedding-001)
      * Stored as PostgreSQL vector type using pgvector extension
      */
     @Column(nullable = false, columnDefinition = "vector(768)")

@@ -1,4 +1,4 @@
-package com.finance.financeservice.service;
+package com.finance.financeservice.service.sepay;
 
 import com.finance.financeservice.config.SepayOAuth2Properties;
 import com.finance.financeservice.dto.keys.DecryptRequest;

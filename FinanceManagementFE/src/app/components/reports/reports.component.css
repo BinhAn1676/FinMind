@@ -4,8 +4,8 @@
   min-height: 100vh;
   background: radial-gradient(120% 120% at 10% 20%, rgba(79, 195, 247, 0.08), transparent 35%),
               radial-gradient(100% 100% at 80% 0%, rgba(255, 107, 107, 0.08), transparent 30%),
-              #071525;
-  color: #e9edf5;
+              var(--bg-page-alt);
+  color: var(--text-body);
 }
 
 /* Page Header */
@@ -39,7 +39,7 @@
 
 .subtitle {
   margin: 0;
-  color: #9fb2d4;
+  color: var(--text-dim);
   font-size: 15px;
   font-weight: 500;
 }
@@ -2240,4 +2240,448 @@ select.form-input option {
 .input-group ::ng-deep .p-datepicker .p-datepicker-buttonbar button:hover {
   background: rgba(78, 205, 196, 0.25);
   border-color: #4ECDC4;
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .reports-container {
+  background: radial-gradient(120% 120% at 10% 20%, rgba(79,195,247,0.06), transparent 35%),
+              radial-gradient(100% 100% at 80% 0%, rgba(255,107,107,0.05), transparent 30%),
+              #f0f4f8 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .subtitle {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .glass-panel {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .panel-header {
+  background: rgba(78,205,196,0.08) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .panel-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .section-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .optional-badge {
+  background: rgba(0,0,0,0.06) !important;
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .preset-btn {
+  background: rgba(233,246,252,0.8) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .preset-btn:hover {
+  background: rgba(255,255,255,1) !important;
+  border-color: rgba(78,205,196,0.5) !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .preset-btn.active {
+  background: rgba(78,205,196,0.15) !important;
+  border-color: rgba(78,205,196,0.5) !important;
+  color: #0f8a84 !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .label-hint {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .input-with-icon i {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input:focus {
+  background: #FFFFFF !important;
+  border-color: rgba(78,205,196,0.6) !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input:disabled {
+  background: #f1f5f9 !important;
+  color: #94A3B8 !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input::placeholder {
+  color: #94A3B8 !important;
+}
+
+:host-context(html[data-theme="light"]) select.form-input option {
+  background: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .input-hint {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-actions {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-secondary {
+  background: rgba(0,0,0,0.05) !important;
+  color: #334155 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-secondary:hover:not(:disabled) {
+  background: rgba(0,0,0,0.08) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .info-panel h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .info-description {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .feature-list {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .feature-item {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .helper-box {
+  background: rgba(255,255,255,0.5) !important;
+  border: 1px dashed #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .helper-box p {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .checkbox-label {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .checkbox-label:hover {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(78,205,196,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .section-sublabel {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-card {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-title {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .templates-section {
+  background: rgba(78,205,196,0.05) !important;
+  border: 1px solid rgba(78,205,196,0.2) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-template-load {
+  background: rgba(233,246,252,0.8) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-template-load:hover {
+  background: rgba(78,205,196,0.1) !important;
+  border-color: rgba(78,205,196,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .loading-templates {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-overlay {
+  background: rgba(0,0,0,0.5) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-dialog {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-close-modal {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-close-modal:hover {
+  color: #FF6B6B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-description {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .schedules-section {
+  background: rgba(138,43,226,0.04) !important;
+  border: 1px solid rgba(138,43,226,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .schedule-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .schedule-item:hover {
+  background: rgba(138,43,226,0.06) !important;
+  border-color: rgba(138,43,226,0.25) !important;
+}
+
+:host-context(html[data-theme="light"]) .schedule-email {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .schedule-time {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .schedule-info-box {
+  background: rgba(138,43,226,0.05) !important;
+  border: 1px solid rgba(138,43,226,0.15) !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .schedule-info-box strong {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .loading-schedules {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .preview-actions {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .preview-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-close-preview {
+  background: rgba(0,0,0,0.05) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .preview-stat-card {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .preview-stat-card:hover {
+  background: rgba(255,255,255,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .stat-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .stat-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .notification-settings {
+  background: rgba(255,255,255,0.5) !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .notification-toggle-header .checkbox-label {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .notification-options .checkbox-label {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .help-text {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .history-section {
+  background: rgba(255,255,255,0.5) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .history-table-container {
+  background: rgba(255,255,255,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .history-table thead {
+  background: rgba(78,205,196,0.1) !important;
+}
+
+:host-context(html[data-theme="light"]) .history-table td {
+  color: #1E293B !important;
+  border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .history-table tbody tr:hover {
+  background: rgba(78,205,196,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-controls {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-info {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .schedule-type-toggle {
+  background: rgba(0,0,0,0.04) !important;
+}
+
+:host-context(html[data-theme="light"]) .type-option {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .type-option:hover {
+  background: rgba(255,255,255,0.6) !important;
+  border-color: rgba(78,205,196,0.3) !important;
+}
+
+:host-context(html[data-theme="light"]) .type-option:has(input:checked) {
+  background: rgba(78,205,196,0.1) !important;
+  border-color: rgba(78,205,196,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .details-section {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .web-notification-section {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .empty-history {
+  color: #64748B !important;
+}
+
+/* PrimeNG Calendar - Light Theme */
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-calendar .p-inputtext:enabled:hover {
+  border-color: rgba(78,205,196,0.5) !important;
+  background: #FFFFFF !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-calendar .p-inputtext:enabled:focus {
+  border-color: rgba(78,205,196,0.7) !important;
+  background: #FFFFFF !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-float-label label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-float-label .p-inputwrapper-focus ~ label,
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-float-label .p-inputwrapper-filled ~ label {
+  background: linear-gradient(to bottom, transparent 50%, #e8f4f8 50%) !important;
+  color: #0f8a84 !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker .p-datepicker-header {
+  background: rgba(78,205,196,0.07) !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker .p-datepicker-header .p-datepicker-title {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker table td > span {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker table td > span:hover {
+  background: rgba(78,205,196,0.12) !important;
+  color: #0f8a84 !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker table td.p-datepicker-today > span {
+  background: rgba(78,205,196,0.15) !important;
+  color: #0f8a84 !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker .p-datepicker-buttonbar {
+  border-top: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker .p-datepicker-buttonbar button {
+  background: rgba(78,205,196,0.1) !important;
+  border: 1px solid rgba(78,205,196,0.3) !important;
+  color: #0f8a84 !important;
+}
+
+:host-context(html[data-theme="light"]) .input-group ::ng-deep .p-datepicker .p-datepicker-buttonbar button:hover {
+  background: rgba(78,205,196,0.2) !important;
+  border-color: rgba(78,205,196,0.5) !important;
 }

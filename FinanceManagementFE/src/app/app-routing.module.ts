@@ -20,7 +20,8 @@ import { AnalyticsDashboardComponent } from './components/analytics-dashboard/an
 import { ReportsComponent } from './components/reports/reports.component';
 import { SepayCallbackComponent } from './components/sepay-callback/sepay-callback.component';
 import { InvestmentComponent } from './components/investment/investment.component';
-
+import { FinancialCalendarComponent } from './components/financial-calendar/financial-calendar.component';
+import { BillRemindersComponent } from './components/bill-reminders/bill-reminders.component';
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full'},
   { path: 'home', component: HomeComponent},
@@ -53,7 +54,10 @@ const routes: Routes = [
   { path: 'analytics', component: AnalyticsDashboardComponent, canActivate: [AuthKeyClockGuard], data: { roles: ['USER'] }},
   { path: 'reports', component: ReportsComponent, canActivate: [AuthKeyClockGuard], data: { roles: ['USER'] }},
   { path: 'sepay/callback', component: SepayCallbackComponent, canActivate: [AuthKeyClockGuard], data: { roles: ['USER'] }},
-  { path: 'investment', component: InvestmentComponent, canActivate: [AuthKeyClockGuard], data: { roles: ['USER'] }}
+  { path: 'investment', component: InvestmentComponent, canActivate: [AuthKeyClockGuard], data: { roles: ['USER'] }},
+  { path: 'calendar', component: FinancialCalendarComponent, canActivate: [AuthKeyClockGuard], data: { roles: ['USER'] }},
+  { path: 'bills', component: BillRemindersComponent, canActivate: [AuthKeyClockGuard], data: { roles: ['USER'] }},
+  { path: 'savings', redirectTo: '/planning', pathMatch: 'full' }
 ];
 
 @NgModule({

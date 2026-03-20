@@ -59,7 +59,7 @@ public class TransactionEmbedding {
     private String transactionType; // INCOME, EXPENSE
 
     /**
-     * Vector embedding (768 dimensions for nomic-embed-text)
+     * Vector embedding (768 dimensions for gemini-embedding-001)
      * Generated from: category + amount + description + date
      */
     @Column(nullable = false, columnDefinition = "vector(768)")
@@ -83,10 +83,10 @@ public class TransactionEmbedding {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (embeddingModel == null) {
-            embeddingModel = "nomic-embed-text";
+            embeddingModel = "gemini-embedding-001";
         }
         if (embeddingVersion == null) {
-            embeddingVersion = "1.5";
+            embeddingVersion = "1.0";
         }
     }
 

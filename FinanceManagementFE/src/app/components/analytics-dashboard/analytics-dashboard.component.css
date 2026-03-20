@@ -3,8 +3,8 @@
   min-height: 100vh;
   background: radial-gradient(120% 120% at 10% 20%, rgba(79, 195, 247, 0.08), transparent 35%),
               radial-gradient(100% 100% at 80% 0%, rgba(255, 107, 107, 0.08), transparent 30%),
-              #071525;
-  color: #e9edf5;
+              var(--bg-page-alt);
+  color: var(--text-body);
 }
 
 .page-header {
@@ -29,7 +29,7 @@
 
 .page-header p {
   margin: 0;
-  color: #9fb2d4;
+  color: var(--text-dim);
   font-size: 15px;
   font-weight: 500;
 }
@@ -1037,4 +1037,267 @@
   .recommendation-item {
     grid-template-columns: 1fr;
   }
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .analytics-page {
+  background: radial-gradient(120% 120% at 10% 20%, rgba(79,195,247,0.06), transparent 35%),
+              radial-gradient(100% 100% at 80% 0%, rgba(255,107,107,0.05), transparent 30%),
+              #f0f4f8 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .glass-panel {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .month-selector {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .month-selector label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .month-input {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .month-input:hover {
+  background: #FFFFFF !important;
+  border-color: rgba(78,205,196,0.5) !important;
+}
+
+:host-context(html[data-theme="light"]) .month-input::-webkit-calendar-picker-indicator {
+  filter: none !important;
+}
+
+:host-context(html[data-theme="light"]) .month-hint {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .btn.ghost {
+  background: rgba(255,255,255,0.7) !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .loading-inline {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .spinner {
+  border: 4px solid rgba(0,0,0,0.08) !important;
+  border-top-color: #4ECDC4 !important;
+}
+
+:host-context(html[data-theme="light"]) .section-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .timestamp {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .score-inner {
+  background: #e8f4f8 !important;
+}
+
+:host-context(html[data-theme="light"]) .score-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .score-status {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .health-message {
+  background: rgba(78,205,196,0.08) !important;
+  border: 1px solid rgba(78,205,196,0.25) !important;
+}
+
+:host-context(html[data-theme="light"]) .health-message p {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .strengths,
+:host-context(html[data-theme="light"]) .concerns {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .strengths h4,
+:host-context(html[data-theme="light"]) .concerns h4 {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .strengths li,
+:host-context(html[data-theme="light"]) .concerns li {
+  color: #475569 !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-header h4 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .card-header h4 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .confidence {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .category-name {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .vs-text {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .ideal-value {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .bar-background {
+  background: rgba(0,0,0,0.04) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .bar-amount {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .marker-label {
+  color: rgba(0,0,0,0.7) !important;
+  background: rgba(255,255,255,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .marker-line {
+  background: rgba(0,0,0,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .recommendation {
+  background: rgba(78,205,196,0.06) !important;
+  border: 1px solid rgba(78,205,196,0.2) !important;
+}
+
+:host-context(html[data-theme="light"]) .recommendation p {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .forecast-item {
+  background: rgba(255,255,255,0.6) !important;
+}
+
+:host-context(html[data-theme="light"]) .forecast-item .label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .forecast-item .value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .bar-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .warning-message {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .warning-recommendation {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .empty-state {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .anomaly-item {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .anomaly-item:hover {
+  background: rgba(255,255,255,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .anomaly-date {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .anomaly-description {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .anomaly-reason {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .pattern-item {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .pattern-item:hover {
+  background: rgba(255,255,255,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .pattern-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .pattern-description {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .recommendation-item {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .recommendation-item:hover {
+  background: rgba(255,255,255,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .rec-category {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .amount-pair .label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .arrow {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .rec-savings {
+  background: rgba(78,205,196,0.06) !important;
+  border: 1px solid rgba(78,205,196,0.2) !important;
+}
+
+:host-context(html[data-theme="light"]) .savings-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .section-header .subtitle {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .ai-narrative {
+  background: linear-gradient(135deg, rgba(78,205,196,0.06), rgba(78,205,196,0.02)) !important;
+  border: 1px solid rgba(78,205,196,0.2) !important;
+  border-left: 3px solid #4ECDC4 !important;
+}
+
+:host-context(html[data-theme="light"]) .ai-narrative-text {
+  color: rgba(30,41,59,0.9) !important;
 }

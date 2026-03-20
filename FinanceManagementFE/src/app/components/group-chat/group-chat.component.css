@@ -16,11 +16,11 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
+  background: var(--bg-card-inner);
   border-radius: 16px;
   overflow: hidden;
   position: relative;
-  border: 1px solid rgba(78, 205, 196, 0.25);
+  border: 1px solid var(--border-teal);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);

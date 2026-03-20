@@ -3,7 +3,7 @@
   <nav>
     <div class="logo" (click)="showLogoModal()">
       <img src="assets/images/logo.png" alt="FinanceTracker Logo" class="logo-image">
-      <span class="logo-text">FinanceTracker</span>
+      <span class="logo-text">FinMind</span>
     </div>
     <div class="nav-links">
       <!-- Features button - only show when not logged in -->
@@ -17,6 +17,12 @@
 
       <!-- Login button for non-logged in users -->
       <a href="#" class="btn btn-secondary" *ngIf="!isLoggedIn" data-key="navLogin" (click)="navigateToLogin($event)">Đăng nhập</a>
+
+      <!-- Theme toggle -->
+      <button class="theme-toggle-btn" (click)="toggleTheme()"
+              [title]="isDark ? 'Chế độ sáng' : 'Chế độ tối'">
+        <i [class]="isDark ? 'fa fa-sun-o' : 'fa fa-moon-o'"></i>
+      </button>
 
       <!-- Notification and Chat icons for logged in users -->
       <div class="header-icons" *ngIf="isLoggedIn">
@@ -64,16 +70,10 @@
 </header>
 
 
-<!-- Logo Modal -->
-<div class="logo-modal" *ngIf="showModal" (click)="closeLogoModal()">
-  <div class="logo-modal-content" (click)="$event.stopPropagation()">
-    <div class="logo-modal-header">
-      <h3 data-key="modalLogoTitle">FinanceTracker Logo</h3>
-      <button class="close-btn" (click)="closeLogoModal()" data-key="modalCloseButton">&times;</button>
-    </div>
-    <div class="logo-modal-body">
-      <img src="assets/images/logo.png" alt="FinanceTracker Logo" class="modal-logo-image">
-      <p data-key="modalLogoDesc">Logo chính thức của FinanceTracker - Ứng dụng quản lý tài chính cá nhân</p>
-    </div>
+<!-- Logo Lightbox -->
+<div class="logo-lightbox" *ngIf="showModal" (click)="closeLogoModal()">
+  <div class="logo-lightbox-content" (click)="$event.stopPropagation()">
+    <button class="logo-lightbox-close" (click)="closeLogoModal()">×</button>
+    <img src="assets/images/logo.png" alt="FinMind Logo">
   </div>
 </div>

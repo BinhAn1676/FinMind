@@ -17,6 +17,8 @@ export interface PlanningBudget {
   endDate?: string;   // yyyy-MM-dd - required for SHORT_TERM, optional for LONG_TERM
   repeatCycle?: RepeatCycle; // required for RECURRING, optional for LONG_TERM
   dayOfMonth?: number; // 1-31, required for RECURRING
+  icon?: string;
+  color?: string;
 }
 
 @Injectable({ providedIn: 'root' })

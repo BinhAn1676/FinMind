@@ -5,6 +5,8 @@ import com.finance.notificationservice.constants.NotificationType;
 import com.finance.notificationservice.entity.Notification;
 import com.finance.notificationservice.model.kafka.model.UserNotificationEvent;
 import com.finance.notificationservice.repository.NotificationRepository;
+import com.finance.notificationservice.service.NotifyService;
+import com.finance.notificationservice.service.impl.EmailTemplateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,16 +20,17 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationKafkaConsumer {
-    
+
     private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    
+    private final NotifyService notifyService;
+    private final EmailTemplateService emailTemplateService;
+
     @KafkaListener(topics = KafkaConfig.USER_NOTIFICATION_TOPIC, groupId = "notification-group")
     public void consumeNotification(UserNotificationEvent event) {
         log.info("Received notification event: {}", event);
-        
+
         try {
-            // Create a notification entity from the event
             Map<String, String> metadata = new HashMap<>();
             if (event.getAdditionalData() != null) {
                 metadata.putAll(event.getAdditionalData());
@@ -41,23 +44,27 @@ public class NotificationKafkaConsumer {
                     .source(event.getSource())
                     .metadata(metadata)
                     .build();
-            
-            // Save notification to database
+
             notification = notificationRepository.save(notification);
-            
-            // Send notification to connected user via WebSocket
+
+            // Push via WebSocket
             String destination = "/user/" + event.getUserId() + "/queue/notifications";
             messagingTemplate.convertAndSend(destination, notification);
-            
-            // Also send to the notifications count endpoint to update badge
+
             String countDestination = "/user/" + event.getUserId() + "/queue/notifications-count";
             long unreadCount = notificationRepository.countByUserIdAndReadFalse(event.getUserId());
             messagingTemplate.convertAndSend(countDestination, unreadCount);
-            
+
             log.info("Notification processed and sent to user {}", event.getUserId());
-            
+
+            // Send email for BILL_REMINDER events
+            if ("BILL_REMINDER".equals(event.getEventType()) && event.getEmail() != null && !event.getEmail().isBlank()) {
+                String htmlBody = emailTemplateService.buildBillReminderEmail(event.getFullName(), event.getMessage());
+                notifyService.sendEmail(event.getEmail(), "⏰ " + event.getTitle(), htmlBody);
+            }
+
         } catch (Exception e) {
             log.error("Error processing notification event", e);
         }
     }
-} 
+}

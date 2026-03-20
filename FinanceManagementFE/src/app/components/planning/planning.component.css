@@ -16,12 +16,12 @@
 }
 
 .planning-panel {
-  background: linear-gradient(145deg, #1b4458, #173a4a);
+  background: var(--bg-card);
   border-radius: 26px;
-  box-shadow: 0 12px 45px rgba(10, 26, 33, 0.65), 0 2px 18px rgba(78, 205, 255, 0.25);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-panel);
+  border: 1.5px solid var(--border-default);
   padding: 2.5rem 3rem;
-  color: #f8fafc;
+  color: var(--text-primary);
   min-height: 70vh;
 }
 
@@ -319,7 +319,7 @@
   background: linear-gradient(140deg, rgba(14, 30, 46, 0.95), rgba(16, 45, 66, 0.95));
   border-radius: 20px;
   border: 1px solid rgba(148, 210, 255, 0.15);
-  padding: 1.6rem;
+  padding: 0;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -1026,4 +1026,1227 @@
   }
 }
 
+/* ─── Tab Navigation ──────────────────────────────────────────────────────── */
 
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -2px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-btn:hover {
+  color: #e2e8f0;
+}
+
+.tab-btn.active {
+  color: #4ecdc4;
+  border-bottom-color: #4ecdc4;
+}
+
+.tab-content {
+  animation: fadeIn 0.2s ease;
+}
+
+/* ─── Plan card emoji icon ────────────────────────────────────────────────── */
+
+.plan-emoji-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+/* ─── Icon & Color pickers inside modal ──────────────────────────────────── */
+
+.icon-picker {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.picker-icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: all 0.15s;
+}
+
+.picker-icon-btn:hover,
+.picker-icon-btn.selected {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.15);
+}
+
+.color-picker {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.picker-color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.picker-color-btn:hover {
+  transform: scale(1.15);
+}
+
+.picker-color-btn.selected {
+  border-color: #f8fafc;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Savings Goals Styles (copied from savings-goals.component.css) ──────── */
+
+/* Stats */
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 160px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stat-icon {
+  font-size: 1.6rem;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.stat-value.green { color: #4ade80; }
+.stat-value.blue { color: #60a5fa; }
+.stat-value.teal { color: #4ecdc4; }
+
+/* Secondary button */
+.btn.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.btn.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Goals grid */
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.goal-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.goal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.goal-card.completed { opacity: 0.85; }
+.goal-card.cancelled { opacity: 0.5; }
+
+.card-accent { height: 4px; }
+
+.card-body {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.goal-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.goal-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goal-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.card-actions { flex-shrink: 0; }
+
+.status-badge {
+  font-size: 0.7rem;
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-active { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
+.status-completed { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+.status-cancelled { background: rgba(100, 116, 139, 0.3); color: #94a3b8; }
+
+/* Progress */
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.current-amount {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.progress-pct {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.target-amount {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.progress-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  min-width: 4px;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.remaining-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.days-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Card footer */
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.btn-contribute {
+  flex: 1;
+  border: none;
+  color: #0f2030;
+  border-radius: 10px;
+  padding: 0.55rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
+}
+
+.btn-contribute:hover { opacity: 0.85; }
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #94a3b8;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-icon:hover { background: rgba(78, 205, 196, 0.2); color: #4ecdc4; }
+.btn-icon.danger:hover { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+
+/* Goal Modal (modal-backdrop / modal-box) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-box {
+  background: linear-gradient(145deg, #1b4458, #0f2030);
+  border-radius: 20px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-box.small { max-width: 420px; }
+
+.modal-box .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: none;
+}
+
+.modal-box .modal-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #f8fafc;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box .modal-body {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-box .modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1rem 2rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-row label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.goal-form-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  color: #f8fafc;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.goal-form-input:focus { border-color: #4ecdc4; }
+
+select.goal-form-input {
+  background: #0f2030;
+  color: #f8fafc;
+  appearance: auto;
+}
+
+select.goal-form-input option {
+  background: #1b4458;
+  color: #f8fafc;
+}
+
+.goal-icon-picker {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.goal-icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: all 0.15s;
+}
+
+.goal-icon-btn:hover,
+.goal-icon-btn.selected {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.15);
+}
+
+.goal-color-picker {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.goal-color-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.goal-color-btn:hover { transform: scale(1.15); }
+.goal-color-btn.selected {
+  border-color: #f8fafc;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* p-calendar inside savings goal modal */
+.modal-box .form-row ::ng-deep .p-calendar {
+  width: 100%;
+}
+
+.modal-box .form-row ::ng-deep .p-calendar > span {
+  width: 100%;
+  display: flex;
+}
+
+.modal-box .form-row ::ng-deep .p-calendar .p-inputtext {
+  width: 100%;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px 0 0 10px;
+  color: #f8fafc;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+  height: auto;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+
+.modal-box .form-row ::ng-deep .p-calendar .p-inputtext:enabled:focus {
+  border-color: #4ecdc4;
+  outline: none;
+  box-shadow: none;
+}
+
+.modal-box .form-row ::ng-deep .p-calendar .p-datepicker-trigger {
+  background: rgba(78, 205, 196, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-left: none;
+  color: #4ecdc4;
+  border-radius: 0 10px 10px 0;
+  transition: all 0.2s;
+  padding: 0.65rem;
+}
+
+.modal-box .form-row ::ng-deep .p-calendar .p-datepicker-trigger:hover {
+  background: rgba(78, 205, 196, 0.35);
+  color: #f8fafc;
+}
+
+/* Empty state for savings tab */
+.sg-empty-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sg-empty-icon { font-size: 4rem; }
+.sg-empty-state h3 { margin: 0; font-size: 1.3rem; color: #f8fafc; }
+.sg-empty-state p { margin: 0; color: #94a3b8; }
+
+@media (max-width: 768px) {
+  .goals-grid { grid-template-columns: 1fr; }
+  .form-row-2 { grid-template-columns: 1fr; }
+  .stats-row { flex-direction: column; }
+  .tab-nav { overflow-x: auto; }
+}
+
+
+
+/* ─── Budget Surplus Banner ──────────────────────────────────────── */
+.surplus-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(78, 205, 196, 0.05));
+  border: 1px solid rgba(78, 205, 196, 0.35);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.surplus-banner-icon { font-size: 1.5rem; flex-shrink: 0; }
+
+.surplus-banner-text {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.surplus-title { font-size: 0.9rem; color: #e2e8f0; }
+.surplus-title strong { color: #4ecdc4; }
+.surplus-sub { font-size: 0.75rem; color: #94a3b8; }
+
+.surplus-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.surplus-select {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(78, 205, 196, 0.4);
+  border-radius: 10px;
+  color: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.surplus-select option { background: #1b4458; }
+
+.btn-transfer {
+  background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+  border: none;
+  border-radius: 10px;
+  color: #0f2030;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.btn-transfer:hover:not(:disabled) { opacity: 0.85; }
+.btn-transfer:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Quick Amount Buttons ───────────────────────────────────────── */
+.quick-amounts {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #e2e8f0;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.quick-btn:hover {
+  background: rgba(78, 205, 196, 0.2);
+  border-color: #4ecdc4;
+  color: #4ecdc4;
+}
+
+.surplus-quick-btn {
+  background: rgba(78, 205, 196, 0.12);
+  border-color: rgba(78, 205, 196, 0.4);
+  color: #4ecdc4;
+}
+
+/* ─── Auto-save toggle ───────────────────────────────────────────── */
+.auto-save-section {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auto-save-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auto-save-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.auto-save-options {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Toggle switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  transition: 0.2s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #f8fafc;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.toggle-switch input:checked + .toggle-slider { background: #4ecdc4; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Auto-save badge on goal card */
+.auto-save-badge {
+  font-size: 0.7rem;
+  background: rgba(78, 205, 196, 0.15);
+  border: 1px solid rgba(78, 205, 196, 0.3);
+  color: #4ecdc4;
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+/* ─── Contribution History ───────────────────────────────────────── */
+.btn-history-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  color: #64748b;
+  font-size: 0.75rem;
+  padding: 0.5rem 0 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: color 0.2s;
+  margin-top: 0.25rem;
+}
+
+.btn-history-toggle:hover { color: #94a3b8; }
+
+.contribution-history {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.no-contributions {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.78rem;
+  padding: 0.5rem 0;
+}
+
+.contribution-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.contribution-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.contribution-amount {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.contribution-note {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contribution-date {
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.btn-delete-contrib {
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-delete-contrib:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.btn-delete-contrib:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .planning-panel {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .panel-title p {
+  color: #475569 !important;
+}
+
+/* Summary cards */
+:host-context(html[data-theme="light"]) .summary-card {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-card::after {
+  display: none !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-value {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+/* Tab nav */
+:host-context(html[data-theme="light"]) .tab-nav {
+  border-bottom: 2px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn:hover {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn.active {
+  color: #0e7490 !important;
+  border-bottom-color: #0e7490 !important;
+}
+
+/* Plan cards */
+:host-context(html[data-theme="light"]) .plan-card {
+  background: linear-gradient(140deg, rgba(232,244,248,0.98), rgba(216,236,244,0.98)) !important;
+  border: 1px solid rgba(0,0,0,0.09) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-card::before {
+  display: none !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-title h4 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-title span {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .icon-btn {
+  background: rgba(0,0,0,0.05) !important;
+  border: 1px solid rgba(0,0,0,0.1) !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-progress {
+  background: rgba(0,0,0,0.1) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-stats {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-stats label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-stats span {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-stats .divider {
+  background: rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-status {
+  background: rgba(14,116,144,0.1) !important;
+  color: #0e7490 !important;
+}
+
+:host-context(html[data-theme="light"]) .plan-status.overspent {
+  background: rgba(239,68,68,0.1) !important;
+  color: #dc2626 !important;
+}
+
+/* Empty/loading state */
+:host-context(html[data-theme="light"]) .loading-state,
+:host-context(html[data-theme="light"]) .empty-state {
+  color: #64748B !important;
+}
+
+/* Goal cards */
+:host-context(html[data-theme="light"]) .goal-card {
+  background: rgba(255,255,255,0.85) !important;
+  border: 1px solid rgba(0,0,0,0.09) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .goal-name {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .goal-desc {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .current-amount {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .target-amount,
+:host-context(html[data-theme="light"]) .remaining-label,
+:host-context(html[data-theme="light"]) .days-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .progress-bar-bg {
+  background: rgba(0,0,0,0.1) !important;
+}
+
+:host-context(html[data-theme="light"]) .card-footer {
+  border-top: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-icon {
+  background: rgba(0,0,0,0.06) !important;
+  color: #64748B !important;
+}
+
+/* Stat cards */
+:host-context(html[data-theme="light"]) .stat-card {
+  background: rgba(255,255,255,0.75) !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+}
+
+:host-context(html[data-theme="light"]) .stat-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .stat-value {
+  color: #0F172A !important;
+}
+
+/* Surplus banner */
+:host-context(html[data-theme="light"]) .surplus-banner {
+  background: linear-gradient(135deg, rgba(78,205,196,0.12), rgba(78,205,196,0.05)) !important;
+  border: 1px solid rgba(78,205,196,0.3) !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-title {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-sub {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-select {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .surplus-select option {
+  background: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+/* Quick amount buttons */
+:host-context(html[data-theme="light"]) .quick-btn {
+  background: rgba(0,0,0,0.05) !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .quick-btn:hover {
+  background: rgba(14,116,144,0.1) !important;
+  border-color: rgba(14,116,144,0.4) !important;
+  color: #0e7490 !important;
+}
+
+/* Auto-save section */
+:host-context(html[data-theme="light"]) .auto-save-section {
+  background: rgba(0,0,0,0.03) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .auto-save-label {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .auto-save-options {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+/* Contribution items */
+:host-context(html[data-theme="light"]) .contribution-item {
+  background: rgba(0,0,0,0.04) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .contribution-note,
+:host-context(html[data-theme="light"]) .contribution-date {
+  color: #64748B !important;
+}
+
+/* Category management */
+:host-context(html[data-theme="light"]) .category-management {
+  border-top: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+:host-context(html[data-theme="light"]) .category-management h4 {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .category-name {
+  color: #1E293B !important;
+}
+
+/* Picker buttons */
+:host-context(html[data-theme="light"]) .picker-icon-btn,
+:host-context(html[data-theme="light"]) .goal-icon-btn {
+  background: rgba(0,0,0,0.05) !important;
+}
+
+/* Checkbox */
+:host-context(html[data-theme="light"]) .checkbox-label span {
+  color: #1E293B !important;
+}
+
+/* Planning modal */
+:host-context(html[data-theme="light"]) .modal-overlay {
+  background: rgba(0,0,0,0.5) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content.planning-modal {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header {
+  background: rgba(0,0,0,0.04) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-close {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-column-left {
+  border-right: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input {
+  background: #FFFFFF !important;
+  border: 1.5px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn.btn-cancel {
+  background: rgba(0,0,0,0.07) !important;
+  color: #334155 !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-body .form-group ::ng-deep .p-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 1.5px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-body .form-group ::ng-deep .p-calendar .p-datepicker-trigger {
+  background: rgba(56,189,248,0.12) !important;
+  border: 1.5px solid #CBD5E1 !important;
+  border-left: none !important;
+  color: #0e7490 !important;
+}
+
+/* Savings goal modal (modal-box) */
+:host-context(html[data-theme="light"]) .modal-backdrop {
+  background: rgba(0,0,0,0.5) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-box {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-box .modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-box .modal-header h2 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .close-btn {
+  background: rgba(0,0,0,0.07) !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-box .modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .form-row label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .goal-form-input {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) select.goal-form-input {
+  background: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) select.goal-form-input option {
+  background: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-box .form-row ::ng-deep .p-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-box .form-row ::ng-deep .p-calendar .p-datepicker-trigger {
+  background: rgba(56,189,248,0.12) !important;
+  border: 1px solid #CBD5E1 !important;
+  border-left: none !important;
+  color: #0e7490 !important;
+}
+
+:host-context(html[data-theme="light"]) .sg-empty-state h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .sg-empty-state p {
+  color: #64748B !important;
+}

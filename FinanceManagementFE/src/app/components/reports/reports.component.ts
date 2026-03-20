@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { LanguageService } from '../../services/language.service';
 import { LayoutService } from '../../services/layout.service';
 import { TransactionService, TransactionFilterParams } from '../../services/transaction.service';
@@ -6,6 +6,9 @@ import { AccountService } from '../../services/account.service';
 import { CategoryService, Category } from '../../services/category.service';
 import { UserService } from '../../services/user.service';
 import { ToastService } from '../../services/toast.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ThemeService } from '../../services/theme.service';
 import {
   ChartComponent,
   ApexAxisChartSeries,
@@ -25,7 +28,7 @@ import {
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.css']
 })
-export class ReportsComponent implements OnInit {
+export class ReportsComponent implements OnInit, OnDestroy {
   userId!: string;
 
   // Report generation state
@@ -142,6 +145,8 @@ export class ReportsComponent implements OnInit {
   startDateObj: Date | null = null;
   endDateObj: Date | null = null;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     public language: LanguageService,
     public layout: LayoutService,
@@ -149,8 +154,14 @@ export class ReportsComponent implements OnInit {
     private accountService: AccountService,
     private categoryService: CategoryService,
     private userService: UserService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private themeService: ThemeService
   ) {}
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   ngOnInit(): void {
     // Load user info
@@ -168,6 +179,16 @@ export class ReportsComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error loading user:', error);
+      }
+    });
+
+    this.themeService.theme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      // Re-initialize charts if preview data is available
+      if (this.previewData?.categoryBreakdown) {
+        this.initializeCategoryChart(this.previewData.categoryBreakdown);
+      }
+      if (this.previewData?.dailyTrend) {
+        this.initializeTrendChart(this.previewData.dailyTrend);
       }
     });
   }
@@ -723,14 +744,17 @@ export class ReportsComponent implements OnInit {
   initializeCategoryChart(categories: any[]): void {
     const categoryNames = categories.map(c => c.category || 'Uncategorized');
     const categoryAmounts = categories.map(c => Math.abs(c.amount || c.totalAmount || 0));
+    const isDark = this.themeService.isDark();
 
     this.categoryChartOptions = {
       series: categoryAmounts,
       chart: {
         type: 'donut',
         height: 320,
-        background: 'transparent'
+        background: 'transparent',
+        foreColor: isDark ? '#94a3b8' : '#64748B'
       },
+      theme: { mode: isDark ? 'dark' : 'light' },
       labels: categoryNames,
       colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'],
       plotOptions: {
@@ -753,7 +777,7 @@ export class ReportsComponent implements OnInit {
       legend: {
         position: 'bottom',
         labels: {
-          colors: '#e9edf5'
+          colors: isDark ? '#e9edf5' : '#334155'
         }
       },
       dataLabels: {
@@ -766,7 +790,7 @@ export class ReportsComponent implements OnInit {
         }
       },
       tooltip: {
-        theme: 'dark',
+        theme: isDark ? 'dark' : 'light',
         y: {
           formatter: (val: number) => {
             return this.formatCurrency(val);
@@ -780,6 +804,8 @@ export class ReportsComponent implements OnInit {
     const dates = dailyData.map(d => d.date);
     const incomeData = dailyData.map(d => d.income || 0);
     const expenseData = dailyData.map(d => Math.abs(d.expense || 0));
+    const isDark = this.themeService.isDark();
+    const chartText = isDark ? '#9fb2d4' : '#64748B';
 
     this.trendChartOptions = {
       series: [
@@ -796,10 +822,12 @@ export class ReportsComponent implements OnInit {
         type: 'area',
         height: 320,
         background: 'transparent',
+        foreColor: chartText,
         toolbar: {
           show: false
         }
       },
+      theme: { mode: isDark ? 'dark' : 'light' },
       colors: ['#4ECDC4', '#FF6B6B'],
       dataLabels: {
         enabled: false
@@ -812,14 +840,14 @@ export class ReportsComponent implements OnInit {
         categories: dates,
         labels: {
           style: {
-            colors: '#9fb2d4'
+            colors: chartText
           }
         }
       },
       yaxis: {
         labels: {
           style: {
-            colors: '#9fb2d4'
+            colors: chartText
           },
           formatter: (val: number) => {
             return (val / 1000000).toFixed(1) + 'M';
@@ -829,11 +857,11 @@ export class ReportsComponent implements OnInit {
       legend: {
         position: 'top',
         labels: {
-          colors: '#e9edf5'
+          colors: isDark ? '#e9edf5' : '#334155'
         }
       },
       tooltip: {
-        theme: 'dark',
+        theme: isDark ? 'dark' : 'light',
         y: {
           formatter: (val: number) => {
             return this.formatCurrency(val);

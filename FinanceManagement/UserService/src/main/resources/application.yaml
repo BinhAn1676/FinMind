@@ -63,8 +63,8 @@ info:
 
 #minio:
 #  url: http://localhost:9000
-#  access-key: ${MINIO_ACCESS_KEY}
-#  secret-key: ${MINIO_SECRET_KEY}
+#  access-key: loki
+#  secret-key: supersecret
 #  bucket-name: userFiles
 
 

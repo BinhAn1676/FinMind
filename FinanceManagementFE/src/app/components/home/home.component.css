@@ -1,4 +1,5 @@
-:root {
+/* ─── home component local vars ─── */
+:host {
   --color-navy: #0A192F;
   --color-teal: #143A4E;
   --color-off-white: #F8F9FA;
@@ -6,16 +7,6 @@
   --color-coral: #FF6B6B;
   --color-soft-green: #4ECDC4;
   --font-family: 'Be Vietnam Pro', sans-serif;
-
-  /* Dark Theme Variables (Default) - Matching Image 2 */
-  --color-bg: #0A192F;
-  --color-text: #FFFFFF;
-  --color-text-secondary: #adb5bd;
-  --color-header-bg: #0A192F;
-  --color-card-bg: #143A4E;
-  --color-section-bg: #071324;
-  --color-footer-bg: #071324;
-  --shadow-color: rgba(0,0,0,0.3);
 }
 
 /* Force dark theme on all elements */
@@ -27,35 +18,14 @@
 
 html {
   scroll-behavior: smooth;
-  background-color: #0A192F !important;
-}
-
-html, body {
-  background-color: #0A192F !important;
-  color: #FFFFFF !important;
 }
 
 body {
   font-family: var(--font-family);
-  background-color: #0A192F !important;
-  color: #FFFFFF !important;
   line-height: 1.6;
-  transition: background-color 0.3s ease, color 0.3s ease;
   position: relative;
   overflow-x: hidden;
   min-height: 100vh;
-}
-
-/* Force dark theme on app-root and all children */
-app-root {
-  background-color: #0A192F !important;
-  color: #FFFFFF !important;
-  display: block;
-  min-height: 100vh;
-}
-
-app-root * {
-  color: inherit;
 }
 
 .background-gradient {
@@ -914,28 +884,135 @@ section {
     grid-template-columns: 2fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
   }
-  
+
   .item-large {
     grid-column: 1 / 2;
     grid-row: 1 / 4;
   }
-  
+
   .item-large img {
     height: 300px;
   }
-  
+
   .item-small:nth-of-type(2) {
     grid-column: 2 / 3;
     grid-row: 1 / 2;
   }
-  
+
   .item-small:nth-of-type(3) {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
   }
-  
+
   .item-small:nth-of-type(4) {
     grid-column: 2 / 3;
     grid-row: 3 / 4;
   }
 }
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .main-header {
+  background-color: #F0F8FB !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) section {
+  background-color: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .section-title {
+  color: #1E293B !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .hero-section {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .hero-content h1 {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .hero-content p,
+:host-context(html[data-theme="light"]) .social-proof {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .features-section {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .bento-item {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.09), 0 1px 4px rgba(0,0,0,0.05) !important;
+}
+
+:host-context(html[data-theme="light"]) .bento-item:hover {
+  box-shadow: 0 12px 36px rgba(0,0,0,0.13), 0 2px 6px rgba(78,205,196,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .bento-item h3 {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .bento-item p {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .features-pyramid-section {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .pyramid-item {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09) !important;
+}
+
+:host-context(html[data-theme="light"]) .pyramid-item:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.13) !important;
+}
+
+:host-context(html[data-theme="light"]) .pyramid-item h3 {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .pyramid-item p { color: #475569 !important; }
+
+:host-context(html[data-theme="light"]) .contact-section {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .contact-section h2 {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .contact-info {
+  background: rgba(210,238,250,0.6) !important;
+  border: 1px solid rgba(78,205,196,0.25) !important;
+}
+
+:host-context(html[data-theme="light"]) .contact-details h3 { color: #0F172A !important; }
+:host-context(html[data-theme="light"]) .contact-details p { color: #475569 !important; }
+
+:host-context(html[data-theme="light"]) .main-footer {
+  background-color: #1E293B !important;
+  color: #e2e8f0 !important;
+}
+
+:host-context(html[data-theme="light"]) .logo-modal-content {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .logo-modal-header h3 { color: #0F172A !important; }
+:host-context(html[data-theme="light"]) .logo-modal-body p { color: #475569 !important; }
+:host-context(html[data-theme="light"]) .close-btn { color: #334155 !important; }

@@ -1,15 +1,13 @@
 package com.finance.financeservice.controller;
 
 import com.finance.financeservice.dto.sepay.SyncResult;
-import com.finance.financeservice.service.SepaySyncService;
+import com.finance.financeservice.service.sepay.SepaySyncService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.quartz.JobBuilder;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController

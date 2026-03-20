@@ -51,8 +51,9 @@ public class CategoryServiceImpl implements CategoryService {
         log.debug("Fetching categories from database for user: {}", userId);
         List<Category> categories = categoryRepository.findByUserId(userId);
 
-        // If user has no categories, initialize default ones
-        if (categories.isEmpty()) {
+        // Sync missing default categories (handles newly added defaults for existing users)
+        long defaultCount = categories.stream().filter(c -> Boolean.TRUE.equals(c.getIsDefault())).count();
+        if (defaultCount < DEFAULT_CATEGORIES.size()) {
             initializeDefaultCategories(userId);
             categories = categoryRepository.findByUserId(userId);
         }
@@ -123,11 +124,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @CacheEvict(value = "userCategories", key = "#userId")
     public void initializeDefaultCategories(String userId) {
-        // Check if user already has categories
-        if (!categoryRepository.findByUserId(userId).isEmpty()) {
-            return;
-        }
-
         List<Category> defaultCategories = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
 

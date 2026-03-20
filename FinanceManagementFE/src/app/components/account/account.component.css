@@ -35,22 +35,22 @@
 }
 
 .account-container.full-width {
-  background: linear-gradient(145deg, #1b4458, #173a4a);
+  background: var(--bg-card);
   border-radius: 22px;
-  box-shadow: 0 8px 32px #0a1a21, 0 2px 12px #4ECDFF;
-  border: 1.5px solid rgba(255,255,255,0.13);
+  box-shadow: var(--shadow-panel);
+  border: 1.5px solid var(--border-default);
   padding: 2rem;
-  color: #FFF;
+  color: var(--text-primary);
   min-height: 800px; /* Dài hơn để chiếm nhiều không gian */
 }
 
 .chart-container.full-width {
-  background: linear-gradient(145deg, #1b4458, #173a4a);
+  background: var(--bg-card);
   border-radius: 22px;
-  box-shadow: 0 8px 32px #0a1a21, 0 2px 12px #4ECDFF;
-  border: 1.5px solid rgba(255,255,255,0.13);
+  box-shadow: var(--shadow-panel);
+  border: 1.5px solid var(--border-default);
   padding: 2rem;
-  color: #FFF;
+  color: var(--text-primary);
   min-height: 600px;
 }
 
@@ -1203,4 +1203,263 @@ select.form-input {
 
 .recommended-banks li strong {
   color: var(--color-soft-green);
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .summary-card.full-width {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(78,205,196,0.25) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-value.xl {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-divider {
+  background: rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .account-container.full-width,
+:host-context(html[data-theme="light"]) .chart-container.full-width {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1.5px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .account-tile {
+  background: linear-gradient(135deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .account-tile:hover {
+  box-shadow: 0 6px 24px rgba(78,205,196,0.2) !important;
+  border-color: rgba(78,205,196,0.3) !important;
+}
+
+:host-context(html[data-theme="light"]) .title-text {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .subtitle-text {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .info-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .info-value {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .tile-actions {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .icon-btn {
+  background: rgba(215,235,245,0.9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .icon-btn:hover {
+  background: #F1F5F9 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn {
+  background: rgba(232,244,248,0.9) !important;
+  color: #334155 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn:hover {
+  background: #d4eaf3 !important;
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .tab-btn.active {
+  background: linear-gradient(135deg, #FF6B6B, #4ECDC4) !important;
+  color: #fff !important;
+}
+
+:host-context(html[data-theme="light"]) .account-actions .form-input {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-wrapper {
+  background: rgba(224,240,249,0.8) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-info {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .page-size-select {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-btn {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-btn:hover:not(:disabled) {
+  background: #F1F5F9 !important;
+  border-color: rgba(78,205,196,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-page {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .total-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-tooltip {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(78,205,196,0.3) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .tooltip-label {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .tooltip-percentage {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .legend-item {
+  background: rgba(224,240,249,0.8) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .legend-item:hover {
+  background: #F1F5F9 !important;
+}
+
+:host-context(html[data-theme="light"]) .legend-label {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .legend-amount {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  background: rgba(255,255,255,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-close {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-item label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-value {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-group label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-cancel {
+  background: rgba(215,235,245,0.9) !important;
+  color: #475569 !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-cancel:hover {
+  background: #F1F5F9 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .warning-message {
+  color: #FF6B6B !important;
+}
+
+:host-context(html[data-theme="light"]) .account-info {
+  background: rgba(255,107,107,0.08) !important;
+  border: 1px solid rgba(255,107,107,0.2) !important;
+}
+
+:host-context(html[data-theme="light"]) .info-row {
+  border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .sync-guide-tooltip {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(78,205,196,0.3) !important;
+  color: #334155 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .banks-list li {
+  background: rgba(224,240,249,0.8) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .bank-name {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .bank-features {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .sync-info-intro {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .supported-banks-list h4,
+:host-context(html[data-theme="light"]) .balance-sync-note h4 {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .balance-sync-note p,
+:host-context(html[data-theme="light"]) .recommended-banks-note p {
+  color: #475569 !important;
 }

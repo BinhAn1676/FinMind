@@ -48,6 +48,12 @@ public class PlanningBudget {
     @Field("day_of_month")
     private Integer dayOfMonth; // 1-31, used for RECURRING plans (when to reset budget)
 
+    @Field("icon")
+    private String icon; // emoji, e.g. "🏠"
+
+    @Field("color")
+    private String color; // hex, e.g. "#4ecdc4"
+
     public double remaining() {
         double budget = budgetAmount != null ? budgetAmount : 0.0;
         double spent = spentAmount != null ? spentAmount : 0.0;

@@ -86,10 +86,10 @@
   top: calc(100% + 10px);
   right: 0;
   width: 340px;
-  background: linear-gradient(160deg, #1a3a4a 0%, #0f2535 100%);
+  background: var(--bg-card-inner);
   border: 1px solid rgba(78, 205, 196, 0.2);
   border-radius: 18px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(78,205,196,0.08);
+  box-shadow: var(--shadow-dropdown), 0 0 0 1px rgba(78,205,196,0.08);
   z-index: 1100;
   overflow: hidden;
   animation: dropIn 0.2s ease;
@@ -106,7 +106,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .dropdown-title {
@@ -354,4 +354,86 @@
   .btn-label { display: none; }
   .btc-mini { display: none; }
   .ticker-trigger-btn { padding: 8px 10px; }
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .ticker-dropdown {
+  background: #EBF5FB !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  box-shadow: 0 8px 32px rgba(78,163,196,0.15), 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .dropdown-header {
+  border-bottom: 1px solid rgba(78,163,196,0.20) !important;
+}
+
+:host-context(html[data-theme="light"]) .dropdown-title {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .coin-sym {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .coin-nm {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .coin-price {
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .coin-row:hover {
+  background: rgba(78,163,196,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .section-tabs {
+  border-bottom: 1px solid rgba(78,163,196,0.18) !important;
+}
+
+:host-context(html[data-theme="light"]) .section-tab {
+  border: 1px solid rgba(78,163,196,0.20) !important;
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .section-tab:hover {
+  background: rgba(78,163,196,0.10) !important;
+  color: #1A3A50 !important;
+}
+
+:host-context(html[data-theme="light"]) .section-tab.active {
+  background: rgba(78,205,196,0.15) !important;
+  border-color: rgba(78,205,196,0.45) !important;
+  color: #0D7A8A !important;
+}
+
+:host-context(html[data-theme="light"]) .dropdown-footer {
+  border-top: 1px solid rgba(78,163,196,0.18) !important;
+  color: #0D7A8A !important;
+}
+
+:host-context(html[data-theme="light"]) .dropdown-footer:hover {
+  background: rgba(78,163,196,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .ticker-loading {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .chevron {
+  color: #4A7A96 !important;
+}
+
+:host-context(html[data-theme="light"]) .view-all-btn {
+  background: rgba(78,163,196,0.12) !important;
+  border: 1px solid rgba(78,163,196,0.30) !important;
+  color: #0D7A8A !important;
+}
+
+:host-context(html[data-theme="light"]) .view-all-btn:hover {
+  background: rgba(78,163,196,0.22) !important;
+}
+
+:host-context(html[data-theme="light"]) .ticker-vn-circle {
+  background: linear-gradient(135deg, #1a8a6a, #0d6a4a) !important;
 }

@@ -86,7 +86,10 @@ export class HelpService {
       myBalance: 'myBalance',
       myCards: 'myCards',
       investment: 'investment',
-      profile: 'profile'
+      profile: 'profile',
+      'savings-goals': 'savings-goals',
+      bills: 'bills',
+      calendar: 'calendar'
     };
     return routeMap[path] || '';
   }

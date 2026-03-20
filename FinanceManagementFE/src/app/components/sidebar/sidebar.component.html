@@ -20,6 +20,10 @@
       <i class="fa fa-exchange"></i>
       <span data-key="menuTransactions">{{ language.translate('menuTransactions') }}</span>
     </a>
+    <a href="#" class="menu-item" [class.active]="isActive('/calendar')" (click)="navigate('/calendar', $event)">
+      <i class="fa fa-calendar"></i>
+      <span data-key="menuCalendar">{{ language.translate('menuCalendar') }}</span>
+    </a>
     <a href="#" class="menu-item" [class.active]="isActive('/myLoans')" (click)="navigate('/myLoans', $event)">
       <i class="fa fa-balance-scale"></i>
       <span data-key="menuLoans">{{ language.translate('menuLoans') }}</span>
@@ -44,10 +48,13 @@
       <span data-key="menuStatistics">{{ language.translate('menuStatistics') }}</span>
     </a>
     <a href="#" class="menu-item" [class.active]="isActive('/analytics')" (click)="navigate('/analytics', $event)">
-      <i class="fa fa-line-chart"></i>
+      <i class="fa fa-magic"></i>
       <span data-key="menuAnalysis">{{ language.translate('menuAnalysis') }}</span>
     </a>
-
+    <a href="#" class="menu-item" [class.active]="isActive('/bills')" (click)="navigate('/bills', $event)">
+      <i class="fa fa-bell"></i>
+      <span data-key="menuBills">{{ language.translate('menuBills') }}</span>
+    </a>
     <!-- Đầu tư -->
     <a href="#" class="menu-item investment-item" [class.active]="isActive('/investment')" (click)="navigate('/investment', $event)">
       <i class="fa fa-bitcoin"></i>

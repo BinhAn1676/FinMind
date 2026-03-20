@@ -159,6 +159,10 @@
       <span>{{ language.translate('invest.vnStocks') }}</span>
       <span class="tab-badge live-badge" *ngIf="activeTab === 'vn'">LIVE</span>
     </button>
+    <button class="tab-btn" [class.active]="activeTab === 'portfolio'" (click)="setTab('portfolio')">
+      <span class="tab-icon">💼</span>
+      <span>{{ language.translate('invest.portfolio') }}</span>
+    </button>
   </div>
 
   <!-- ═══════════════════ CRYPTO TAB ═══════════════════ -->
@@ -384,7 +388,7 @@
               </div>
               <div class="stat-row">
                 <span class="stat-key">Bán ra</span>
-                <span class="stat-val" style="color:#FFD93D">{{ g.sell | number:'1.0-0' }} ₫</span>
+                <span class="stat-val gold-sell-inline">{{ g.sell | number:'1.0-0' }} ₫</span>
               </div>
               <div class="stat-row">
                 <span class="stat-key">Spread</span>
@@ -394,6 +398,7 @@
           </div>
         </div>
       </ng-container>
+
     </div>
 
     <aside class="side-panel">
@@ -538,6 +543,7 @@
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- VN Side Panel -->
@@ -592,5 +598,957 @@
     </aside>
 
   </div><!-- end vn content-layout -->
+
+  <!-- ═══════════════════ PORTFOLIO TAB ═══════════════════ -->
+  <div class="portfolio-full-page" *ngIf="activeTab === 'portfolio'" (click)="closeAllMenus()">
+
+    <!-- ── Portfolio Sub-tabs ── -->
+    <div class="portfolio-sub-tabs">
+      <button class="ptab-btn" [class.active]="portfolioSubTab === 'crypto'"
+              (click)="setPortfolioSubTab('crypto'); $event.stopPropagation()">
+        <span class="ptab-icon">🪙</span>
+        <span>Tiền điện tử</span>
+        <span class="ptab-count" *ngIf="portfolioCoins.length > 0">{{ portfolioCoins.length }}</span>
+      </button>
+      <button class="ptab-btn" [class.active]="portfolioSubTab === 'gold'"
+              (click)="setPortfolioSubTab('gold'); $event.stopPropagation()">
+        <span class="ptab-icon">🥇</span>
+        <span>Vàng</span>
+        <span class="ptab-count" *ngIf="goldHoldings.length > 0">{{ goldHoldings.length }}</span>
+      </button>
+      <button class="ptab-btn" [class.active]="portfolioSubTab === 'vn_stock'"
+              (click)="setPortfolioSubTab('vn_stock'); $event.stopPropagation()">
+        <span class="ptab-icon">🇻🇳</span>
+        <span>Cổ phiếu VN</span>
+        <span class="ptab-count" *ngIf="stockHoldings.length > 0">{{ stockHoldings.length }}</span>
+      </button>
+    </div>
+
+    <!-- ════════════════ CRYPTO SUB-TAB ════════════════ -->
+    <ng-container *ngIf="portfolioSubTab === 'crypto'">
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="portfolioLoading">
+      <div class="loading-spinner"></div>
+      <p>{{ language.translate('invest.loadingPortfolio') }}</p>
+    </div>
+
+    <ng-container *ngIf="!portfolioLoading">
+
+      <!-- ── MAIN VIEW (coin list) ── -->
+      <ng-container *ngIf="!selectedCoin">
+
+        <!-- ── Toolbar ── -->
+        <div class="portfolio-toolbar-new">
+          <div class="toolbar-left">
+            <div class="add-coin-search" (click)="$event.stopPropagation()">
+              <div class="add-coin-input-wrap">
+                <i class="fa fa-search add-coin-search-icon"></i>
+                <input type="text" class="add-coin-input"
+                       placeholder="{{ language.translate('invest.searchToAddCoin') }}"
+                       [(ngModel)]="addCoinQuery"
+                       (focus)="showAddCoinDropdown = true"
+                       (input)="showAddCoinDropdown = true">
+              </div>
+              <div class="coin-suggestions" *ngIf="showAddCoinDropdown && addCoinSuggestions.length > 0">
+                <div class="coin-suggestion-item"
+                     *ngFor="let c of addCoinSuggestions"
+                     (click)="addCoinToPortfolio(c)">
+                  <img [src]="c.image" [alt]="c.symbol" class="sugg-img" loading="lazy">
+                  <span class="sugg-name">{{ c.name }}</span>
+                  <span class="sugg-sym">{{ c.symbol | uppercase }}</span>
+                  <i class="fa fa-plus sugg-plus"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="toolbar-right">
+            <span class="rate-badge">1 USD = {{ liveUsdVndRate | number:'1.0-0' }} ₫</span>
+            <div class="currency-toggle">
+              <button [class.active]="displayCurrency === 'USD'" (click)="displayCurrency !== 'USD' && toggleCurrency()">USD</button>
+              <button [class.active]="displayCurrency === 'VND'" (click)="displayCurrency !== 'VND' && toggleCurrency()">VNĐ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 4 Stat Boxes ── -->
+        <div class="stat-boxes-row" *ngIf="portfolioCoins.length > 0">
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.balance') }}</div>
+            <div class="stat-box-value">{{ fmtCurrency(portfolioTotalValueVnd) }}</div>
+            <div class="stat-box-sub">{{ language.translate('invest.totalHoldings') }}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.change24h') }}</div>
+            <div class="stat-box-value"
+                 [class.positive]="portfolio24hChangeVnd >= 0"
+                 [class.negative]="portfolio24hChangeVnd < 0">
+              {{ portfolio24hChangeVnd >= 0 ? '+' : '' }}{{ fmtCurrency(portfolio24hChangeVnd) }}
+            </div>
+            <div class="stat-box-sub"
+                 [class.positive]="portfolio24hChangePct >= 0"
+                 [class.negative]="portfolio24hChangePct < 0">
+              {{ portfolio24hChangePct >= 0 ? '▲' : '▼' }} {{ abs(portfolio24hChangePct) | number:'1.2-2' }}%
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.totalPnl') }}</div>
+            <div class="stat-box-value"
+                 [class.positive]="portfolioTotalPnlVnd >= 0"
+                 [class.negative]="portfolioTotalPnlVnd < 0">
+              {{ portfolioTotalPnlVnd >= 0 ? '+' : '' }}{{ fmtCurrency(portfolioTotalPnlVnd) }}
+            </div>
+            <div class="stat-box-sub"
+                 [class.positive]="portfolioTotalPnlPct >= 0"
+                 [class.negative]="portfolioTotalPnlPct < 0">
+              {{ portfolioTotalPnlPct >= 0 ? '+' : '' }}{{ portfolioTotalPnlPct | number:'1.2-2' }}%
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.topPerformer') }}</div>
+            <div class="stat-box-value" *ngIf="topPerformer">
+              <img [src]="topPerformer.image" [alt]="topPerformer.symbol" class="top-perf-img" *ngIf="topPerformer.image">
+              {{ topPerformer.symbol }}
+            </div>
+            <div class="stat-box-value" *ngIf="!topPerformer">—</div>
+            <div class="stat-box-sub positive" *ngIf="topPerformer">
+              +{{ topPerformer.pnlPct | number:'1.2-2' }}%
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Charts Row ── -->
+        <div class="charts-row" *ngIf="portfolioCoins.length > 0">
+          <div class="chart-card" *ngIf="donutOptions.series">
+            <div class="chart-card-title">{{ language.translate('invest.totalAssets') }}</div>
+            <apx-chart #donutChart
+              [series]="donutOptions.series!"
+              [chart]="donutOptions.chart"
+              [labels]="donutOptions.labels!"
+              [colors]="donutOptions.colors!"
+              [legend]="donutOptions.legend"
+              [dataLabels]="donutOptions.dataLabels"
+              [plotOptions]="donutOptions.plotOptions"
+              [theme]="donutOptions.theme"
+              [tooltip]="donutOptions.tooltip">
+            </apx-chart>
+          </div>
+          <div class="chart-card chart-card-wide" *ngIf="performanceOptions.series">
+            <div class="chart-card-title">{{ language.translate('invest.performance') }} (7 {{ language.translate('invest.days') }})</div>
+            <apx-chart #perfChart
+              [series]="performanceOptions.series!"
+              [chart]="performanceOptions.chart"
+              [dataLabels]="performanceOptions.dataLabels"
+              [stroke]="performanceOptions.stroke"
+              [fill]="performanceOptions.fill"
+              [colors]="performanceOptions.colors!"
+              [xaxis]="performanceOptions.xaxis"
+              [yaxis]="performanceOptions.yaxis"
+              [grid]="performanceOptions.grid"
+              [theme]="performanceOptions.theme"
+              [tooltip]="performanceOptions.tooltip">
+            </apx-chart>
+          </div>
+        </div>
+
+        <!-- ── Holdings Table (CoinGecko style, 1 row per coin) ── -->
+        <div class="cg-holdings-table-wrap" *ngIf="portfolioCoins.length > 0">
+          <div class="cg-holdings-scroll">
+          <table class="holdings-table cg-holdings-table">
+            <thead>
+              <tr>
+                <th class="col-rank">#</th>
+                <th class="col-coin">{{ language.translate('invest.coinName') }}</th>
+                <th class="num-col">{{ language.translate('invest.price') }}</th>
+                <th class="num-col">{{ language.translate('invest.change1h') }}</th>
+                <th class="num-col">{{ language.translate('invest.change24h') }}</th>
+                <th class="num-col">{{ language.translate('invest.change7d') }}</th>
+                <th class="num-col">{{ language.translate('invest.volumeShort') }}</th>
+                <th class="num-col">{{ language.translate('invest.marketCapShort') }}</th>
+                <th class="num-col sparkline-col">7 {{ language.translate('invest.days') }}</th>
+                <th class="num-col">{{ language.translate('invest.totalAssetValue') }}</th>
+                <th class="num-col">{{ language.translate('invest.pnlLabel') }}</th>
+                <th class="action-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let h of cryptoHoldings; let i = index; trackBy: trackByCoinId">
+                <td class="col-rank">{{ i + 1 }}</td>
+                <td class="col-coin">
+                  <div class="coin-cell">
+                    <img [src]="h.image" [alt]="h.symbol" class="coin-logo-sm" loading="lazy"
+                         onerror="this.style.display='none'">
+                    <div class="coin-cell-info">
+                      <span class="coin-cell-name">{{ h.name }}</span>
+                      <span class="coin-cell-sym">{{ h.symbol }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="num-col">
+                  {{ h.currentPriceVnd !== null ? fmtCurrency(h.currentPriceVnd) : '—' }}
+                </td>
+                <td class="num-col" [class.positive]="h.change1h >= 0" [class.negative]="h.change1h < 0">
+                  {{ h.change1h >= 0 ? '▲' : '▼' }} {{ abs(h.change1h) | number:'1.2-2' }}%
+                </td>
+                <td class="num-col" [class.positive]="h.change24h >= 0" [class.negative]="h.change24h < 0">
+                  {{ h.change24h >= 0 ? '▲' : '▼' }} {{ abs(h.change24h) | number:'1.2-2' }}%
+                </td>
+                <td class="num-col" [class.positive]="h.change7d >= 0" [class.negative]="h.change7d < 0">
+                  {{ h.change7d >= 0 ? '▲' : '▼' }} {{ abs(h.change7d) | number:'1.2-2' }}%
+                </td>
+                <td class="num-col">${{ formatLarge(h.volume24h) }}</td>
+                <td class="num-col">${{ formatLarge(h.marketCap) }}</td>
+                <td class="sparkline-cell">
+                  <svg *ngIf="h.sparkline.length > 0" viewBox="0 0 100 40" class="sparkline-svg"
+                       [class.spark-up]="h.change7d >= 0" [class.spark-down]="h.change7d < 0">
+                    <polyline [attr.points]="getSparklinePoints(h.sparkline)" fill="none" stroke-width="1.5"/>
+                  </svg>
+                </td>
+                <td class="num-col">
+                  <ng-container *ngIf="h.netQty > 0 && h.currentValueVnd !== null">
+                    <div>{{ fmtCurrency(h.currentValueVnd) }}</div>
+                    <div class="holdings-qty-sub">{{ h.netQty | number:'1.0-8' }} {{ h.symbol }}</div>
+                  </ng-container>
+                  <span *ngIf="h.netQty <= 0" class="text-muted">—</span>
+                </td>
+                <td class="num-col">
+                  <ng-container *ngIf="h.pnlVnd !== null">
+                    <div [class.positive]="h.pnlVnd >= 0" [class.negative]="h.pnlVnd < 0">
+                      {{ h.pnlVnd >= 0 ? '+' : '' }}{{ fmtCurrency(h.pnlVnd) }}
+                    </div>
+                    <div class="pnl-pct-sub" [class.positive]="(h.pnlPct || 0) >= 0" [class.negative]="(h.pnlPct || 0) < 0">
+                      {{ (h.pnlPct || 0) >= 0 ? '+' : '' }}{{ h.pnlPct | number:'1.2-2' }}%
+                    </div>
+                  </ng-container>
+                  <span *ngIf="h.pnlVnd === null" class="text-muted">—</span>
+                </td>
+                <td class="action-col" (click)="$event.stopPropagation()">
+                  <button class="action-btn-plus" (click)="openTxModal(h.portfolioCoin, 'BUY')" title="Thêm giao dịch">
+                    <i class="fa fa-plus"></i>
+                  </button>
+                  <div class="three-dot-menu">
+                    <button class="three-dot-btn" (click)="toggleMenu(h.coinId, $event)">⋮</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          </div><!-- end cg-holdings-scroll -->
+        </div><!-- end cg-holdings-table-wrap -->
+
+        <!-- Empty state -->
+        <div class="portfolio-empty" *ngIf="portfolioCoins.length === 0">
+          <span class="empty-icon">💼</span>
+          <p>{{ language.translate('invest.portfolioEmpty') }}</p>
+          <div class="empty-search-wrap">
+            <div class="add-coin-search" (click)="$event.stopPropagation()">
+              <div class="add-coin-input-wrap">
+                <i class="fa fa-search add-coin-search-icon"></i>
+                <input type="text" class="add-coin-input"
+                       placeholder="{{ language.translate('invest.searchToAddCoin') }}"
+                       [(ngModel)]="addCoinQuery"
+                       (focus)="showAddCoinDropdown = true"
+                       (input)="showAddCoinDropdown = true">
+              </div>
+              <div class="coin-suggestions" *ngIf="showAddCoinDropdown && addCoinSuggestions.length > 0">
+                <div class="coin-suggestion-item"
+                     *ngFor="let c of addCoinSuggestions"
+                     (click)="addCoinToPortfolio(c)">
+                  <img [src]="c.image" [alt]="c.symbol" class="sugg-img" loading="lazy">
+                  <span class="sugg-name">{{ c.name }}</span>
+                  <span class="sugg-sym">{{ c.symbol | uppercase }}</span>
+                  <i class="fa fa-plus sugg-plus"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </ng-container><!-- end main view -->
+
+      <!-- ── COIN DETAIL VIEW ── -->
+      <ng-container *ngIf="selectedCoin">
+
+        <!-- Back link -->
+        <div class="coin-detail-breadcrumb">
+          <span class="back-link" (click)="closeCoinDetail()">
+            <i class="fa fa-arrow-left"></i> {{ language.translate('invest.portfolio') }}
+          </span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">{{ selectedCoin.name }}</span>
+        </div>
+
+        <!-- Coin Header -->
+        <div class="coin-detail-header" *ngIf="selectedCoinHolding">
+          <img [src]="selectedCoinHolding.image" [alt]="selectedCoinHolding.symbol" class="coin-detail-logo"
+               onerror="this.style.display='none'">
+          <div class="coin-detail-title-block">
+            <div class="coin-detail-name">{{ selectedCoinHolding.name }}</div>
+            <div class="coin-detail-sym">{{ selectedCoinHolding.symbol }}</div>
+          </div>
+          <div class="coin-detail-price-block">
+            <div class="coin-detail-price">
+              {{ selectedCoinHolding.currentPriceVnd !== null ? fmtCurrency(selectedCoinHolding.currentPriceVnd) : '—' }}
+            </div>
+            <div class="coin-detail-change"
+                 [class.positive]="selectedCoinHolding.change24h >= 0"
+                 [class.negative]="selectedCoinHolding.change24h < 0">
+              {{ selectedCoinHolding.change24h >= 0 ? '▲' : '▼' }}
+              {{ abs(selectedCoinHolding.change24h) | number:'1.2-2' }}% (24h)
+            </div>
+          </div>
+          <div class="toolbar-right" style="margin-left:auto">
+            <div class="currency-toggle">
+              <button [class.active]="displayCurrency === 'USD'" (click)="displayCurrency !== 'USD' && toggleCurrency()">USD</button>
+              <button [class.active]="displayCurrency === 'VND'" (click)="displayCurrency !== 'VND' && toggleCurrency()">VNĐ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 Stat Boxes -->
+        <div class="coin-stat-boxes" *ngIf="selectedCoinHolding">
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.totalAssetValue') }}</div>
+            <div class="stat-box-value">
+              {{ selectedCoinHolding.currentValueVnd !== null ? fmtCurrency(selectedCoinHolding.currentValueVnd) : '—' }}
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.totalQty') }}</div>
+            <div class="stat-box-value">{{ selectedCoinHolding.netQty | number:'1.0-8' }} {{ selectedCoinHolding.symbol }}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.totalCost') }}</div>
+            <div class="stat-box-value">{{ fmtCurrency(selectedCoinHolding.totalBuyCostVnd) }}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.avgNetCost') }}</div>
+            <div class="stat-box-value">
+              {{ selectedCoinHolding.avgBuyPriceVnd > 0 ? fmtCurrency(selectedCoinHolding.avgBuyPriceVnd) : '—' }}
+            </div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">{{ language.translate('invest.totalPnl') }}</div>
+            <div class="stat-box-value"
+                 [class.positive]="(selectedCoinHolding.pnlVnd || 0) >= 0"
+                 [class.negative]="(selectedCoinHolding.pnlVnd || 0) < 0">
+              {{ selectedCoinHolding.pnlVnd !== null
+                  ? ((selectedCoinHolding.pnlVnd >= 0 ? '+' : '') + fmtCurrency(selectedCoinHolding.pnlVnd))
+                  : '—' }}
+            </div>
+            <div class="stat-box-sub"
+                 *ngIf="selectedCoinHolding.pnlPct !== null"
+                 [class.positive]="(selectedCoinHolding.pnlPct || 0) >= 0"
+                 [class.negative]="(selectedCoinHolding.pnlPct || 0) < 0">
+              {{ (selectedCoinHolding.pnlPct || 0) >= 0 ? '+' : '' }}{{ selectedCoinHolding.pnlPct | number:'1.2-2' }}%
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Section -->
+        <div class="coin-detail-tx-header">
+          <span class="coin-detail-tx-title">{{ language.translate('invest.transactions') }}</span>
+          <button class="btn-add-crypto" (click)="openTxModal(selectedCoin, 'BUY')">
+            <i class="fa fa-plus"></i> {{ language.translate('invest.addTransactionBtn') }}
+          </button>
+        </div>
+
+        <!-- Transaction Table -->
+        <div class="holdings-table-wrap">
+          <div class="holdings-loading" *ngIf="coinDetailLoading">
+            <i class="fa fa-spinner fa-spin"></i> Đang tải...
+          </div>
+          <table class="holdings-table" *ngIf="!coinDetailLoading">
+            <thead>
+              <tr>
+                <th class="num-col">{{ language.translate('invest.txType') }}</th>
+                <th class="num-col">{{ language.translate('invest.price') }}</th>
+                <th class="num-col">{{ language.translate('invest.quantity') }}</th>
+                <th class="num-col">{{ language.translate('invest.transactionDate') }}</th>
+                <th class="num-col">{{ language.translate('invest.fees') }}</th>
+                <th class="num-col">{{ language.translate('invest.cost') }}</th>
+                <th class="num-col">{{ language.translate('invest.income') }}</th>
+                <th class="num-col">{{ language.translate('invest.pnlLabel') }}</th>
+                <th class="num-col">{{ language.translate('invest.note') }}</th>
+                <th class="action-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="coinDetailLots.length === 0">
+                <td colspan="10" class="holdings-no-result">{{ language.translate('invest.noTransactions') }}</td>
+              </tr>
+              <tr *ngFor="let lot of coinDetailLots; trackBy: trackByLotId">
+                <td class="num-col">
+                  <span class="badge-tx" [class.badge-buy]="lot.transactionType !== 'SELL'" [class.badge-sell]="lot.transactionType === 'SELL'">
+                    {{ lot.transactionType || 'BUY' }}
+                  </span>
+                </td>
+                <td class="num-col">{{ fmtCurrency(lot.buyPriceVnd) }}</td>
+                <td class="num-col">{{ lot.quantity | number:'1.0-8' }}</td>
+                <td class="num-col date-col">{{ lot.buyDate || '—' }}</td>
+                <td class="num-col">{{ lot.fees ? fmtCurrency(lot.fees) : '—' }}</td>
+                <td class="num-col">
+                  {{ lot.transactionType !== 'SELL' ? fmtCurrency(lot.buyPriceVnd * lot.quantity) : '—' }}
+                </td>
+                <td class="num-col">
+                  {{ lot.transactionType === 'SELL' ? fmtCurrency(lot.buyPriceVnd * lot.quantity) : '—' }}
+                </td>
+                <td class="num-col">
+                  <ng-container *ngIf="getLotPnl(lot) !== null">
+                    <span [class.positive]="getLotPnl(lot)! >= 0" [class.negative]="getLotPnl(lot)! < 0">
+                      {{ getLotPnl(lot)! >= 0 ? '+' : '' }}{{ fmtCurrency(getLotPnl(lot)!) }}
+                    </span>
+                  </ng-container>
+                  <span *ngIf="getLotPnl(lot) === null">—</span>
+                </td>
+                <td class="num-col" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" [title]="lot.note || ''">
+                  {{ lot.note || '—' }}
+                </td>
+                <td class="action-col">
+                  <button class="lot-del-btn" (click)="deleteLot(lot.id!)" *ngIf="lot.id" title="Xóa">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Pagination -->
+          <div class="holdings-pagination" *ngIf="coinDetailTotalPages > 1">
+            <button class="hp-btn" [disabled]="coinDetailPage === 0" (click)="coinDetailGoPage(0)">
+              <i class="fa fa-angle-double-left"></i>
+            </button>
+            <button class="hp-btn" [disabled]="coinDetailPage === 0" (click)="coinDetailGoPage(coinDetailPage - 1)">
+              <i class="fa fa-angle-left"></i>
+            </button>
+            <span class="hp-info">{{ coinDetailPage + 1 }} / {{ coinDetailTotalPages }}</span>
+            <button class="hp-btn" [disabled]="coinDetailPage >= coinDetailTotalPages - 1" (click)="coinDetailGoPage(coinDetailPage + 1)">
+              <i class="fa fa-angle-right"></i>
+            </button>
+            <button class="hp-btn" [disabled]="coinDetailPage >= coinDetailTotalPages - 1" (click)="coinDetailGoPage(coinDetailTotalPages - 1)">
+              <i class="fa fa-angle-double-right"></i>
+            </button>
+            <span class="hp-total">{{ coinDetailTotalElements }} giao dịch</span>
+          </div>
+        </div>
+
+      </ng-container><!-- end coin detail view -->
+
+    </ng-container>
+
+    </ng-container><!-- end crypto sub-tab -->
+
+    <!-- ════════════════ GOLD SUB-TAB ════════════════ -->
+    <ng-container *ngIf="portfolioSubTab === 'gold'">
+      <div class="asset-portfolio-section">
+        <div class="asset-portfolio-header">
+          <div class="asset-portfolio-title">
+            <span>🥇</span>
+            <span>Danh mục vàng</span>
+            <span class="asset-count-badge" *ngIf="goldHoldings.length > 0">{{ goldHoldings.length }}</span>
+          </div>
+          <button class="btn-add-asset" (click)="openGoldTxModal(); $event.stopPropagation()" *ngIf="!goldDetailSymbol">
+            <i class="fa fa-plus"></i> Thêm giao dịch
+          </button>
+        </div>
+
+        <!-- MAIN VIEW -->
+        <ng-container *ngIf="!goldDetailSymbol">
+          <div class="asset-empty" *ngIf="goldHoldings.length === 0">
+            <div class="asset-empty-icon">🥇</div>
+            <p>Chưa có giao dịch vàng nào</p>
+            <button class="btn-add-asset-lg" (click)="openGoldTxModal()">
+              <i class="fa fa-plus"></i> Thêm giao dịch vàng
+            </button>
+          </div>
+          <div class="asset-holdings-wrap" *ngIf="goldHoldings.length > 0">
+            <table class="asset-holdings-table">
+              <thead>
+                <tr>
+                  <th>Loại vàng</th>
+                  <th>Số lượng</th>
+                  <th>Giá TB mua</th>
+                  <th>Giá hiện tại</th>
+                  <th>Giá trị</th>
+                  <th>Lãi / Lỗ</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let g of goldHoldings; trackBy: trackByGoldSymbol">
+                  <td>
+                    <div class="asset-cell">
+                      <div class="gold-circle-sm">Au</div>
+                      <div>
+                        <div class="asset-cell-name">{{ g.name }}</div>
+                        <div class="asset-cell-sym">{{ g.symbol }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ g.netQty | number:'1.0-4' }}</td>
+                  <td>{{ g.avgBuyPriceVnd | number:'1.0-0' }} ₫</td>
+                  <td [class.positive]="g.currentSellPriceVnd !== null && g.currentSellPriceVnd >= g.avgBuyPriceVnd"
+                      [class.negative]="g.currentSellPriceVnd !== null && g.currentSellPriceVnd < g.avgBuyPriceVnd">
+                    {{ g.currentSellPriceVnd !== null ? (g.currentSellPriceVnd | number:'1.0-0') + ' ₫' : '—' }}
+                  </td>
+                  <td>{{ g.currentValueVnd !== null ? (g.currentValueVnd | number:'1.0-0') + ' ₫' : '—' }}</td>
+                  <td>
+                    <div *ngIf="g.pnlVnd !== null" [class.positive]="g.pnlVnd >= 0" [class.negative]="g.pnlVnd < 0">
+                      {{ g.pnlVnd >= 0 ? '+' : '' }}{{ g.pnlVnd | number:'1.0-0' }} ₫
+                      <div style="font-size:0.72rem">({{ g.pnlPct !== null && g.pnlPct >= 0 ? '+' : '' }}{{ g.pnlPct | number:'1.2-2' }}%)</div>
+                    </div>
+                    <span *ngIf="g.pnlVnd === null">—</span>
+                  </td>
+                  <td class="action-col">
+                    <button class="btn-action-plus" (click)="openGoldTxModal(g, 'BUY'); $event.stopPropagation()" title="Mua thêm">
+                      <i class="fa fa-plus"></i>
+                    </button>
+                    <div class="three-dot-menu">
+                      <button class="three-dot-btn" (click)="toggleGoldMenu(g.symbol, $event)">⋮</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+        <!-- DETAIL VIEW -->
+        <ng-container *ngIf="goldDetailSymbol">
+          <div class="coin-detail-breadcrumb">
+            <span class="back-link" (click)="closeGoldDetail()"><i class="fa fa-arrow-left"></i> Danh mục vàng</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">{{ goldDetailHolding?.name || goldDetailSymbol }}</span>
+          </div>
+          <div class="coin-stat-boxes" *ngIf="goldDetailHolding as g">
+            <div class="stat-box"><div class="stat-box-label">Giá trị tài sản</div><div class="stat-box-value">{{ g.currentValueVnd !== null ? (g.currentValueVnd | number:'1.0-0') + ' ₫' : '—' }}</div></div>
+            <div class="stat-box"><div class="stat-box-label">Số lượng nắm giữ</div><div class="stat-box-value">{{ g.netQty | number:'1.0-4' }}</div></div>
+            <div class="stat-box"><div class="stat-box-label">Tổng chi phí</div><div class="stat-box-value">{{ g.totalBuyCostVnd | number:'1.0-0' }} ₫</div></div>
+            <div class="stat-box"><div class="stat-box-label">Giá TB mua</div><div class="stat-box-value">{{ g.avgBuyPriceVnd | number:'1.0-0' }} ₫</div></div>
+            <div class="stat-box">
+              <div class="stat-box-label">Tổng Lãi/Lỗ</div>
+              <div class="stat-box-value" [class.positive]="(g.pnlVnd || 0) >= 0" [class.negative]="(g.pnlVnd || 0) < 0">
+                {{ g.pnlVnd !== null ? ((g.pnlVnd >= 0 ? '+' : '') + (g.pnlVnd | number:'1.0-0') + ' ₫') : '—' }}
+              </div>
+            </div>
+          </div>
+          <div class="coin-detail-tx-section">
+            <div class="coin-detail-tx-header">
+              <span class="coin-detail-tx-title">Giao dịch</span>
+              <button class="btn-add-asset" (click)="openGoldTxModal(goldDetailHolding || undefined, 'BUY'); $event.stopPropagation()">
+                <i class="fa fa-plus"></i> Thêm giao dịch
+              </button>
+            </div>
+            <div class="holdings-loading" *ngIf="goldDetailLoading"><div class="loading-spinner"></div></div>
+            <div class="holdings-no-result" *ngIf="!goldDetailLoading && goldDetailLots.length === 0">Chưa có giao dịch nào</div>
+            <div class="holdings-table-wrap" *ngIf="goldDetailLots.length > 0">
+              <table class="holdings-table">
+                <thead><tr>
+                  <th style="text-align:left">Loại</th><th>Giá</th><th>Số lượng</th><th>Ngày</th><th>Phí</th><th>Lãi/Lỗ</th><th>Ghi chú</th><th></th>
+                </tr></thead>
+                <tbody>
+                  <tr *ngFor="let lot of goldDetailLots; trackBy: trackByLotId">
+                    <td style="text-align:left"><span class="badge-tx" [class.badge-buy]="lot.transactionType==='BUY'" [class.badge-sell]="lot.transactionType==='SELL'">{{ lot.transactionType || 'BUY' }}</span></td>
+                    <td>{{ lot.buyPriceVnd | number:'1.0-0' }} ₫</td>
+                    <td>{{ lot.quantity | number:'1.0-4' }}</td>
+                    <td>{{ lot.buyDate }}</td>
+                    <td>{{ lot.fees ? (lot.fees | number:'1.0-0') + ' ₫' : '—' }}</td>
+                    <td>
+                      <ng-container *ngIf="getGoldLotPnl(lot) !== null">
+                        <span [class.positive]="getGoldLotPnl(lot)! >= 0" [class.negative]="getGoldLotPnl(lot)! < 0">
+                          {{ getGoldLotPnl(lot)! >= 0 ? '+' : '' }}{{ getGoldLotPnl(lot)! | number:'1.0-0' }} ₫
+                        </span>
+                      </ng-container>
+                      <span *ngIf="getGoldLotPnl(lot) === null">—</span>
+                    </td>
+                    <td>{{ lot.note || '—' }}</td>
+                    <td><button class="btn-delete-lot" (click)="deleteLot(lot.id!)"><i class="fa fa-trash"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="holdings-pagination" *ngIf="goldDetailTotalPages > 1">
+              <button class="hp-btn" [disabled]="goldDetailPage === 0" (click)="goldDetailGoPage(0)">◀◀</button>
+              <button class="hp-btn" [disabled]="goldDetailPage === 0" (click)="goldDetailGoPage(goldDetailPage - 1)">◀</button>
+              <span class="hp-info">{{ goldDetailPage + 1 }} / {{ goldDetailTotalPages }}</span>
+              <button class="hp-btn" [disabled]="goldDetailPage >= goldDetailTotalPages - 1" (click)="goldDetailGoPage(goldDetailPage + 1)">▶</button>
+              <button class="hp-btn" [disabled]="goldDetailPage >= goldDetailTotalPages - 1" (click)="goldDetailGoPage(goldDetailTotalPages - 1)">▶▶</button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container><!-- end gold sub-tab -->
+
+    <!-- ════════════════ VN STOCK SUB-TAB ════════════════ -->
+    <ng-container *ngIf="portfolioSubTab === 'vn_stock'">
+      <div class="asset-portfolio-section">
+        <div class="asset-portfolio-header">
+          <div class="asset-portfolio-title">
+            <span>🇻🇳</span>
+            <span>Danh mục cổ phiếu</span>
+            <span class="asset-count-badge" *ngIf="stockHoldings.length > 0">{{ stockHoldings.length }}</span>
+          </div>
+          <button class="btn-add-asset" (click)="openStockTxModal(); $event.stopPropagation()" *ngIf="!stockDetailTicker">
+            <i class="fa fa-plus"></i> Thêm giao dịch
+          </button>
+        </div>
+
+        <!-- MAIN VIEW -->
+        <ng-container *ngIf="!stockDetailTicker">
+          <div class="asset-empty" *ngIf="stockHoldings.length === 0">
+            <div class="asset-empty-icon">📈</div>
+            <p>Chưa có giao dịch cổ phiếu nào</p>
+            <button class="btn-add-asset-lg" (click)="openStockTxModal()">
+              <i class="fa fa-plus"></i> Thêm giao dịch cổ phiếu
+            </button>
+          </div>
+          <div class="asset-holdings-wrap" *ngIf="stockHoldings.length > 0">
+            <table class="asset-holdings-table">
+              <thead>
+                <tr>
+                  <th>Mã CP / Công ty</th>
+                  <th>Số CP</th>
+                  <th>Giá TB mua</th>
+                  <th>Giá hiện tại</th>
+                  <th>Giá trị</th>
+                  <th>Lãi / Lỗ</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of stockHoldings; trackBy: trackByStockTicker">
+                  <td>
+                    <div class="asset-cell">
+                      <div class="gold-circle-sm" style="background:linear-gradient(135deg,#4ECDC4,#38B2AC);color:#0A192F;font-size:0.6rem">{{ s.ticker }}</div>
+                      <div>
+                        <div class="asset-cell-name">{{ s.ticker }}</div>
+                        <div class="asset-cell-sym">{{ s.name }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ s.netQty | number:'1.0-0' }}</td>
+                  <td>{{ s.avgBuyPriceVnd | number:'1.0-0' }} ₫</td>
+                  <td [class.positive]="s.currentPriceVnd !== null && s.currentPriceVnd >= s.avgBuyPriceVnd"
+                      [class.negative]="s.currentPriceVnd !== null && s.currentPriceVnd < s.avgBuyPriceVnd">
+                    {{ s.currentPriceVnd !== null ? (s.currentPriceVnd | number:'1.0-0') + ' ₫' : '—' }}
+                  </td>
+                  <td>{{ s.currentValueVnd !== null ? (s.currentValueVnd | number:'1.0-0') + ' ₫' : '—' }}</td>
+                  <td>
+                    <div *ngIf="s.pnlVnd !== null" [class.positive]="s.pnlVnd >= 0" [class.negative]="s.pnlVnd < 0">
+                      {{ s.pnlVnd >= 0 ? '+' : '' }}{{ s.pnlVnd | number:'1.0-0' }} ₫
+                      <div style="font-size:0.72rem">({{ s.pnlPct !== null && s.pnlPct >= 0 ? '+' : '' }}{{ s.pnlPct | number:'1.2-2' }}%)</div>
+                    </div>
+                    <span *ngIf="s.pnlVnd === null">—</span>
+                  </td>
+                  <td class="action-col">
+                    <button class="btn-action-plus" (click)="openStockTxModal(s, 'BUY'); $event.stopPropagation()" title="Mua thêm">
+                      <i class="fa fa-plus"></i>
+                    </button>
+                    <div class="three-dot-menu">
+                      <button class="three-dot-btn" (click)="toggleStockMenu(s.ticker, $event)">⋮</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+        <!-- DETAIL VIEW -->
+        <ng-container *ngIf="stockDetailTicker">
+          <div class="coin-detail-breadcrumb">
+            <span class="back-link" (click)="closeStockDetail()"><i class="fa fa-arrow-left"></i> Danh mục cổ phiếu</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">{{ stockDetailHolding?.ticker || stockDetailTicker }}</span>
+          </div>
+          <div class="coin-stat-boxes" *ngIf="stockDetailHolding as s">
+            <div class="stat-box"><div class="stat-box-label">Giá trị tài sản</div><div class="stat-box-value">{{ s.currentValueVnd !== null ? (s.currentValueVnd | number:'1.0-0') + ' ₫' : '—' }}</div></div>
+            <div class="stat-box"><div class="stat-box-label">Số CP nắm giữ</div><div class="stat-box-value">{{ s.netQty | number:'1.0-0' }}</div></div>
+            <div class="stat-box"><div class="stat-box-label">Tổng chi phí</div><div class="stat-box-value">{{ s.totalBuyCostVnd | number:'1.0-0' }} ₫</div></div>
+            <div class="stat-box"><div class="stat-box-label">Giá TB mua</div><div class="stat-box-value">{{ s.avgBuyPriceVnd | number:'1.0-0' }} ₫</div></div>
+            <div class="stat-box">
+              <div class="stat-box-label">Tổng Lãi/Lỗ</div>
+              <div class="stat-box-value" [class.positive]="(s.pnlVnd || 0) >= 0" [class.negative]="(s.pnlVnd || 0) < 0">
+                {{ s.pnlVnd !== null ? ((s.pnlVnd >= 0 ? '+' : '') + (s.pnlVnd | number:'1.0-0') + ' ₫') : '—' }}
+              </div>
+            </div>
+          </div>
+          <div class="coin-detail-tx-section">
+            <div class="coin-detail-tx-header">
+              <span class="coin-detail-tx-title">Giao dịch</span>
+              <button class="btn-add-asset" (click)="openStockTxModal(stockDetailHolding || undefined, 'BUY'); $event.stopPropagation()">
+                <i class="fa fa-plus"></i> Thêm giao dịch
+              </button>
+            </div>
+            <div class="holdings-loading" *ngIf="stockDetailLoading"><div class="loading-spinner"></div></div>
+            <div class="holdings-no-result" *ngIf="!stockDetailLoading && stockDetailLots.length === 0">Chưa có giao dịch nào</div>
+            <div class="holdings-table-wrap" *ngIf="stockDetailLots.length > 0">
+              <table class="holdings-table">
+                <thead><tr>
+                  <th style="text-align:left">Loại</th><th>Giá</th><th>Số CP</th><th>Ngày</th><th>Phí</th><th>Lãi/Lỗ</th><th>Ghi chú</th><th></th>
+                </tr></thead>
+                <tbody>
+                  <tr *ngFor="let lot of stockDetailLots; trackBy: trackByLotId">
+                    <td style="text-align:left"><span class="badge-tx" [class.badge-buy]="lot.transactionType==='BUY'" [class.badge-sell]="lot.transactionType==='SELL'">{{ lot.transactionType || 'BUY' }}</span></td>
+                    <td>{{ lot.buyPriceVnd | number:'1.0-0' }} ₫</td>
+                    <td>{{ lot.quantity | number:'1.0-0' }}</td>
+                    <td>{{ lot.buyDate }}</td>
+                    <td>{{ lot.fees ? (lot.fees | number:'1.0-0') + ' ₫' : '—' }}</td>
+                    <td>
+                      <ng-container *ngIf="getStockLotPnl(lot) !== null">
+                        <span [class.positive]="getStockLotPnl(lot)! >= 0" [class.negative]="getStockLotPnl(lot)! < 0">
+                          {{ getStockLotPnl(lot)! >= 0 ? '+' : '' }}{{ getStockLotPnl(lot)! | number:'1.0-0' }} ₫
+                        </span>
+                      </ng-container>
+                      <span *ngIf="getStockLotPnl(lot) === null">—</span>
+                    </td>
+                    <td>{{ lot.note || '—' }}</td>
+                    <td><button class="btn-delete-lot" (click)="deleteLot(lot.id!)"><i class="fa fa-trash"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="holdings-pagination" *ngIf="stockDetailTotalPages > 1">
+              <button class="hp-btn" [disabled]="stockDetailPage === 0" (click)="stockDetailGoPage(0)">◀◀</button>
+              <button class="hp-btn" [disabled]="stockDetailPage === 0" (click)="stockDetailGoPage(stockDetailPage - 1)">◀</button>
+              <span class="hp-info">{{ stockDetailPage + 1 }} / {{ stockDetailTotalPages }}</span>
+              <button class="hp-btn" [disabled]="stockDetailPage >= stockDetailTotalPages - 1" (click)="stockDetailGoPage(stockDetailPage + 1)">▶</button>
+              <button class="hp-btn" [disabled]="stockDetailPage >= stockDetailTotalPages - 1" (click)="stockDetailGoPage(stockDetailTotalPages - 1)">▶▶</button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container><!-- end vn_stock sub-tab -->
+
+  </div><!-- end portfolio full page -->
+
+  <!-- ═══════════════════ THREE-DOT DROPDOWN (fixed, escapes overflow) ═══════════════════ -->
+  <ng-container *ngFor="let h of cryptoHoldings">
+    <div class="three-dot-dropdown three-dot-fixed"
+         *ngIf="openMenuCoinId === h.coinId && dropdownPos"
+         [style.top.px]="dropdownPos!.top"
+         [style.right.px]="dropdownPos!.right">
+      <button class="dd-item" (click)="openCoinDetail(h.portfolioCoin); closeAllMenus()">
+        <i class="fa fa-list"></i> {{ language.translate('invest.viewTransactions') }}
+      </button>
+      <button class="dd-item" (click)="openTxModal(h.portfolioCoin, 'BUY'); closeAllMenus()">
+        <i class="fa fa-plus"></i> {{ language.translate('invest.addTransactionBtn') }}
+      </button>
+      <button class="dd-item dd-item-danger" (click)="removeCoinFromPortfolio(h.portfolioCoin)">
+        <i class="fa fa-trash"></i> {{ language.translate('invest.removeCoin') }}
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- ═══════════════════ GOLD THREE-DOT DROPDOWNS ═══════════════════ -->
+  <ng-container *ngFor="let g of goldHoldings">
+    <div class="three-dot-dropdown three-dot-fixed"
+         *ngIf="openMenuGoldSymbol === g.symbol && goldDropdownPos"
+         [style.top.px]="goldDropdownPos!.top"
+         [style.right.px]="goldDropdownPos!.right">
+      <div class="dd-item" (click)="openGoldTxModal(g, 'BUY'); openMenuGoldSymbol = null">
+        <i class="fa fa-plus-circle"></i> Thêm giao dịch
+      </div>
+      <div class="dd-item" (click)="openGoldDetail(g.symbol)">
+        <i class="fa fa-list"></i> Xem giao dịch
+      </div>
+      <div class="dd-item dd-item-danger" (click)="removeGoldHolding(g.symbol)">
+        <i class="fa fa-trash"></i> Xóa tất cả
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ═══════════════════ STOCK THREE-DOT DROPDOWNS ═══════════════════ -->
+  <ng-container *ngFor="let s of stockHoldings">
+    <div class="three-dot-dropdown three-dot-fixed"
+         *ngIf="openMenuStockTicker === s.ticker && stockDropdownPos"
+         [style.top.px]="stockDropdownPos!.top"
+         [style.right.px]="stockDropdownPos!.right">
+      <div class="dd-item" (click)="openStockTxModal(s, 'BUY'); openMenuStockTicker = null">
+        <i class="fa fa-plus-circle"></i> Thêm giao dịch
+      </div>
+      <div class="dd-item" (click)="openStockDetail(s.ticker)">
+        <i class="fa fa-list"></i> Xem giao dịch
+      </div>
+      <div class="dd-item dd-item-danger" (click)="removeStockHolding(s.ticker)">
+        <i class="fa fa-trash"></i> Xóa tất cả
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ═══════════════════ TRANSACTION MODAL ═══════════════════ -->
+  <div class="tx-modal-backdrop" *ngIf="showTxModal" (click)="closeTxModal()"></div>
+  <div class="tx-modal-shell" *ngIf="showTxModal">
+    <div class="tx-modal-header">
+      <div>
+        <h3 class="tx-modal-title">{{ language.translate('invest.addTransaction') }}</h3>
+        <div class="tx-locked-coin" *ngIf="txLockedCoin">
+          <img [src]="getCoinImage(txLockedCoin.coinId)" [alt]="txLockedCoin.symbol" class="coin-logo-sm"
+               onerror="this.style.display='none'">
+          <span>{{ txLockedCoin.name }} ({{ txLockedCoin.symbol }})</span>
+        </div>
+      </div>
+      <button class="tx-modal-close" (click)="closeTxModal()"><i class="fa fa-times"></i></button>
+    </div>
+
+    <!-- BUY / SELL tabs -->
+    <div class="tx-tabs">
+      <button class="tx-tab" [class.active-buy]="txTab === 'BUY'" (click)="txTab = 'BUY'">
+        {{ language.translate('invest.txBuy') }}
+      </button>
+      <button class="tx-tab" [class.active-sell]="txTab === 'SELL'" (click)="txTab = 'SELL'">
+        {{ language.translate('invest.txSell') }}
+      </button>
+    </div>
+
+    <!-- CRYPTO: Coin select (locked if opened from coin row) -->
+    <ng-container *ngIf="txForm.assetType === 'CRYPTO'">
+      <div class="tx-field" *ngIf="!txLockedCoin">
+        <label class="tx-label">{{ language.translate('invest.selectCoin') }}</label>
+        <select class="tx-select" [(ngModel)]="txForm.coinId" (ngModelChange)="onTxCoinChange($event)">
+          <option value="">— {{ language.translate('invest.selectCoin') }} —</option>
+          <option *ngFor="let opt of cryptoSymbolOptions; trackBy: trackByOptId" [value]="opt.id">{{ opt.name }}</option>
+        </select>
+      </div>
+    </ng-container>
+
+    <!-- GOLD: Gold provider select -->
+    <ng-container *ngIf="txForm.assetType === 'GOLD'">
+      <div class="tx-field">
+        <label class="tx-label">Loại vàng</label>
+        <select class="tx-select" [(ngModel)]="txForm.assetSymbol" (ngModelChange)="onGoldSymbolChange($event)">
+          <option value="">-- Chọn loại vàng --</option>
+          <option *ngFor="let g of goldProviderOptions" [value]="g.code">{{ g.name }}</option>
+        </select>
+      </div>
+    </ng-container>
+
+    <!-- VN_STOCK: Stock ticker select -->
+    <ng-container *ngIf="txForm.assetType === 'VN_STOCK'">
+      <div class="tx-field">
+        <label class="tx-label">Mã cổ phiếu</label>
+        <select class="tx-select" [(ngModel)]="txForm.assetSymbol" (ngModelChange)="onStockSymbolChange($event)">
+          <option value="">-- Chọn cổ phiếu --</option>
+          <option *ngFor="let s of vnStockOptions" [value]="s.ticker">{{ s.ticker }} - {{ s.name }}</option>
+        </select>
+      </div>
+    </ng-container>
+
+    <!-- Total spent / received -->
+    <div class="tx-field">
+      <label class="tx-label">
+        {{ txTab === 'BUY' ? language.translate('invest.totalSpent') : language.translate('invest.totalReceived') }}
+        <ng-container *ngIf="txForm.assetType === 'CRYPTO'">({{ displayCurrency }})</ng-container>
+        <ng-container *ngIf="txForm.assetType !== 'CRYPTO'">(VNĐ)</ng-container>
+      </label>
+      <p-inputNumber
+        [(ngModel)]="txForm.totalSpent"
+        (ngModelChange)="onTxTotalChange($event)"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="8"
+        [useGrouping]="true"
+        [prefix]="txForm.assetType === 'CRYPTO' && displayCurrency === 'USD' ? '$' : ''"
+        [suffix]="txForm.assetType !== 'CRYPTO' || displayCurrency === 'VND' ? ' ₫' : ''"
+        [placeholder]="'0.00'"
+        styleClass="tx-num-input">
+      </p-inputNumber>
+    </div>
+
+    <!-- Qty + Price row -->
+    <div class="tx-field-row">
+      <div class="tx-field tx-field-half">
+        <label class="tx-label">
+          {{ language.translate('invest.quantity') }}
+          <span class="coin-badge" *ngIf="txForm.assetType === 'CRYPTO' && txForm.coinId">
+            {{ getSelectedCoinSymbol() }}
+          </span>
+          <span class="coin-badge" *ngIf="txForm.assetType === 'GOLD' && txForm.assetSymbol">lượng</span>
+          <span class="coin-badge" *ngIf="txForm.assetType === 'VN_STOCK' && txForm.assetSymbol">CP</span>
+        </label>
+        <p-inputNumber
+          [(ngModel)]="txForm.quantity"
+          (ngModelChange)="onTxQtyChange($event)"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="8"
+          [useGrouping]="false"
+          placeholder="0.00"
+          styleClass="tx-num-input">
+        </p-inputNumber>
+        <div class="tx-sell-hint" *ngIf="txTab === 'SELL' && txForm.assetType === 'CRYPTO' && txForm.coinId">
+          {{ language.translate('invest.balance') }}: {{ getHoldingNetQty(txForm.coinId) | number:'1.0-8' }}
+          <button class="max-qty-btn" (click)="useMaxQty()">{{ language.translate('invest.maxQty') }}</button>
+        </div>
+      </div>
+      <div class="tx-field tx-field-half">
+        <label class="tx-label">
+          {{ language.translate('invest.pricePerCoin') }}
+          <ng-container *ngIf="txForm.assetType === 'CRYPTO'">({{ displayCurrency }})</ng-container>
+          <ng-container *ngIf="txForm.assetType !== 'CRYPTO'">(VNĐ)</ng-container>
+        </label>
+        <p-inputNumber
+          [(ngModel)]="txForm.pricePerUnit"
+          (ngModelChange)="onTxPriceChange($event)"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="8"
+          [useGrouping]="true"
+          [prefix]="txForm.assetType === 'CRYPTO' && displayCurrency === 'USD' ? '$' : ''"
+          [suffix]="txForm.assetType !== 'CRYPTO' || displayCurrency === 'VND' ? ' ₫' : ''"
+          placeholder="0.00"
+          styleClass="tx-num-input">
+        </p-inputNumber>
+        <button class="use-market-btn" (click)="useMarketPrice()" *ngIf="txForm.assetType === 'CRYPTO' && txForm.coinId">
+          <i class="fa fa-line-chart"></i> {{ language.translate('invest.useMarketPrice') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Date -->
+    <div class="tx-field">
+      <label class="tx-label">{{ language.translate('invest.transactionDate') }}</label>
+      <p-calendar
+        [(ngModel)]="txForm.transactionDate"
+        dateFormat="dd/mm/yy"
+        [showTime]="true"
+        [showIcon]="true"
+        [showButtonBar]="true"
+        styleClass="tx-calendar"
+        appendTo="body">
+      </p-calendar>
+    </div>
+
+    <!-- Fees & notes (expandable) -->
+    <div class="tx-fees-toggle" (click)="showTxFeesNotes = !showTxFeesNotes">
+      <i class="fa" [class.fa-plus]="!showTxFeesNotes" [class.fa-minus]="showTxFeesNotes"></i>
+      {{ language.translate('invest.feesAndNotes') }}
+    </div>
+    <div class="tx-fees-body" *ngIf="showTxFeesNotes">
+      <div class="tx-field">
+        <label class="tx-label">{{ language.translate('invest.fees') }} ({{ displayCurrency }}) — {{ language.translate('invest.feeOptional') }}</label>
+        <p-inputNumber
+          [(ngModel)]="txForm.fees"
+          [minFractionDigits]="0"
+          [maxFractionDigits]="8"
+          [useGrouping]="true"
+          [prefix]="displayCurrency === 'USD' ? '$' : ''"
+          [suffix]="displayCurrency === 'VND' ? ' ₫' : ''"
+          placeholder="0"
+          styleClass="tx-num-input">
+        </p-inputNumber>
+      </div>
+      <div class="tx-field">
+        <label class="tx-label">{{ language.translate('invest.note') }}</label>
+        <input type="text" class="tx-text-input" [(ngModel)]="txForm.note"
+               [placeholder]="language.translate('invest.notePlaceholder')">
+      </div>
+    </div>
+
+    <!-- Save button -->
+    <button class="btn-save-tx" (click)="saveTx()"
+            [disabled]="txSaving || (txForm.assetType === 'CRYPTO' ? !txForm.coinId : !txForm.assetSymbol) || !txForm.quantity">
+      <i class="fa fa-check" *ngIf="!txSaving"></i>
+      <i class="fa fa-spinner fa-spin" *ngIf="txSaving"></i>
+      {{ txSaving ? language.translate('invest.saving') : language.translate('invest.addTransactionBtn') }}
+    </button>
+  </div>
 
 </div>

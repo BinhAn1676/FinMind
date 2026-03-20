@@ -1,6 +1,8 @@
 package com.finance.financeservice.config;
 
 import com.finance.financeservice.scheduler.AccountsSyncJob;
+import com.finance.financeservice.scheduler.AutoSaveGoalJob;
+import com.finance.financeservice.scheduler.BillReminderJob;
 import com.finance.financeservice.scheduler.TransactionsSyncJob;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +70,40 @@ public class QuartzConfig {
                 .forJob(transactionsJobDetail)
                 .withIdentity("transactionsSyncTrigger")
                 .withSchedule(CronScheduleBuilder.cronSchedule(sepayApiProperties.getTransactionsCron()))
+                .build();
+    }
+
+    @Bean
+    public JobDetail autoSaveGoalJobDetail() {
+        return JobBuilder.newJob(AutoSaveGoalJob.class)
+                .withIdentity("autoSaveGoalJob")
+                .storeDurably()
+                .build();
+    }
+
+    @Bean
+    public Trigger autoSaveGoalTrigger(JobDetail autoSaveGoalJobDetail) {
+        return TriggerBuilder.newTrigger()
+                .forJob(autoSaveGoalJobDetail)
+                .withIdentity("autoSaveGoalTrigger")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 8 * * ?")) // 8am daily
+                .build();
+    }
+
+    @Bean
+    public JobDetail billReminderJobDetail() {
+        return JobBuilder.newJob(BillReminderJob.class)
+                .withIdentity("billReminderJob")
+                .storeDurably()
+                .build();
+    }
+
+    @Bean
+    public Trigger billReminderTrigger(JobDetail billReminderJobDetail) {
+        return TriggerBuilder.newTrigger()
+                .forJob(billReminderJobDetail)
+                .withIdentity("billReminderTrigger")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 8 * * ?")) // 8am daily
                 .build();
     }
 }

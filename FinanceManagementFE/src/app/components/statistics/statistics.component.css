@@ -3,8 +3,8 @@
   min-height: 100vh;
   background: radial-gradient(120% 120% at 10% 20%, rgba(79, 195, 247, 0.08), transparent 35%),
               radial-gradient(100% 100% at 80% 0%, rgba(255, 107, 107, 0.08), transparent 30%),
-              #071525;
-  color: #e9edf5;
+              var(--bg-page-alt);
+  color: var(--text-body);
 }
 
 .page-header {
@@ -29,7 +29,7 @@
 
 .page-header p {
   margin: 0;
-  color: #9fb2d4;
+  color: var(--text-dim);
   font-size: 15px;
   font-weight: 500;
 }
@@ -53,8 +53,8 @@
 }
 
 .btn.ghost {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e9edf5;
+  background: var(--bg-chip);
+  color: var(--text-body);
 }
 
 .btn.primary {
@@ -137,11 +137,41 @@
 .custom-range {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.custom-range span {
+.custom-range span,
+.range-sep {
   color: #9fb2d4;
+}
+
+/* PrimeNG calendar in stats filter */
+.custom-range ::ng-deep .p-calendar {
+  min-width: 165px;
+}
+.custom-range ::ng-deep .p-calendar .p-inputtext {
+  background: rgba(27, 68, 88, 1) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-right: none !important;
+  color: #ffffff !important;
+  padding: 10px 12px !important;
+  border-radius: 10px 0 0 10px !important;
+  font-size: 14px !important;
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+}
+.custom-range ::ng-deep .p-calendar .p-inputtext:focus {
+  border-color: rgba(78,205,196,0.5) !important;
+  outline: none !important;
+}
+.custom-range ::ng-deep .p-calendar .p-datepicker-trigger {
+  background: rgba(78,205,196,0.15) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-left: none !important;
+  color: #4ECDC4 !important;
+  border-radius: 0 10px 10px 0 !important;
+}
+.custom-range ::ng-deep .p-calendar .p-datepicker-trigger:hover {
+  background: rgba(78,205,196,0.28) !important;
 }
 
 .summary-grid {
@@ -1128,4 +1158,321 @@
   }
 }
 
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .statistics-page {
+  background: radial-gradient(120% 120% at 10% 20%, rgba(79,195,247,0.06), transparent 35%),
+              radial-gradient(100% 100% at 80% 0%, rgba(255,107,107,0.05), transparent 30%),
+              #f0f4f8 !important;
+  color: #1E293B !important;
+}
 
+:host-context(html[data-theme="light"]) .glass-panel {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-card h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .card-header {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .trend {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .inline-filter {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .inline-filter label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .inline-filter select,
+:host-context(html[data-theme="light"]) .custom-range input {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .custom-range span,
+:host-context(html[data-theme="light"]) .range-sep {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .custom-range ::ng-deep .p-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  border-right: none !important;
+  color: #1E293B !important;
+}
+:host-context(html[data-theme="light"]) .custom-range ::ng-deep .p-calendar .p-datepicker-trigger {
+  background: rgba(78,163,196,0.10) !important;
+  border: 1px solid #CBD5E1 !important;
+  border-left: none !important;
+  color: #1A7A9A !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-header {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-value {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-hover-info .hover-name {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .chart-hover-info .muted {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .donut-hole {
+  fill: #e8f4f8 !important;
+}
+
+:host-context(html[data-theme="light"]) .donut-ring {
+  stroke: rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .donut-center {
+  background: #e8f4f8 !important;
+}
+
+:host-context(html[data-theme="light"]) .donut-center p {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .donut-center h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend li:hover {
+  background: rgba(255,255,255,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .category-legend .percent {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .legend,
+:host-context(html[data-theme="light"]) .legend-list {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .loading-inline {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .pill-toggle {
+  background: rgba(0,0,0,0.05) !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .pill-toggle button {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .pill-toggle button:hover {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .pill-toggle button.active {
+  color: #FFFFFF !important;
+}
+
+:host-context(html[data-theme="light"]) .week-day {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .calendar-day.level-0 {
+  background: rgba(0,0,0,0.04) !important;
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .legend-label {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .list li {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .list-label p {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .list-label small {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .variance-list li {
+  background: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .variance-list .text .label {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .variance-list .text small {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .amount-inline {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .variance-list .right .delta-pct {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .month-select,
+:host-context(html[data-theme="light"]) .year-select {
+  background: rgba(233,246,252,0.8) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .month-select:hover,
+:host-context(html[data-theme="light"]) .year-select:hover {
+  background: #FFFFFF !important;
+}
+
+:host-context(html[data-theme="light"]) .month-select option,
+:host-context(html[data-theme="light"]) .year-select option {
+  background: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .settings-btn {
+  background: rgba(233,246,252,0.8) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-overlay {
+  background: rgba(0,0,0,0.5) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-close {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-close:hover {
+  background: rgba(0,0,0,0.08) !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .setting-group label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .setting-group small {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .radio-option {
+  background: rgba(255,255,255,0.7) !important;
+  border: 2px solid #CBD5E1 !important;
+}
+
+:host-context(html[data-theme="light"]) .radio-option:hover {
+  background: #FFFFFF !important;
+  border-color: rgba(78,205,196,0.5) !important;
+}
+
+:host-context(html[data-theme="light"]) .radio-option span {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .radio-option small {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-control {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-control:focus {
+  background: #FFFFFF !important;
+}
+
+:host-context(html[data-theme="light"]) .form-control::placeholder {
+  color: #94A3B8 !important;
+}
+
+:host-context(html[data-theme="light"]) .color-guide {
+  background: rgba(255,255,255,0.5) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+:host-context(html[data-theme="light"]) .color-guide h4 {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .color-item {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .color-box.level-0 {
+  background: #cbd5e1 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-secondary {
+  background: rgba(0,0,0,0.05) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-secondary:hover {
+  background: rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn.ghost {
+  background: rgba(255,255,255,0.7) !important;
+  color: #334155 !important;
+}

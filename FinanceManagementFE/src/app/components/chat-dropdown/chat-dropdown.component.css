@@ -12,9 +12,9 @@
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-chip);
   transition: all 0.3s ease;
-  color: #FFFFFF;
+  color: var(--text-primary);
   position: relative;
 }
 
@@ -40,7 +40,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  border: 2px solid #0A192F;
+  border: 2px solid var(--badge-border);
   animation: pulse-badge 2s infinite;
   box-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
 }
@@ -63,9 +63,9 @@
   right: 0;
   width: 360px;
   max-height: 600px;
-  background: linear-gradient(145deg, #1a3a4a, #142e3d);
+  background: var(--bg-card);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-dropdown), 0 0 0 1px var(--border-default);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px) scale(0.95);
@@ -85,7 +85,7 @@
 /* Header */
 .dropdown-header {
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .header-top {
@@ -99,7 +99,7 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--text-primary);
 }
 
 .header-actions {
@@ -112,8 +112,8 @@
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+  background: var(--bg-chip);
+  color: var(--text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -145,8 +145,8 @@
   padding: 10px 12px 10px 40px;
   border: none;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: var(--bg-chip);
+  color: var(--text-primary);
   font-size: 14px;
   transition: all 0.2s ease;
 }
@@ -278,7 +278,7 @@
 .chat-name {
   font-size: 14px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--text-primary);
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -297,7 +297,7 @@
 
 .chat-item.unread .chat-name,
 .chat-item.unread .chat-preview {
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -416,7 +416,7 @@
   margin: 0 0 4px;
   font-size: 14px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--text-primary);
 }
 
 .empty-state span {
@@ -426,7 +426,7 @@
 /* Footer */
 .dropdown-footer {
   padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-subtle);
   text-align: center;
 }
 

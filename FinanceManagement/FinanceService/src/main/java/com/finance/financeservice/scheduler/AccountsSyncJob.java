@@ -1,7 +1,7 @@
 package com.finance.financeservice.scheduler;
 
 import com.finance.financeservice.config.SepayOAuth2Properties;
-import com.finance.financeservice.service.SepaySyncService;
+import com.finance.financeservice.service.sepay.SepaySyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;

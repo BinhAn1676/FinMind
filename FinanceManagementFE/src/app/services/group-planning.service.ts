@@ -19,6 +19,8 @@ export interface GroupPlanning {
   dayOfMonth?: number; // 1-31
   createdBy?: string;
   description?: string;
+  icon?: string;
+  color?: string;
 }
 
 export interface GroupPlanningSummary {

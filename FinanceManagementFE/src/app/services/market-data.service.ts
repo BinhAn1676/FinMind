@@ -148,8 +148,27 @@ export class MarketDataService implements OnDestroy {
   private refreshSubscription: Subscription | null = null;
   private activeSubscribers = 0;
 
-  // Approximate USD/VND exchange rate (update periodically)
-  private readonly USD_VND_RATE = 25400;
+  // Approximate USD/VND exchange rate — updated via fetchExchangeRate() on startAutoRefresh
+  private readonly USD_VND_RATE = 26000;
+
+  private usdVndRateSubject = new BehaviorSubject<number>(this.USD_VND_RATE);
+  public usdVndRate$ = this.usdVndRateSubject.asObservable();
+
+  get usdVndRate(): number { return this.usdVndRateSubject.getValue(); }
+
+  // Use CoinGecko (already CORS-allowed) to get USDT price in VND (USDT ≈ 1 USD)
+  fetchExchangeRate(): void {
+    const url = `${this.COINGECKO_BASE}/simple/price?ids=tether&vs_currencies=vnd`;
+    this.http.get<any>(url, SILENT).pipe(
+      catchError(() => of(null))
+    ).subscribe(resp => {
+      // Response shape: { tether: { vnd: 26290 } }
+      const rate = resp?.tether?.vnd;
+      if (rate && rate > 10000) {
+        this.usdVndRateSubject.next(Math.round(rate));
+      }
+    });
+  }
   private readonly TROY_OZ_GRAMS = 31.1035;
   private readonly CHI_GRAMS = 3.75;
   private readonly LUONG_GRAMS = 37.5;
@@ -219,6 +238,7 @@ export class MarketDataService implements OnDestroy {
   startAutoRefresh(): void {
     this.activeSubscribers++;
     if (this.refreshSubscription) return;
+    this.fetchExchangeRate();
     this.refreshSubscription = interval(this.REFRESH_INTERVAL_MS).pipe(
       startWith(0)
     ).subscribe(() => {

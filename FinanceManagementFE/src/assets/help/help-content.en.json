@@ -33,6 +33,39 @@
       { "icon": "fa-users", "text": "The 'Group Plans' tab lets you share budgets with group members." }
     ]
   },
+  "savings-goals": {
+    "title": "Savings Goals",
+    "description": "Set savings targets and track your progress over time.",
+    "tips": [
+      { "icon": "fa-plus-circle", "text": "Create a new goal: set a name, target amount, and deadline. The system automatically calculates how much you need to save per month." },
+      { "icon": "fa-money", "text": "Contribute to a goal using the 'Add Funds' button — each contribution is recorded in the history." },
+      { "icon": "fa-bar-chart", "text": "The progress bar and completion % show whether you're on track or need to save more." },
+      { "icon": "fa-users", "text": "The 'Group' tab lets your whole group contribute to a shared goal (group trips, shared purchases, etc.)." },
+      { "icon": "fa-history", "text": "View detailed contribution history — who contributed how much and when — by clicking on a goal." }
+    ]
+  },
+  "bills": {
+    "title": "Bill Reminders",
+    "description": "Manage and get notified before recurring bills are due.",
+    "tips": [
+      { "icon": "fa-plus", "text": "Add a new bill: name, amount, category, and due date. The system will remind you before it's due." },
+      { "icon": "fa-repeat", "text": "Set a repeat cycle (weekly / monthly / yearly) for recurring bills like utilities, rent, or subscriptions." },
+      { "icon": "fa-bell", "text": "Receive notifications N days before the due date — customize the reminder lead time per bill." },
+      { "icon": "fa-check", "text": "Mark a bill as 'Paid' after settling it to update its status." },
+      { "icon": "fa-calendar", "text": "Upcoming bills also appear on the Financial Calendar for a comprehensive view." }
+    ]
+  },
+  "calendar": {
+    "title": "Financial Calendar",
+    "description": "View all financial events — bills, reminders — on a visual calendar.",
+    "tips": [
+      { "icon": "fa-calendar", "text": "Each day shows bills and reminders due — red means overdue, yellow means upcoming, green means paid." },
+      { "icon": "fa-chevron-left", "text": "Use left/right arrows to navigate months, or click 'Today' to return to the current month." },
+      { "icon": "fa-mouse-pointer", "text": "Click on any date to see a detailed list of events for that day." },
+      { "icon": "fa-plus", "text": "Click on any date to quickly create a new bill with the due date pre-filled." },
+      { "icon": "fa-filter", "text": "Filter by event type (bills / reminders) to focus on what matters most." }
+    ]
+  },
   "groups": {
     "title": "Financial Groups",
     "description": "Manage shared finances with family, friends, or colleagues.",
@@ -109,11 +142,16 @@
   },
   "investment": {
     "title": "Investment & Market",
-    "description": "Track your investment portfolio and market prices.",
+    "description": "Track real-time market prices and manage your multi-asset portfolio.",
     "tips": [
-      { "icon": "fa-line-chart", "text": "View real-time price movements for stocks and crypto." },
-      { "icon": "fa-briefcase", "text": "Add investment assets to track your total portfolio value." },
-      { "icon": "fa-info-circle", "text": "The ticker at the top shows prices for popular symbols — click for details." }
+      { "icon": "fa-bitcoin", "text": "Crypto tab: view live coin prices. Search for a coin and use the search box in Portfolio to add it to your watchlist." },
+      { "icon": "fa-plus", "text": "In Portfolio, click '+' on any coin/gold/stock row to log a Buy or Sell transaction with price, quantity, and date." },
+      { "icon": "fa-briefcase", "text": "The Portfolio tab is split into 3 asset types: 🪙 Crypto / 🥇 Gold / 🇻🇳 VN Stocks — click to switch." },
+      { "icon": "fa-bar-chart", "text": "Each asset row shows current total value and P&L (profit/loss) vs. your average buy price." },
+      { "icon": "fa-list", "text": "Click ⋮ or 'View Transactions' to drill into an asset's detail page — see full buy/sell history and per-trade P&L." },
+      { "icon": "fa-gold", "text": "Gold tab: view live SJC and domestic gold buy/sell prices from multiple providers." },
+      { "icon": "fa-flag", "text": "VN Stocks tab: live HOSE/HNX price board updating in real time. Click a stock for details." },
+      { "icon": "fa-exchange", "text": "Toggle USD ↔ VND display using the currency switch in the Portfolio toolbar." }
     ]
   },
   "profile": {

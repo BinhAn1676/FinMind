@@ -1,0 +1,112 @@
+<div class="cal-layout"
+  [class.sidebar-visible]="!layout.isSidebarCollapsed"
+  [class.sidebar-collapsed]="layout.isSidebarCollapsed">
+
+  <div class="cal-panel">
+    <!-- Header -->
+    <div class="panel-header">
+      <div class="panel-title">
+        <h1><i class="fa fa-calendar"></i> {{ language.translate('menuCalendar') }}</h1>
+        <p>{{ language.translate('calendar.subtitle') }}</p>
+      </div>
+      <!-- Month summary -->
+      <div class="month-summary" *ngIf="!loading">
+        <div class="summary-item income">
+          <span class="label"><i class="fa fa-arrow-down"></i> {{ language.translate('calendar.income') }}</span>
+          <span class="value">{{ formatVnd(monthSummary.income) }}</span>
+        </div>
+        <div class="summary-item expense">
+          <span class="label"><i class="fa fa-arrow-up"></i> {{ language.translate('calendar.expense') }}</span>
+          <span class="value">{{ formatVnd(monthSummary.expense) }}</span>
+        </div>
+        <div class="summary-item net" [class.positive]="monthSummary.net >= 0" [class.negative]="monthSummary.net < 0">
+          <span class="label"><i class="fa fa-balance-scale"></i> {{ language.translate('calendar.net') }}</span>
+          <span class="value">{{ formatVnd(monthSummary.net) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="cal-nav">
+      <button class="nav-btn" (click)="prevMonth()"><i class="fa fa-chevron-left"></i></button>
+      <span class="month-label">{{ monthLabel }}</span>
+      <button class="nav-btn" (click)="nextMonth()"><i class="fa fa-chevron-right"></i></button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" *ngIf="loading">
+      <i class="fa fa-spinner fa-spin"></i> {{ language.translate('common.loading') }}
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="cal-grid" *ngIf="!loading">
+      <!-- Week day headers -->
+      <div class="week-header" *ngFor="let wd of weekDays">{{ wd }}</div>
+
+      <!-- Day cells -->
+      <div *ngFor="let day of calendarDays"
+        class="day-cell"
+        [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday"
+        [class.selected]="selectedDay === day"
+        [class.has-tx]="day.isCurrentMonth && day.transactions.length > 0"
+        (click)="selectDay(day)">
+
+        <span class="day-num">{{ day.dayNumber }}</span>
+
+        <ng-container *ngIf="day.isCurrentMonth && day.transactions.length > 0">
+          <span class="day-income" *ngIf="day.totalIncome > 0">+{{ formatVnd(day.totalIncome) }}</span>
+          <span class="day-expense" *ngIf="day.totalExpense > 0">-{{ formatVnd(day.totalExpense) }}</span>
+          <span class="tx-count">{{ day.transactions.length }} GD</span>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" [class.open]="showDetailPanel" *ngIf="selectedDay">
+    <div class="detail-header">
+      <div>
+        <h3>{{ formatDayLabel(selectedDay.date) }}</h3>
+        <span class="detail-count">{{ selectedDay.transactions.length }} {{ language.translate('calendar.transactions') }}</span>
+      </div>
+      <button class="close-btn" (click)="closePanel()"><i class="fa fa-times"></i></button>
+    </div>
+
+    <div class="detail-summary">
+      <div class="ds-item income" *ngIf="selectedDay.totalIncome > 0">
+        <i class="fa fa-arrow-circle-down"></i>
+        <span>{{ formatVnd(selectedDay.totalIncome) }}</span>
+      </div>
+      <div class="ds-item expense" *ngIf="selectedDay.totalExpense > 0">
+        <i class="fa fa-arrow-circle-up"></i>
+        <span>{{ formatVnd(selectedDay.totalExpense) }}</span>
+      </div>
+    </div>
+
+    <div class="tx-list">
+      <div class="tx-item" *ngFor="let tx of selectedDay.transactions">
+        <div class="tx-icon" [class.income-icon]="tx.amountIn && tx.amountIn > 0"
+                             [class.expense-icon]="tx.amountOut && tx.amountOut > 0">
+          <i class="fa" [class.fa-arrow-down]="tx.amountIn && tx.amountIn > 0"
+                        [class.fa-arrow-up]="tx.amountOut && tx.amountOut > 0"></i>
+        </div>
+        <div class="tx-info">
+          <span class="tx-content">{{ tx.transactionContent || 'Giao dịch' }}</span>
+          <span class="tx-category">{{ tx.category || '' }}</span>
+          <span class="tx-bank">{{ tx.bankBrandName || '' }}</span>
+        </div>
+        <div class="tx-amount" [class.income-amt]="tx.amountIn && tx.amountIn > 0"
+                               [class.expense-amt]="tx.amountOut && tx.amountOut > 0">
+          <span *ngIf="tx.amountIn && tx.amountIn > 0">+{{ formatVnd(tx.amountIn) }}</span>
+          <span *ngIf="tx.amountOut && tx.amountOut > 0">-{{ formatVnd(tx.amountOut) }}</span>
+        </div>
+      </div>
+
+      <div class="no-tx" *ngIf="selectedDay.transactions.length === 0">
+        <i class="fa fa-inbox"></i>
+        <span>{{ language.translate('calendar.noTransactions') }}</span>
+      </div>
+    </div>
+  </div>
+</div>

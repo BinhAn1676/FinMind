@@ -741,6 +741,13 @@
 
     <!-- Plan Tab -->
     <div *ngIf="activeTab === 'plan'" class="plan-tab">
+      <!-- Plan Sub-navigation -->
+      <div class="plan-subnav">
+        <button class="plan-subnav-btn" [class.active]="activePlanSubTab==='budgets'" (click)="selectPlanSubTab('budgets')">📊 Kế hoạch ngân sách</button>
+        <button class="plan-subnav-btn" [class.active]="activePlanSubTab==='savings'" (click)="selectPlanSubTab('savings')">🎯 Mục tiêu tiết kiệm</button>
+      </div>
+      <!-- Budgets Sub-tab -->
+      <ng-container *ngIf="activePlanSubTab==='budgets'">
       <div class="planning-panel">
         <div class="panel-header">
           <div class="panel-title">
@@ -799,60 +806,299 @@
 
         <div class="planning-grid" *ngIf="!loadingGroupPlans && groupPlansFull.length">
           <div class="plan-card" *ngFor="let plan of groupPlansFull; trackBy: trackByPlanning" [class.overspent]="isOverspent(plan)">
-            <div class="plan-header">
-              <div class="icon-circle">
-                <i class="fa" [ngClass]="iconForPlanning(plan.category)"></i>
+            <div class="card-accent" [style.background]="isOverspent(plan) ? '#f87171' : (plan.color || '#4ecdc4')"></div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="goal-icon">{{ plan.icon || '📦' }}</span>
+                <div class="goal-meta">
+                  <h3 class="goal-name">{{ plan.category || translate('planning.uncategorized') || 'Chưa phân loại' }}</h3>
+                  <span class="goal-desc">{{ formatPlanningRange(plan) }}</span>
+                </div>
+                <div class="card-actions">
+                  <span class="status-badge" [class.status-active]="!isOverspent(plan)" [class.status-cancelled]="isOverspent(plan)">
+                    {{ isOverspent(plan) ? '⚠️ Vượt ngân sách' : '✅ Trong ngân sách' }}
+                  </span>
+                </div>
               </div>
-              <div class="plan-title">
-                <h4>{{ plan.category || translate('planning.uncategorized') || 'Chưa phân loại' }}</h4>
-                <span>{{ formatPlanningRange(plan) }}</span>
+              <div class="progress-section">
+                <div class="progress-row">
+                  <span class="current-amount">{{ (plan.spentAmount || 0) | number:'1.0-0' }}đ</span>
+                  <span class="progress-pct" [style.color]="isOverspent(plan) ? '#f87171' : (plan.color || '#4ecdc4')">{{ getProgressPercentage(plan) }}%</span>
+                  <span class="target-amount">{{ (plan.budgetAmount || 0) | number:'1.0-0' }}đ</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill"
+                    [style.width.%]="getProgressPercentage(plan)"
+                    [style.background]="isOverspent(plan) ? '#f87171' : (plan.color || '#4ecdc4')"></div>
+                </div>
+                <div class="progress-labels">
+                  <span [style.color]="isOverspent(plan) ? '#f87171' : '#94a3b8'">
+                    <ng-container *ngIf="!isOverspent(plan)">Còn lại: {{ remainingAmount(plan) | number:'1.0-0' }}đ</ng-container>
+                    <ng-container *ngIf="isOverspent(plan)">Vượt quá: {{ (remainingAmount(plan) * -1) | number:'1.0-0' }}đ</ng-container>
+                  </span>
+                </div>
               </div>
-              <div class="plan-actions">
-                <button class="icon-btn" type="button" (click)="openEditPlanningModal(plan)" 
-                        [title]="translate('planning.edit') || 'Chỉnh sửa'">
-                  <i class="fa fa-edit"></i>
-                </button>
-                <button class="icon-btn" type="button" (click)="deleteGroupPlanning(plan)" 
-                        [disabled]="deletingPlanningId === plan.id"
-                        [title]="translate('planning.delete') || 'Xóa'">
+              <div class="card-footer">
+                <button class="btn-icon" type="button" (click)="openEditPlanningModal(plan)"><i class="fa fa-pencil"></i></button>
+                <button class="btn-icon danger" type="button" (click)="deleteGroupPlanning(plan)" [disabled]="deletingPlanningId === plan.id">
                   <i class="fa" [ngClass]="deletingPlanningId === plan.id ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
                 </button>
               </div>
             </div>
-
-            <div class="plan-progress">
-              <div class="progress-bar" [class.danger]="isOverspent(plan)" 
-                   [style.width.%]="isOverspent(plan) ? 100 : getProgressPercentage(plan)"></div>
-            </div>
-
-            <div class="plan-stats">
-              <div class="stat">
-                <label>{{ translate('planning.cards.spent') || 'Đã chi' }}</label>
-                <span>{{ (plan.spentAmount || 0) | number:'1.0-0' }} đ</span>
-              </div>
-              <div class="divider"></div>
-              <div class="stat">
-                <label>{{ translate('planning.cards.budget') || 'Ngân sách' }}</label>
-                <span>{{ (plan.budgetAmount || 0) | number:'1.0-0' }} đ</span>
-              </div>
-            </div>
-
-            <div class="plan-status" [class.overspent]="isOverspent(plan)">
-              <ng-container *ngIf="!isOverspent(plan); else overspentTpl">
-                {{ translate('planning.cards.remaining') || 'Còn lại' }}: {{ remainingAmount(plan) | number:'1.0-0' }} đ
-              </ng-container>
-              <ng-template #overspentTpl>
-                {{ translate('planning.cards.overspent') || 'Vượt quá' }}: {{ (remainingAmount(plan) * -1) | number:'1.0-0' }} đ
-              </ng-template>
-            </div>
-
-            <div class="plan-description" *ngIf="plan.description">
-              <i class="fa fa-info-circle"></i>
-              <span>{{ plan.description }}</span>
-            </div>
           </div>
         </div>
       </div>
+      </ng-container><!-- /budgets -->
+
+      <!-- Savings Sub-tab -->
+      <ng-container *ngIf="activePlanSubTab==='savings'">
+        <div class="savings-panel">
+
+          <!-- Budget Surplus Banner -->
+          <div class="surplus-banner" *ngIf="groupPlanningSummary?.totalRemainingAmount > 0 && savingsGoals.length > 0">
+            <div class="surplus-banner-icon">💡</div>
+            <div class="surplus-banner-text">
+              <span class="surplus-title">Bạn đang dư <strong>{{ formatVnd(groupPlanningSummary.totalRemainingAmount) }}</strong> từ kế hoạch ngân sách</span>
+              <span class="surplus-sub">Chuyển vào mục tiêu tiết kiệm ngay?</span>
+            </div>
+            <div class="surplus-actions">
+              <select class="surplus-select" [(ngModel)]="surplusGoalId" [ngModelOptions]="{standalone: true}">
+                <option value="">-- Chọn mục tiêu --</option>
+                <option *ngFor="let g of savingsGoals" [value]="g.id">{{ g.icon }} {{ g.name }}</option>
+              </select>
+              <button class="btn-transfer" (click)="openContributeFromSurplus()" [disabled]="!surplusGoalId">
+                <i class="fa fa-arrow-right"></i> Nạp tiền
+              </button>
+            </div>
+          </div>
+
+          <div class="savings-header">
+            <div class="savings-stats" *ngIf="savingsGoals.length > 0">
+              <div class="savings-stat">
+                <span class="savings-stat-icon">🎯</span>
+                <div class="savings-stat-info">
+                  <span class="savings-stat-label">Mục tiêu</span>
+                  <span class="savings-stat-value">{{ savingsGoals.length }}</span>
+                </div>
+              </div>
+              <div class="savings-stat">
+                <span class="savings-stat-icon">📋</span>
+                <div class="savings-stat-info">
+                  <span class="savings-stat-label">Đang tiết kiệm</span>
+                  <span class="savings-stat-value blue">{{ countGoalsByStatus('ACTIVE') }}</span>
+                </div>
+              </div>
+              <div class="savings-stat">
+                <span class="savings-stat-icon">✅</span>
+                <div class="savings-stat-info">
+                  <span class="savings-stat-label">Đã hoàn thành</span>
+                  <span class="savings-stat-value teal">{{ countGoalsByStatus('COMPLETED') }}</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn-add-goal" (click)="openCreateGoal()">+ Thêm mục tiêu</button>
+          </div>
+
+          <div *ngIf="loadingSavings" class="savings-loading">Đang tải...</div>
+
+          <div *ngIf="!loadingSavings && savingsGoals.length === 0" class="savings-empty">
+            <div class="savings-empty-icon">🎯</div>
+            <p class="savings-empty-title">Chưa có mục tiêu tiết kiệm</p>
+            <p class="savings-empty-desc">Tạo mục tiêu đầu tiên cho nhóm!</p>
+            <button class="btn-add-goal" (click)="openCreateGoal()">Tạo mục tiêu ngay</button>
+          </div>
+
+          <div class="savings-grid" *ngIf="!loadingSavings && savingsGoals.length > 0">
+            <div *ngFor="let goal of savingsGoals" class="goal-card" [class.completed]="goal.status === 'COMPLETED'" [class.cancelled]="goal.status === 'CANCELLED'">
+
+              <div class="card-accent" [style.background]="goal.color || '#4ecdc4'"></div>
+
+              <div class="card-body">
+                <div class="card-header-row">
+                  <span class="goal-icon">{{ goal.icon || '🎯' }}</span>
+                  <div class="goal-meta">
+                    <h3 class="goal-name">{{ goal.name }}</h3>
+                    <span class="goal-desc" *ngIf="goal.description">{{ goal.description }}</span>
+                  </div>
+                  <div class="card-actions">
+                    <span class="status-badge" [class]="'status-' + (goal.status || 'ACTIVE').toLowerCase()">
+                      {{ goal.status === 'COMPLETED' ? '✅ Hoàn thành' : goal.status === 'CANCELLED' ? '❌ Đã hủy' : '🔄 Đang tiết kiệm' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="progress-section">
+                  <div class="progress-row">
+                    <span class="current-amount">{{ formatVnd(goal.currentAmount || 0) }}</span>
+                    <span class="progress-pct" [style.color]="goal.color || '#4ecdc4'">{{ getSavingsProgress(goal) }}%</span>
+                    <span class="target-amount">{{ formatVnd(goal.targetAmount) }}</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill"
+                      [style.width.%]="getSavingsProgress(goal)"
+                      [style.background]="goal.color || '#4ecdc4'"></div>
+                  </div>
+                  <div class="progress-labels">
+                    <span class="remaining-label">Còn thiếu: {{ formatVnd(goalRemaining(goal)) }}</span>
+                    <span class="days-label" *ngIf="daysLeft(goal) !== null">
+                      <i class="fa fa-clock-o"></i> {{ daysLeft(goal) }} ngày
+                    </span>
+                  </div>
+                </div>
+
+                <div class="card-footer">
+                  <button class="btn-contribute" [style.background]="goal.color || '#4ecdc4'"
+                    *ngIf="goal.status === 'ACTIVE'"
+                    (click)="openContribute(goal)">
+                    <i class="fa fa-plus"></i> Tiết kiệm thêm
+                  </button>
+                  <button class="btn-icon" (click)="openEditGoal(goal)" title="Chỉnh sửa">
+                    <i class="fa fa-pencil"></i>
+                  </button>
+                  <button class="btn-icon danger" (click)="deleteGoal(goal)"
+                    [disabled]="deletingGoalId === goal.id" title="Xoá">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+
+                <button class="btn-history-toggle" type="button" (click)="toggleContributions(goal.id!)">
+                  <i class="fa" [ngClass]="expandedGoalId === goal.id ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                  {{ (goal.contributions?.length || 0) }} lần nạp
+                </button>
+
+                <div class="contribution-history" *ngIf="expandedGoalId === goal.id">
+                  <div *ngIf="!goal.contributions?.length" class="no-contributions">
+                    Chưa có lần nạp nào
+                  </div>
+                  <div class="contribution-item" *ngFor="let c of (goal.contributions || []).slice().reverse()">
+                    <div class="contribution-info">
+                      <span class="contribution-amount">+{{ formatVnd(c.amount || 0) }}</span>
+                      <span class="contribution-note" *ngIf="c.note">{{ c.note }}</span>
+                    </div>
+                    <div class="contribution-right">
+                      <span class="contribution-date">{{ c.createdAt | date:'dd/MM/yyyy' }}</span>
+                      <button class="contribution-delete" (click)="removeContribution(goal, c)" title="Xóa">×</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Create/Edit Goal Modal -->
+          <div *ngIf="showSavingsModal" class="savings-modal-backdrop" (click)="closeSavingsModal()">
+            <div class="savings-modal-box" (click)="$event.stopPropagation()">
+              <div class="savings-modal-header">
+                <h3>{{ editingGoal ? 'Sửa mục tiêu' : 'Thêm mục tiêu tiết kiệm' }}</h3>
+                <button class="savings-modal-close" (click)="closeSavingsModal()">✕</button>
+              </div>
+              <div class="savings-modal-body">
+                <div class="sform-row">
+                  <label>Tên mục tiêu *</label>
+                  <input type="text" [(ngModel)]="savingsForm.name" class="sform-control" placeholder="VD: Du lịch Đà Lạt, Mua xe...">
+                </div>
+                <div class="sform-row-2">
+                  <div class="sform-row">
+                    <label>Số tiền mục tiêu (₫) *</label>
+                    <input type="text" class="sform-control"
+                      [value]="formatNumberWithDots(savingsForm.targetAmount)"
+                      (input)="onSavingsAmountInput($event)"
+                      placeholder="0">
+                  </div>
+                  <div class="sform-row">
+                    <label>Deadline</label>
+                    <p-calendar [(ngModel)]="savingsTargetDate"
+                      [ngModelOptions]="{standalone: true}"
+                      dateFormat="dd/mm/yy"
+                      [showIcon]="true"
+                      [showButtonBar]="true"
+                      styleClass="savings-calendar">
+                    </p-calendar>
+                  </div>
+                </div>
+                <div class="sform-row">
+                  <label>Mô tả</label>
+                  <input type="text" [(ngModel)]="savingsForm.description" class="sform-control" placeholder="Ghi chú...">
+                </div>
+                <div class="sform-row">
+                  <label>Icon</label>
+                  <div class="goal-icon-picker">
+                    <button *ngFor="let ic of goalIcons" class="goal-icon-btn" type="button"
+                      [class.selected]="savingsForm.icon === ic"
+                      (click)="savingsForm.icon = ic">{{ ic }}</button>
+                  </div>
+                </div>
+                <div class="sform-row">
+                  <label>Màu sắc</label>
+                  <div class="goal-color-picker">
+                    <button *ngFor="let cl of goalColors" class="goal-color-btn" type="button"
+                      [style.background]="cl"
+                      [class.selected]="savingsForm.color === cl"
+                      (click)="savingsForm.color = cl"></button>
+                  </div>
+                </div>
+                <div class="sform-row" *ngIf="editingGoal">
+                  <label>Trạng thái</label>
+                  <select [(ngModel)]="savingsForm.status" class="sform-control">
+                    <option value="ACTIVE">Đang tiết kiệm</option>
+                    <option value="COMPLETED">Hoàn thành</option>
+                    <option value="CANCELLED">Hủy</option>
+                  </select>
+                </div>
+              </div>
+              <div class="savings-modal-footer">
+                <button class="btn btn-ghost" (click)="closeSavingsModal()" [disabled]="savingGoal">Hủy</button>
+                <button class="btn btn-primary" (click)="saveGoal()" [disabled]="savingGoal">
+                  <span *ngIf="!savingGoal">Lưu</span>
+                  <span *ngIf="savingGoal">Đang lưu...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contribute Modal -->
+          <div *ngIf="showContributeModal" class="savings-modal-backdrop" (click)="closeContributeModal()">
+            <div class="savings-modal-box savings-modal-sm" (click)="$event.stopPropagation()">
+              <div class="savings-modal-header">
+                <h3>💰 Thêm tiết kiệm</h3>
+                <button class="savings-modal-close" (click)="closeContributeModal()">✕</button>
+              </div>
+              <div class="savings-modal-body">
+                <p class="contribute-goal-name" *ngIf="contributeGoal">{{ contributeGoal.name }}</p>
+                <div class="sform-row">
+                  <label>Nạp nhanh</label>
+                  <div class="quick-amounts">
+                    <button type="button" class="quick-btn" (click)="quickFillContribute(100000)">100k</button>
+                    <button type="button" class="quick-btn" (click)="quickFillContribute(500000)">500k</button>
+                    <button type="button" class="quick-btn" (click)="quickFillContribute(1000000)">1M</button>
+                    <button type="button" class="quick-btn" (click)="quickFillContribute(2000000)">2M</button>
+                  </div>
+                </div>
+                <div class="sform-row">
+                  <label>Số tiền (₫) *</label>
+                  <input type="text" class="sform-control"
+                    [value]="formatNumberWithDots(contributeAmount)"
+                    (input)="onContributeAmountInput($event)"
+                    placeholder="0" autofocus>
+                </div>
+                <div class="sform-row">
+                  <label>Ghi chú</label>
+                  <input type="text" [(ngModel)]="contributeNote" class="sform-control" placeholder="VD: Tháng 3...">
+                </div>
+              </div>
+              <div class="savings-modal-footer">
+                <button class="btn btn-ghost" (click)="closeContributeModal()" [disabled]="savingContribution">Hủy</button>
+                <button class="btn btn-primary" (click)="submitContribution()" [disabled]="savingContribution">
+                  <span *ngIf="!savingContribution">Xác nhận</span>
+                  <span *ngIf="savingContribution">Đang lưu...</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </ng-container><!-- /savings -->
     </div>
 
     <!-- Create/Edit Planning Modal -->
@@ -908,6 +1154,27 @@
                     <i class="fa fa-trash"></i>
                   </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Icon Picker -->
+            <div class="form-group">
+              <label>Icon</label>
+              <div class="icon-picker">
+                <button *ngFor="let ic of planningIcons" class="picker-icon-btn" type="button"
+                  [class.selected]="selectedPlanningIcon === ic"
+                  (click)="selectedPlanningIcon = ic">{{ ic }}</button>
+              </div>
+            </div>
+
+            <!-- Color Picker -->
+            <div class="form-group">
+              <label>Màu sắc</label>
+              <div class="color-picker">
+                <button *ngFor="let cl of planningColors" class="picker-color-btn" type="button"
+                  [style.background]="cl"
+                  [class.selected]="selectedPlanningColor === cl"
+                  (click)="selectedPlanningColor = cl"></button>
               </div>
             </div>
           </div>
@@ -1820,12 +2087,130 @@
 
     <!-- Chat Tab -->
     <div *ngIf="activeTab === 'chat'" class="chat-tab">
-      <app-group-chat 
-        [groupId]="groupId" 
+      <app-group-chat
+        [groupId]="groupId"
         [groupName]="group?.name || ''"
         [groupAvatarUrl]="avatarUrl">
       </app-group-chat>
     </div>
+
+    <!-- Calendar Tab -->
+    <div *ngIf="activeTab === 'calendar'" class="calendar-tab">
+
+      <!-- Month summary chips -->
+      <div class="gcal-summary-row" *ngIf="!calLoading">
+        <div class="gcal-summary-chip income">
+          <i class="fa fa-arrow-circle-down"></i>
+          <div>
+            <span class="gcal-chip-label">Thu nhập</span>
+            <span class="gcal-chip-value">{{ formatVnd(calMonthSummary.income) }}</span>
+          </div>
+        </div>
+        <div class="gcal-summary-chip expense">
+          <i class="fa fa-arrow-circle-up"></i>
+          <div>
+            <span class="gcal-chip-label">Chi tiêu</span>
+            <span class="gcal-chip-value">{{ formatVnd(calMonthSummary.expense) }}</span>
+          </div>
+        </div>
+        <div class="gcal-summary-chip" [class.net-positive]="calMonthSummary.net >= 0" [class.net-negative]="calMonthSummary.net < 0">
+          <i class="fa fa-balance-scale"></i>
+          <div>
+            <span class="gcal-chip-label">Còn lại</span>
+            <span class="gcal-chip-value">{{ formatVnd(calMonthSummary.net) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gcal-body">
+        <!-- Calendar panel -->
+        <div class="gcal-panel">
+
+          <!-- Navigation -->
+          <div class="gcal-nav">
+            <button class="gcal-nav-btn" (click)="calPrevMonth()"><i class="fa fa-chevron-left"></i></button>
+            <span class="gcal-month-label">{{ calMonthLabel }}</span>
+            <button class="gcal-nav-btn" (click)="calNextMonth()"><i class="fa fa-chevron-right"></i></button>
+          </div>
+
+          <!-- Loading -->
+          <div class="gcal-loading" *ngIf="calLoading">
+            <i class="fa fa-spinner fa-spin"></i> Đang tải...
+          </div>
+
+          <!-- Grid -->
+          <div class="gcal-grid" *ngIf="!calLoading">
+            <div class="gcal-week-header" *ngFor="let wd of calWeekDays">{{ wd }}</div>
+            <div *ngFor="let day of calDays"
+              class="gcal-day-cell"
+              [class.other-month]="!day.isCurrentMonth"
+              [class.today]="day.isToday"
+              [class.selected]="calSelectedDay === day"
+              [class.has-tx]="day.isCurrentMonth && day.transactions.length > 0"
+              (click)="selectCalDay(day)">
+
+              <span class="gcal-day-num">{{ day.dayNumber }}</span>
+
+              <ng-container *ngIf="day.isCurrentMonth && day.transactions.length > 0">
+                <span class="gcal-day-income" *ngIf="day.totalIncome > 0">+{{ formatVnd(day.totalIncome) }}</span>
+                <span class="gcal-day-expense" *ngIf="day.totalExpense > 0">-{{ formatVnd(day.totalExpense) }}</span>
+                <span class="gcal-tx-count">{{ day.transactions.length }} GD</span>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail panel -->
+        <div class="gcal-detail-panel" [class.open]="calShowPanel" *ngIf="calSelectedDay">
+          <div class="gcal-detail-header">
+            <div>
+              <h3>{{ calFormatDayLabel(calSelectedDay.date) }}</h3>
+              <span class="gcal-detail-count">{{ calSelectedDay.transactions.length }} giao dịch</span>
+            </div>
+            <button class="gcal-close-btn" (click)="closeCalPanel()"><i class="fa fa-times"></i></button>
+          </div>
+
+          <div class="gcal-detail-summary">
+            <div class="gcal-ds-item income" *ngIf="calSelectedDay.totalIncome > 0">
+              <i class="fa fa-arrow-circle-down"></i>
+              <span>{{ formatVnd(calSelectedDay.totalIncome) }}</span>
+            </div>
+            <div class="gcal-ds-item expense" *ngIf="calSelectedDay.totalExpense > 0">
+              <i class="fa fa-arrow-circle-up"></i>
+              <span>{{ formatVnd(calSelectedDay.totalExpense) }}</span>
+            </div>
+          </div>
+
+          <div class="gcal-tx-list">
+            <div class="gcal-tx-item" *ngFor="let tx of calSelectedDay.transactions">
+              <div class="gcal-tx-icon"
+                [class.income-icon]="tx.amountIn && tx.amountIn > 0"
+                [class.expense-icon]="tx.amountOut && tx.amountOut > 0">
+                <i class="fa" [class.fa-arrow-down]="tx.amountIn && tx.amountIn > 0"
+                              [class.fa-arrow-up]="tx.amountOut && tx.amountOut > 0"></i>
+              </div>
+              <div class="gcal-tx-info">
+                <span class="gcal-tx-content">{{ tx.transactionContent || 'Giao dịch' }}</span>
+                <span class="gcal-tx-sub">{{ tx.category || tx.bankBrandName || '' }}</span>
+              </div>
+              <div class="gcal-tx-amount"
+                [class.income-amt]="tx.amountIn && tx.amountIn > 0"
+                [class.expense-amt]="tx.amountOut && tx.amountOut > 0">
+                <span *ngIf="tx.amountIn && tx.amountIn > 0">+{{ formatVnd(tx.amountIn) }}</span>
+                <span *ngIf="tx.amountOut && tx.amountOut > 0">-{{ formatVnd(tx.amountOut) }}</span>
+              </div>
+            </div>
+
+            <div class="gcal-no-tx" *ngIf="calSelectedDay.transactions.length === 0">
+              <i class="fa fa-inbox"></i>
+              <span>Không có giao dịch</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </div>
 

@@ -8,6 +8,57 @@ import { LayoutService } from '../../services/layout.service';
 import { UserService } from '../../services/user.service';
 import { AccountService } from '../../services/account.service';
 import { User } from '../../model/user.model';
+import { SavingsGoalService, SavingsGoal } from '../../services/savings-goal.service';
+
+const GOAL_ICONS = [
+  // Tài sản / mua sắm lớn
+  '🚗', '🏠', '🏡', '🛵', '🚲', '💻', '📱', '📷', '🎮', '🎹', '🎸',
+  // Du lịch / trải nghiệm
+  '✈️', '🌏', '🏖️', '🚢', '🏕️', '🗺️',
+  // Cuộc sống / gia đình
+  '💍', '👶', '🐕', '🌱',
+  // Học tập / sự nghiệp
+  '🎓', '📚', '🏆',
+  // Sức khỏe / fitness
+  '💪', '🏋️', '🧘',
+  // Tài chính / đầu tư
+  '🎯', '💎', '🏦', '📈',
+  // Sở thích / nghệ thuật
+  '🎨', '🎭', '🎵',
+];
+const GOAL_COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f', '#bb8fce', '#85c1e9'];
+
+const PLAN_ICONS = [
+  // Ăn uống
+  '🍔', '🍜', '🍱', '☕',
+  // Mua sắm
+  '🛒', '🛍️',
+  // Giao thông
+  '🚗', '⛽', '🚌',
+  // Giải trí
+  '🎉', '🎮', '🎬', '🎵',
+  // Sức khỏe / thể thao
+  '💪', '🏃', '🧘',
+  // Giáo dục
+  '🎓', '📚', '✏️',
+  // Hóa đơn / tiện ích
+  '💡', '💧', '🔥', '📶',
+  // Lương / thu nhập
+  '💰', '💳', '📈',
+  // Y tế
+  '💊', '🏥', '🩺',
+  // Đầu tư
+  '📊', '🏦', '💹',
+  // Du lịch
+  '✈️', '🏖️', '🗺️',
+  // Quà tặng
+  '🎁', '🎀',
+  // Gia đình
+  '🏡', '👨‍👩‍👧', '👶',
+  // Chi tiêu khác / không xác định
+  '📦', '💸', '❓',
+];
+const PLAN_COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f', '#bb8fce', '#85c1e9'];
 
 @Component({
   selector: 'app-planning',
@@ -15,6 +66,10 @@ import { User } from '../../model/user.model';
   styleUrls: ['./planning.component.css']
 })
 export class PlanningComponent implements OnInit {
+  // Tab state
+  activeTab: 'budgets' | 'savings' = 'budgets';
+
+  // Budget plan properties
   budgets: PlanningBudget[] = [];
   categories: Category[] = [];
   form!: FormGroup;
@@ -31,6 +86,43 @@ export class PlanningComponent implements OnInit {
   newCategory = '';
   showNewCategoryInput = false;
 
+  // Plan icon/color picker
+  selectedPlanIcon = '📦';
+  selectedPlanColor = '#4ecdc4';
+  readonly planIcons = PLAN_ICONS;
+  readonly planColors = PLAN_COLORS;
+
+  // Savings goal properties
+  goals: SavingsGoal[] = [];
+  loadingGoals = false;
+  savingGoal = false;
+  deletingGoalId: string | null = null;
+  showGoalModal = false;
+  showContributeModal = false;
+  editingGoal: SavingsGoal | null = null;
+  selectedGoalId = '';
+  goalForm: SavingsGoal = this.emptyGoalForm();
+  contributeAmount = 0;
+  contributeNote = '';
+
+  readonly goalIcons = GOAL_ICONS;
+  readonly goalColors = GOAL_COLORS;
+
+  autoSaveCycles: Array<{value: string, label: string}> = [
+    { value: 'DAILY', label: 'Hàng ngày' },
+    { value: 'WEEKLY', label: 'Hàng tuần' },
+    { value: 'MONTHLY', label: 'Hàng tháng' }
+  ];
+
+  surplusGoalId = '';
+  private _fromSurplus = false;
+
+  expandedGoalId: string | null = null;
+  removingContributionId: string | null = null;
+
+  // Savings modal date/amount binding helpers
+  goalTargetDate: Date | null = null;
+
   constructor(
     private planningService: PlanningBudgetService,
     private categoryService: CategoryService,
@@ -39,7 +131,8 @@ export class PlanningComponent implements OnInit {
     public language: LanguageService,
     private toast: ToastService,
     public layout: LayoutService,
-    private userService: UserService
+    private userService: UserService,
+    private goalService: SavingsGoalService
   ) {}
 
   ngOnInit(): void {
@@ -55,6 +148,7 @@ export class PlanningComponent implements OnInit {
           this.fetchBudgets();
           this.fetchCategories();
           this.loadBankAccounts();
+          this.fetchGoals();
         } else {
           console.error('User ID not found in user info:', user);
           this.toast.showError(this.language.translate('planning.toast.userIdError') || 'Không thể lấy thông tin người dùng');
@@ -67,9 +161,17 @@ export class PlanningComponent implements OnInit {
     });
   }
 
+  // ─── Tab switching ────────────────────────────────────────────────────────
+
+  switchTab(tab: 'budgets' | 'savings'): void {
+    this.activeTab = tab;
+  }
+
+  // ─── Bank accounts ─────────────────────────────────────────────────────────
+
   private loadBankAccounts(): void {
     if (!this.userId) return;
-    
+
     this.loadingAccounts = true;
     this.accountService.filter(this.userId, '', 0, 100).subscribe({
       next: (response: any) => {
@@ -77,10 +179,10 @@ export class PlanningComponent implements OnInit {
         this.bankAccountIds = accounts
           .map((acc: any) => acc.bankAccountId || acc.id?.toString())
           .filter((id: string | undefined): id is string => !!id);
-        
+
         this.loadingAccounts = false;
         console.log('Loaded bank account IDs:', this.bankAccountIds);
-        
+
         // Recalculate spent amounts after accounts are loaded
         if (this.bankAccountIds.length > 0) {
           this.recalculatePlansSpentAmounts();
@@ -125,6 +227,8 @@ export class PlanningComponent implements OnInit {
       }
     });
   }
+
+  // ─── Budget form ───────────────────────────────────────────────────────────
 
   private initForm(): void {
     this.form = this.fb.group({
@@ -180,7 +284,6 @@ export class PlanningComponent implements OnInit {
     const endDateControl = this.form.get('endDate');
     const repeatCycleControl = this.form.get('repeatCycle');
     const dayOfMonthControl = this.form.get('dayOfMonth');
-    const applyForWholeMonthControl = this.form.get('applyForWholeMonth');
 
     // Clear all validators first
     startDateControl?.clearValidators();
@@ -211,7 +314,6 @@ export class PlanningComponent implements OnInit {
           // For QUARTERLY, dayOfMonth is always required
           dayOfMonthControl?.setValidators([Validators.required, Validators.min(1), Validators.max(31)]);
         }
-        // If MONTHLY and applyForWholeMonth = true, or YEARLY and applyForWholeYear = true, dayOfMonth is optional (will be null)
         break;
     }
 
@@ -232,6 +334,8 @@ export class PlanningComponent implements OnInit {
   get repeatCycles(): RepeatCycle[] {
     return ['MONTHLY', 'QUARTERLY', 'YEARLY'];
   }
+
+  // ─── Budget CRUD ───────────────────────────────────────────────────────────
 
   private fetchBudgets(): void {
     if (!this.userId) {
@@ -281,6 +385,8 @@ export class PlanningComponent implements OnInit {
 
   openCreateModal(): void {
     this.editingPlan = null;
+    this.selectedPlanIcon = '📦';
+    this.selectedPlanColor = '#4ecdc4';
     this.form.get('planType')?.setValue('SHORT_TERM');
     this.prefillDefaultDates();
     this.form.get('category')?.setValue('');
@@ -302,13 +408,15 @@ export class PlanningComponent implements OnInit {
 
   openEditModal(plan: PlanningBudget): void {
     this.editingPlan = plan;
+    this.selectedPlanIcon = plan.icon || '📦';
+    this.selectedPlanColor = plan.color || '#4ecdc4';
     this.form.get('planType')?.setValue(plan.planType || 'SHORT_TERM');
     this.form.get('category')?.setValue(plan.category || '');
     this.form.get('budgetAmount')?.setValue(plan.budgetAmount || null);
     this.form.get('startDate')?.setValue(this.stringToDate(plan.startDate));
     this.form.get('endDate')?.setValue(this.stringToDate(plan.endDate));
     this.form.get('repeatCycle')?.setValue(plan.repeatCycle || '');
-    
+
     // Handle dayOfMonth and applyForWholeMonth/Year
     if (plan.planType === 'RECURRING') {
       if (plan.repeatCycle === 'MONTHLY' && !plan.dayOfMonth) {
@@ -327,7 +435,7 @@ export class PlanningComponent implements OnInit {
       this.form.get('applyForWholeMonth')?.setValue(false);
       this.form.get('applyForWholeYear')?.setValue(false);
     }
-    
+
     this.updateFormValidators(plan.planType || 'SHORT_TERM');
     this.form.markAsPristine();
     this.form.markAsUntouched();
@@ -476,7 +584,9 @@ export class PlanningComponent implements OnInit {
     const payload: Partial<PlanningBudget> = {
       category: category,
       budgetAmount: Number(formValues.budgetAmount),
-      planType: planType
+      planType: planType,
+      icon: this.selectedPlanIcon,
+      color: this.selectedPlanColor
     };
 
     // Add fields based on plan type
@@ -524,7 +634,9 @@ export class PlanningComponent implements OnInit {
       userId: this.userId,
       category: category,
       budgetAmount: Number(formValues.budgetAmount),
-      planType: planType
+      planType: planType,
+      icon: this.selectedPlanIcon,
+      color: this.selectedPlanColor
     };
 
     // Add fields based on plan type
@@ -633,7 +745,7 @@ export class PlanningComponent implements OnInit {
       return spent > 0 ? 100 : 0;
     }
     const percent = (spent / budget) * 100;
-    return Math.min(Math.max(percent, 0), 100);
+    return parseFloat(Math.min(Math.max(percent, 0), 100).toFixed(2));
   }
 
   remainingAmount(plan: PlanningBudget): number {
@@ -646,60 +758,59 @@ export class PlanningComponent implements OnInit {
 
   iconFor(category: string | undefined): string {
     if (!category) return 'fa-folder-open';
-    
+
     // Normalize Vietnamese characters and convert to lowercase
     const c = category.toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
       .trim();
-    
+
     // Check for food/eating related
-    if (c.includes('an') || c.includes('uong') || c.includes('an uong') || 
+    if (c.includes('an') || c.includes('uong') || c.includes('an uong') ||
         c.includes('food') || c.includes('eat') || c.includes('dining') ||
         c.includes('restaurant') || c.includes('cafe') || c.includes('meal') ||
         c.includes('com') || c.includes('thuc an') || c.includes('do an')) {
-      return 'fa-cutlery'; // Changed to cutlery icon (utensils) for better visibility
+      return 'fa-cutlery';
     }
-    
+
     // Check for transportation/travel related
-    if (c.includes('giao thong') || c.includes('giao thong') || 
-        c.includes('di chuyen') || c.includes('travel') || 
-        c.includes('move') || c.includes('transport') || 
+    if (c.includes('giao thong') || c.includes('di chuyen') || c.includes('travel') ||
+        c.includes('move') || c.includes('transport') ||
         c.includes('xe') || c.includes('car') || c.includes('bus') ||
         c.includes('taxi') || c.includes('uber') || c.includes('grab')) {
       return 'fa-car';
     }
-    
+
     // Check for shopping
     if (c.includes('mua') || c.includes('shop') || c.includes('buy') ||
         c.includes('shopping') || c.includes('market')) {
       return 'fa-shopping-bag';
     }
-    
+
     // Check for home/housing
     if (c.includes('nha') || c.includes('rent') || c.includes('home') ||
         c.includes('house') || c.includes('apartment')) {
       return 'fa-home';
     }
-    
+
     // Check for entertainment
     if (c.includes('giai tri') || c.includes('entertain') ||
         c.includes('movie') || c.includes('cinema') || c.includes('game')) {
       return 'fa-film';
     }
-    
+
     // Check for education
     if (c.includes('hoc') || c.includes('education') || c.includes('study') ||
         c.includes('school') || c.includes('university')) {
       return 'fa-book';
     }
-    
+
     // Check for health
     if (c.includes('suc khoe') || c.includes('health') ||
         c.includes('medical') || c.includes('hospital') || c.includes('doctor')) {
       return 'fa-heartbeat';
     }
-    
+
     // Default icon
     return 'fa-folder-open';
   }
@@ -749,10 +860,6 @@ export class PlanningComponent implements OnInit {
     return parsed.toLocaleDateString(lang);
   }
 
-  private formatDateInput(date: Date): string {
-    return date.toISOString().split('T')[0];
-  }
-
   private dateToString(date: any): string {
     if (!date) return '';
     if (date instanceof Date) {
@@ -789,6 +896,219 @@ export class PlanningComponent implements OnInit {
     this.form.get('budgetAmount')?.markAsTouched();
     input.value = this.formatNumberWithDots(raw);
   }
+
+  // ─── Savings Goals ─────────────────────────────────────────────────────────
+
+  fetchGoals(): void {
+    if (!this.userId) return;
+    this.loadingGoals = true;
+    this.goalService.getByUser(this.userId).subscribe({
+      next: (data) => { this.goals = data; this.loadingGoals = false; },
+      error: () => { this.toast.showError('Không thể tải mục tiêu tiết kiệm'); this.loadingGoals = false; }
+    });
+  }
+
+  openCreateGoal(): void {
+    this.editingGoal = null;
+    this.goalForm = this.emptyGoalForm();
+    this.goalTargetDate = null;
+    this.showGoalModal = true;
+  }
+
+  openEditGoal(goal: SavingsGoal): void {
+    this.editingGoal = goal;
+    this.goalForm = { ...goal };
+    this.goalTargetDate = goal.targetDate ? new Date(goal.targetDate + 'T00:00:00') : null;
+    this.showGoalModal = true;
+  }
+
+  openContributeModal(goal: SavingsGoal): void {
+    this._fromSurplus = false;
+    this.selectedGoalId = goal.id!;
+    this.contributeAmount = 0;
+    this.contributeNote = '';
+    this.showContributeModal = true;
+  }
+
+  openContributeFromSurplus(): void {
+    if (!this.surplusGoalId || this.budgetSurplus <= 0) return;
+    this._fromSurplus = true;
+    this.selectedGoalId = this.surplusGoalId;
+    this.contributeAmount = this.budgetSurplus;
+    this.contributeNote = 'Chuyển từ ngân sách dư';
+    this.showContributeModal = true;
+  }
+
+  closeGoalModal(): void {
+    this.showGoalModal = false;
+    this.showContributeModal = false;
+    this.editingGoal = null;
+  }
+
+  onGoalAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value.replace(/,/g, '').replace(/[^0-9]/g, '');
+    this.goalForm.targetAmount = raw === '' ? 0 : Number(raw);
+    input.value = this.formatNumberWithDots(raw);
+  }
+
+  onContributeAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value.replace(/,/g, '').replace(/[^0-9]/g, '');
+    this.contributeAmount = raw === '' ? 0 : Number(raw);
+    input.value = this.formatNumberWithDots(raw);
+  }
+
+  saveGoal(): void {
+    if (!this.goalForm.name || !this.goalForm.targetAmount) {
+      this.toast.showError('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+    this.savingGoal = true;
+    const targetDate = this.goalTargetDate
+      ? this.goalTargetDate.toISOString().split('T')[0]
+      : undefined;
+    const payload: SavingsGoal = { ...this.goalForm, userId: this.userId, targetDate };
+
+    const op = this.editingGoal
+      ? this.goalService.update(this.editingGoal.id!, payload)
+      : this.goalService.create(payload);
+
+    op.subscribe({
+      next: () => {
+        this.toast.showSuccess(this.editingGoal ? 'Cập nhật thành công' : 'Tạo mục tiêu thành công');
+        this.closeGoalModal();
+        this.fetchGoals();
+        this.savingGoal = false;
+      },
+      error: () => { this.toast.showError('Có lỗi xảy ra'); this.savingGoal = false; }
+    });
+  }
+
+  deleteGoal(goal: SavingsGoal): void {
+    if (!confirm(`Xoá mục tiêu "${goal.name}"?`)) return;
+    this.deletingGoalId = goal.id!;
+    this.goalService.delete(goal.id!).subscribe({
+      next: () => {
+        this.toast.showSuccess('Đã xoá mục tiêu');
+        this.goals = this.goals.filter(g => g.id !== goal.id);
+        this.deletingGoalId = null;
+      },
+      error: () => { this.toast.showError('Không thể xoá'); this.deletingGoalId = null; }
+    });
+  }
+
+  submitContribution(): void {
+    if (!this.contributeAmount || this.contributeAmount <= 0) {
+      this.toast.showError('Nhập số tiền hợp lệ');
+      return;
+    }
+    if (this._fromSurplus && this.contributeAmount > this.budgetSurplus) {
+      this.toast.showError(`Số tiền vượt quá ngân sách dư (${this.formatVnd(this.budgetSurplus)})`);
+      return;
+    }
+    this.savingGoal = true;
+    const amountContributed = this.contributeAmount;
+    const wasFromSurplus = this._fromSurplus;
+    this.goalService.addContribution(this.selectedGoalId, amountContributed, this.contributeNote).subscribe({
+      next: (updated) => {
+        this.toast.showSuccess('Đã thêm tiết kiệm!');
+        if (wasFromSurplus) {
+          this.surplusGoalId = '';
+        }
+        this._fromSurplus = false;
+        const idx = this.goals.findIndex(g => g.id === this.selectedGoalId);
+        if (idx >= 0) this.goals[idx] = updated;
+        this.closeGoalModal();
+        this.savingGoal = false;
+      },
+      error: () => { this.toast.showError('Có lỗi xảy ra'); this.savingGoal = false; }
+    });
+  }
+
+  goalProgress(goal: SavingsGoal): number {
+    if (!goal.targetAmount || goal.targetAmount === 0) return 0;
+    return parseFloat(Math.min(100, ((goal.currentAmount || 0) / goal.targetAmount) * 100).toFixed(2));
+  }
+
+  goalRemaining(goal: SavingsGoal): number {
+    return Math.max(0, (goal.targetAmount || 0) - (goal.currentAmount || 0));
+  }
+
+  daysLeft(goal: SavingsGoal): number | null {
+    if (!goal.targetDate) return null;
+    const diff = new Date(goal.targetDate).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / 86400000));
+  }
+
+  formatVnd(amount: number): string {
+    return new Intl.NumberFormat('vi-VN').format(amount || 0) + 'đ';
+  }
+
+  private emptyGoalForm(): SavingsGoal {
+    return { name: '', targetAmount: 0, icon: '🎯', color: '#4ecdc4', status: 'ACTIVE', autoSaveEnabled: false };
+  }
+
+  onAutoSaveAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value.replace(/,/g, '').replace(/[^0-9]/g, '');
+    this.goalForm.autoSaveAmount = raw === '' ? 0 : Number(raw);
+    input.value = this.formatNumberWithDots(raw);
+  }
+
+  get budgetSurplus(): number {
+    const raw = Math.max(0, this.totals.totalRemaining);
+    if (raw <= 0) return 0;
+    const used = this.surplusUsedThisMonth();
+    return Math.max(0, raw - used);
+  }
+
+  private surplusUsedThisMonth(): number {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    return this.goals.reduce((sum, goal) => {
+      const contributions = (goal.contributions || []).filter(c => {
+        if (!c.note || !c.note.includes('Chuyển từ ngân sách dư')) return false;
+        if (!c.createdAt) return false;
+        const d = new Date(c.createdAt);
+        return d.getFullYear() === year && d.getMonth() === month;
+      });
+      return sum + contributions.reduce((s, c) => s + (c.amount || 0), 0);
+    }, 0);
+  }
+
+  toggleContributions(goalId: string): void {
+    this.expandedGoalId = this.expandedGoalId === goalId ? null : goalId;
+  }
+
+  removeContribution(goal: SavingsGoal, contributionId: string): void {
+    this.removingContributionId = contributionId;
+    this.goalService.removeContribution(goal.id!, contributionId).subscribe({
+      next: (updated) => {
+        const idx = this.goals.findIndex(g => g.id === goal.id);
+        if (idx >= 0) this.goals[idx] = updated;
+        this.removingContributionId = null;
+      },
+      error: () => {
+        this.toast.showError('Không thể xóa lần nạp này');
+        this.removingContributionId = null;
+      }
+    });
+  }
+
+  formatContribDate(dateStr: string | undefined): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  quickFillAmount(amount: number): void {
+    this.contributeAmount = amount;
+  }
+
+  get totalSaved(): number { return this.goals.reduce((s, g) => s + (g.currentAmount || 0), 0); }
+  get totalTarget(): number { return this.goals.reduce((s, g) => s + (g.targetAmount || 0), 0); }
+  get activeGoals(): number { return this.goals.filter(g => g.status === 'ACTIVE').length; }
+  get completedGoals(): number { return this.goals.filter(g => g.status === 'COMPLETED').length; }
 }
-
-

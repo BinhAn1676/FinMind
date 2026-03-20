@@ -47,6 +47,9 @@ dependencies {
     // Add MongoDB support
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
+    // Email support
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     annotationProcessor 'org.projectlombok:lombok'

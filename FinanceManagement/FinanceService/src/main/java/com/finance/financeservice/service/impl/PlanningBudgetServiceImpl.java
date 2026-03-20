@@ -54,6 +54,8 @@ public class PlanningBudgetServiceImpl implements PlanningBudgetService {
             if (update.getEndDate() != null) existing.setEndDate(update.getEndDate());
             if (update.getRepeatCycle() != null) existing.setRepeatCycle(update.getRepeatCycle());
             if (update.getDayOfMonth() != null) existing.setDayOfMonth(update.getDayOfMonth());
+            if (!ObjectUtils.isEmpty(update.getIcon())) existing.setIcon(update.getIcon());
+            if (!ObjectUtils.isEmpty(update.getColor())) existing.setColor(update.getColor());
             return repository.save(existing);
         }).orElseThrow(() -> new IllegalArgumentException("PlanningBudget not found"));
     }

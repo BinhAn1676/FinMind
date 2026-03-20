@@ -18,11 +18,11 @@
 }
 
 .tab-btn {
-  background: linear-gradient(145deg, #1b4458, #173a4a);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-card);
+  border: 2px solid var(--border-default);
   border-radius: 12px;
   padding: 0.8rem 2rem;
-  color: #FFFFFF;
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
@@ -1584,9 +1584,315 @@
     left: auto !important;
     right: auto !important;
   }
-  
+
   .loan-row > .col-phone::after,
   .loan-row > .col-amount-due::before {
     display: none;
   }
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .loans-container {
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .loans-header h1 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .subtitle {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(78,205,196,0.25) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-value {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-divider {
+  background: rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .filters-card,
+:host-context(html[data-theme="light"]) .reconciliation-filter-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .filter-group label,
+:host-context(html[data-theme="light"]) .reconciliation-filter-header h4 span {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input::placeholder {
+  color: #94A3B8 !important;
+}
+
+:host-context(html[data-theme="light"]) .status-checkbox {
+  background: rgba(224,240,249,0.8) !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .status-checkbox.selected {
+  background: rgba(78,205,196,0.15) !important;
+  border-color: #4ECDC4 !important;
+}
+
+:host-context(html[data-theme="light"]) .loans-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .card-header {
+  border-bottom: 2px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .loan-count {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .loan-row.header-row {
+  background: rgba(248,250,252,0.9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row) {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row):hover {
+  background: rgba(215,235,245,0.8) !important;
+  border-color: rgba(78,205,196,0.25) !important;
+}
+
+:host-context(html[data-theme="light"]) .loan-row.header-row > .col-status,
+:host-context(html[data-theme="light"]) .loan-row.header-row > .col-borrower,
+:host-context(html[data-theme="light"]) .loan-row.header-row > .col-phone,
+:host-context(html[data-theme="light"]) .loan-row.header-row > .col-amount-due,
+:host-context(html[data-theme="light"]) .loan-row.header-row > .col-actions {
+  background: rgba(248,250,252,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row) > .col-status,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row) > .col-borrower,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row) > .col-phone,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row) > .col-amount-due,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row) > .col-actions {
+  background: rgba(255,255,255,0.7) !important;
+}
+
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row):hover > .col-status,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row):hover > .col-borrower,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row):hover > .col-phone,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row):hover > .col-amount-due,
+:host-context(html[data-theme="light"]) .loan-row:not(.header-row):hover > .col-actions {
+  background: rgba(215,235,245,0.8) !important;
+}
+
+:host-context(html[data-theme="light"]) .borrower-name {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .borrower-cccd {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .col-phone,
+:host-context(html[data-theme="light"]) .col-principal,
+:host-context(html[data-theme="light"]) .col-interest-rate,
+:host-context(html[data-theme="light"]) .col-interest-amount,
+:host-context(html[data-theme="light"]) .col-term-days,
+:host-context(html[data-theme="light"]) .col-daily-payment,
+:host-context(html[data-theme="light"]) .col-start-date,
+:host-context(html[data-theme="light"]) .col-end-date,
+:host-context(html[data-theme="light"]) .col-paid,
+:host-context(html[data-theme="light"]) .col-amount-due {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .icon-btn {
+  background: rgba(215,235,245,0.9) !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-wrapper {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-info {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .page-size-select {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-btn {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-btn:hover:not(:disabled) {
+  background: #F1F5F9 !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-page {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-close {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-column-left {
+  border-right: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-section h4 {
+  color: #0F172A !important;
+  border-bottom: 2px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .form-section h4 {
+  color: #0F172A !important;
+  border-bottom: 2px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-item label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-value {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-group label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .borrower-card,
+:host-context(html[data-theme="light"]) .borrower-detail-card {
+  background: rgba(224,240,249,0.8) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .borrower-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .borrower-title {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .payment-row.header-row {
+  background: rgba(248,250,252,0.9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .payment-row:not(.header-row) {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .col-payment-date,
+:host-context(html[data-theme="light"]) .col-payment-amount,
+:host-context(html[data-theme="light"]) .col-payment-notes {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .helper-text {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-cancel {
+  color: #334155 !important;
+  border: 2px solid rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-cancel:hover {
+  background: rgba(215,235,245,0.9) !important;
+}
+
+:host-context(html[data-theme="light"]) .reconciliation-filter-content ::ng-deep .p-calendar .p-inputtext,
+:host-context(html[data-theme="light"]) .filter-group.filter-date ::ng-deep .p-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-datepicker-header {
+  background: #F1F5F9 !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker table {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker table td > span {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-datepicker-buttonbar {
+  background: #F1F5F9 !important;
+  border-top: 1px solid #CBD5E1 !important;
 }

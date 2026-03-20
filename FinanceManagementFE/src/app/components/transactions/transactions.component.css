@@ -46,7 +46,7 @@
 }
 
 .subtitle {
-  color: #adb5bd;
+  color: var(--text-muted);
   font-size: 1.1rem;
   margin: 0;
   font-weight: 400;
@@ -1467,5 +1467,303 @@ select.form-input option {
   background: rgba(78, 205, 196, 0.3);
   border-color: #4ECDC4;
   color: #fff;
+}
+
+/* ─── Light Theme Overrides ─── */
+:host-context(html[data-theme="light"]) .transactions-container {
+  background: transparent !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-header h1 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .subtitle {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(78, 205, 196, 0.25) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-value {
+  color: #0F172A !important;
+  text-shadow: none !important;
+}
+
+:host-context(html[data-theme="light"]) .summary-divider {
+  background: rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .filters-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .filter-group label {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-input::placeholder {
+  color: #94A3B8 !important;
+}
+
+:host-context(html[data-theme="light"]) select.form-input {
+  background-color: #DFF0F8 !important;
+  color: #1E293B !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231A3A50'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 1.2em !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+:host-context(html[data-theme="light"]) select.form-input option {
+  background-color: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .transactions-card {
+  background: linear-gradient(145deg, #d4eaf3, #c5dfe9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(78,205,196,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .card-header {
+  border-bottom: 2px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-count {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .loading-container {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-row.header-row {
+  background: rgba(248,250,252,0.9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-row:not(.header-row) {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .transaction-row:not(.header-row):hover {
+  background: rgba(215,235,245,0.8) !important;
+  border-color: rgba(78,205,196,0.25) !important;
+}
+
+:host-context(html[data-theme="light"]) .col-date {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .content-main {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .content-sub {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .account-number {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .bank-name {
+  color: #64748B !important;
+}
+
+:host-context(html[data-theme="light"]) .category-label {
+  color: #475569 !important;
+  background: rgba(215,235,245,0.9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .icon-btn {
+  background: rgba(215,235,245,0.9) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .icon-btn:hover {
+  background: #F1F5F9 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-wrapper {
+  background: rgba(224,240,249,0.8) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-info {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .page-size-select {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231E293B'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
+}
+
+:host-context(html[data-theme="light"]) .page-size-select option {
+  background-color: #FFFFFF !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-btn {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-btn:hover:not(:disabled) {
+  background: #F1F5F9 !important;
+  border-color: rgba(78,205,196,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .pagination-page {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-content {
+  background: linear-gradient(145deg, #e8f4f8, #d8ecf4) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  background: rgba(255,255,255,0.4) !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-header h3 {
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-close {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-item label {
+  color: #475569 !important;
+}
+
+:host-context(html[data-theme="light"]) .detail-value {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .form-group label,
+:host-context(html[data-theme="light"]) .create-transaction-modal .form-group label {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-cancel {
+  background: rgba(215,235,245,0.9) !important;
+  color: #475569 !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
+:host-context(html[data-theme="light"]) .btn-cancel:hover {
+  background: #F1F5F9 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .category-management {
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .category-management h4 {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-item {
+  background: rgba(255,255,255,0.7) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) .category-item:hover {
+  background: #F1F5F9 !important;
+}
+
+:host-context(html[data-theme="light"]) .category-name {
+  color: #334155 !important;
+}
+
+:host-context(html[data-theme="light"]) .sync-guide-tooltip {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(78,205,196,0.3) !important;
+  color: #334155 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+/* Light theme PrimeNG calendar inputs */
+:host-context(html[data-theme="light"]) .filter-group ::ng-deep .p-calendar .p-inputtext {
+  background: #FFFFFF !important;
+  border: 2px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) .filter-group ::ng-deep .p-float-label .p-inputwrapper-focus ~ label,
+:host-context(html[data-theme="light"]) .filter-group ::ng-deep .p-float-label .p-inputwrapper-filled ~ label {
+  background: linear-gradient(to bottom, transparent 50%, #d4eaf3 50%) !important;
+  color: #0F172A !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-datepicker-header {
+  background: #F1F5F9 !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-datepicker-header .p-datepicker-title {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker table {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker table td > span {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-monthpicker .p-monthpicker-month,
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-yearpicker .p-yearpicker-year {
+  color: #1E293B !important;
+}
+
+:host-context(html[data-theme="light"]) ::ng-deep .p-datepicker .p-datepicker-buttonbar {
+  background: #F1F5F9 !important;
+  border-top: 1px solid #CBD5E1 !important;
 }
 

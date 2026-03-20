@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, Output, EventEmitter, ViewChild, HostListener } from '@angular/core';
+import * as Highcharts from 'highcharts';
 import { GroupService, GroupDetail, GroupAccount, GroupActivity, GroupMember, GroupInvite, PageResponse } from '../../services/group.service';
 import { LanguageService } from '../../services/language.service';
 import { FileService } from '../../services/file.service';
@@ -9,8 +10,11 @@ import { PlanningBudgetService, PlanningBudget } from '../../services/planning-b
 import { GroupPlanningService, GroupPlanning } from '../../services/group-planning.service';
 import { AccountService } from '../../services/account.service';
 import { CategoryService } from '../../services/category.service';
+import { SavingsGoalService, SavingsGoal, SavingsContribution } from '../../services/savings-goal.service';
 import { User } from '../../model/user.model';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ThemeService } from '../../services/theme.service';
 import {
   ChartComponent,
   ApexNonAxisChartSeries,
@@ -22,7 +26,17 @@ import {
   ApexTooltip
 } from 'ng-apexcharts';
 
-type TabType = 'overview' | 'accounts' | 'transactions' | 'plan' | 'members' | 'analysis' | 'activity' | 'chat';
+type TabType = 'overview' | 'accounts' | 'transactions' | 'plan' | 'members' | 'analysis' | 'activity' | 'chat' | 'calendar';
+
+interface GroupCalendarDay {
+  date: Date;
+  dayNumber: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  totalIncome: number;
+  totalExpense: number;
+  transactions: Transaction[];
+}
 
 export type PieChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -147,6 +161,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
   activeIncomeCategoryIndex: number | null = null;
   categoryColors = ['#60a5fa', '#c084fc', '#f97316', '#34d399', '#f87171'];
 
+  readonly planningIcons = ['🍔','🍜','🍱','☕','🛒','🛍️','🚗','⛽','🚌','🎉','🎮','🎬','🎵','💪','🏃','🧘','🎓','📚','✏️','💡','💧','🔥','📶','💰','💳','📈','💊','🏥','🩺','📊','🏦','💹','✈️','🏖️','🗺️','🎁','🎀','🏡','👨‍👩‍👧','👶','📦','💸','❓'];
+  readonly planningColors = ['#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8','#f7dc6f','#bb8fce','#85c1e9'];
+  readonly goalIcons = ['🚗','🏠','🏡','🛵','🚲','💻','📱','📷','🎮','🎹','🎸','✈️','🌏','🏖️','🚢','🏕️','🗺️','💍','👶','🐕','🌱','🎓','📚','🏆','💪','🏋️','🧘','🎯','💎','🏦','📈','🎨','🎭','🎵'];
+  readonly goalColors = ['#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffeaa7','#dda0dd','#98d8c8','#f7dc6f','#bb8fce','#85c1e9'];
+  selectedPlanningIcon = '📦';
+  selectedPlanningColor = '#4ecdc4';
+
   // ApexCharts for category breakdown
   @ViewChild('expenseChart') expenseChart?: ChartComponent;
   @ViewChild('incomeChart') incomeChart?: ChartComponent;
@@ -167,9 +188,38 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
     { id: 'members' as TabType, label: 'groups.detail.tabs.members' },
     { id: 'analysis' as TabType, label: 'groups.detail.tabs.analysis' },
     { id: 'activity' as TabType, label: 'groups.detail.tabs.activity' },
-    { id: 'chat' as TabType, label: 'groups.detail.tabs.chat' }
+    { id: 'chat' as TabType, label: 'groups.detail.tabs.chat' },
+    { id: 'calendar' as TabType, label: 'groups.detail.tabs.calendar' }
   ];
+
+  // ===== CALENDAR TAB STATE =====
+  calYear: number = new Date().getFullYear();
+  calMonth: number = new Date().getMonth();
+  calDays: GroupCalendarDay[] = [];
+  calWeekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  calSelectedDay: GroupCalendarDay | null = null;
+  calShowPanel = false;
+  calLoading = false;
+  calMonthTransactions: Transaction[] = [];
   private subscriptions = new Subscription();
+
+  // ===== SAVINGS TAB STATE =====
+  savingsGoals: SavingsGoal[] = [];
+  loadingSavings = false;
+  showSavingsModal = false;
+  editingGoal: SavingsGoal | null = null;
+  savingsForm: SavingsGoal = this.emptySavingsForm();
+  savingGoal = false;
+  savingsTargetDate: Date | null = null;
+  deletingGoalId: string | null = null;
+  expandedGoalId: string | null = null;
+  showContributeModal = false;
+  contributeGoal: SavingsGoal | null = null;
+  contributeAmount = 0;
+  contributeNote = '';
+  savingContribution = false;
+  activePlanSubTab: 'budgets' | 'savings' = 'budgets';
+  surplusGoalId = '';
 
   // Members tab state
   members: GroupMember[] = [];
@@ -258,6 +308,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
   }> = [];
   loadingAnalysisVariance = false;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private groupService: GroupService,
     private languageService: LanguageService,
@@ -268,7 +320,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
     private planningBudgetService: PlanningBudgetService,
     private groupPlanningService: GroupPlanningService,
     private accountService: AccountService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private savingsGoalService: SavingsGoalService,
+    public themeService: ThemeService
   ) {}
 
   // Getter for overview preset label
@@ -396,15 +450,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
     // Initialize analysis tab
     this.initAnalysisTab();
     this.loadCurrentUser();
-    
+
     // Set initial tab if provided
     if (this.initialTab && this.tabs.some(t => t.id === this.initialTab)) {
       this.activeTab = this.initialTab as TabType;
     }
-    
+
     if (this.groupId) {
       this.loadGroupDetail();
     }
+
+    this.themeService.theme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      setTimeout(() => this.renderAnalysisCashflowChart());
+    });
   }
 
   loadCurrentUser(): void {
@@ -465,6 +523,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadGroupDetail(): void {
@@ -1018,6 +1078,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
       if (this.groupPlansFull.length === 0 && this.groupId) {
         this.loadGroupPlans([]);
       }
+      this.loadSavingsGoals();
+    }
+    if (tab === 'calendar') {
+      this.loadCalendarTransactions();
     }
     if (tab === 'analysis') {
       // Load analysis data if not loaded yet
@@ -1031,6 +1095,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
         });
       }
     }
+  }
+
+  selectPlanSubTab(sub: 'budgets' | 'savings'): void {
+    this.activePlanSubTab = sub;
   }
 
   // ===== Group Activities (tab) =====
@@ -1730,7 +1798,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (!plan.budgetAmount || plan.budgetAmount === 0) return 0;
     const spent = plan.spentAmount || 0;
     const percentage = (spent / plan.budgetAmount) * 100;
-    return Math.min(percentage, 100);
+    return parseFloat(Math.min(percentage, 100).toFixed(2));
   }
 
   isOverspent(plan: GroupPlanning): boolean {
@@ -2976,6 +3044,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
       applyForWholeYear: false
     };
     this.prefillPlanningDates();
+    this.selectedPlanningIcon = '📦';
+    this.selectedPlanningColor = '#4ecdc4';
     this.showNewPlanningCategoryInput = false;
     this.newPlanningCategory = '';
     // Load categories if not already loaded
@@ -3003,6 +3073,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
       applyForWholeMonth: applyForWholeMonth,
       applyForWholeYear: applyForWholeYear
     };
+    this.selectedPlanningIcon = plan.icon || '📦';
+    this.selectedPlanningColor = plan.color || '#4ecdc4';
     this.showNewPlanningCategoryInput = false;
     this.newPlanningCategory = '';
     // Load categories if not already loaded
@@ -3169,7 +3241,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
       repeatCycle: this.planningForm.repeatCycle || undefined,
       dayOfMonth: dayOfMonth,
       createdBy: this.currentUser.id.toString(),
-      description: this.planningForm.description || undefined
+      description: this.planningForm.description || undefined,
+      icon: this.selectedPlanningIcon,
+      color: this.selectedPlanningColor
     };
 
     this.savingPlanning = true;
@@ -3241,7 +3315,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
       endDate: this.planningForm.endDate || undefined,
       repeatCycle: this.planningForm.repeatCycle || undefined,
       dayOfMonth: dayOfMonth,
-      description: this.planningForm.description || undefined
+      description: this.planningForm.description || undefined,
+      icon: this.selectedPlanningIcon,
+      color: this.selectedPlanningColor
     };
 
     this.savingPlanning = true;
@@ -3568,18 +3644,25 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
     this.transactionService.getGroupCashflow(bankAccountIds, startDate, endDate).subscribe({
       next: (data) => {
         this.analysisCashflow = data || [];
+        this.loadingAnalysisCashflow = false;
         setTimeout(() => this.renderAnalysisCashflowChart());
       },
       error: (err) => {
         console.error('Error loading analysis cashflow:', err);
-      },
-      complete: () => this.loadingAnalysisCashflow = false
+        this.loadingAnalysisCashflow = false;
+      }
     });
   }
 
   private renderAnalysisCashflowChart(): void {
-    const H: any = (window as any)['Highcharts'];
+    const H: any = Highcharts;
     if (!H) return;
+
+    // Guard: the element is behind two *ngIf layers — retry if not yet in DOM
+    if (!document.getElementById('group-cashflow-chart')) {
+      setTimeout(() => this.renderAnalysisCashflowChart(), 150);
+      return;
+    }
     
     const { startDate } = this.getAnalysisDateRange();
     const start = new Date(startDate);
@@ -3611,25 +3694,31 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
     const income = months.map(m => m.income || 0);
     const balance = months.map(m => m.balance || 0);
 
+    const isDark = this.themeService.isDark();
+    const chartText = isDark ? '#94a3b8' : '#64748B';
+    const chartGrid = isDark ? 'rgba(255,255,255,0.18)' : '#E2E8F0';
+    const tooltipBg = isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.97)';
+    const tooltipColor = isDark ? '#e2e8f0' : '#1E293B';
+
     H.chart('group-cashflow-chart', {
       chart: { type: 'column', backgroundColor: 'transparent', style: { fontFamily: 'Be Vietnam Pro, sans-serif' } },
       title: { text: undefined },
-      xAxis: { categories, lineColor: '#334155', labels: { style: { color: '#94a3b8' } } },
+      xAxis: { categories, lineColor: chartGrid, labels: { style: { color: chartText } } },
       yAxis: {
         title: { text: undefined },
-        gridLineColor: 'rgba(255,255,255,0.18)',
+        gridLineColor: chartGrid,
         gridLineWidth: 1,
         plotLines: [{ value: 0, color: '#a3b1c6', width: 2, zIndex: 5 }],
-        labels: { style: { color: '#94a3b8' }, formatter: function(this: any) { return H.numberFormat(this.value, 0, '.', ',') + '₫'; } }
+        labels: { style: { color: chartText }, formatter: function(this: any) { return H.numberFormat(this.value, 0, '.', ',') + '₫'; } }
       },
-      legend: { itemStyle: { color: '#cbd5e1' } },
+      legend: { itemStyle: { color: chartText } },
       credits: { enabled: false },
       exporting: { enabled: false },
       tooltip: {
         shared: false,
-        backgroundColor: 'rgba(15,23,42,0.95)',
+        backgroundColor: tooltipBg,
         borderColor: '#93c5fd',
-        style: { color: '#e2e8f0' },
+        style: { color: tooltipColor },
         pointFormatter: function(this: any) { return '<span style="color:' + this.color + '">●</span> ' + this.series.name + ': <b>' + H.numberFormat(this.y, 0, '.', ',') + '₫</b>'; }
       },
       plotOptions: {
@@ -3915,6 +4004,298 @@ export class GroupDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (bankAccountIds.length > 0) {
       this.loadAnalysisHeatmap(bankAccountIds);
     }
+  }
+
+  // ===== SAVINGS GOALS TAB =====
+
+  emptySavingsForm(): SavingsGoal {
+    return {
+      groupId: this.groupId || 0,
+      name: '',
+      description: '',
+      targetAmount: 0,
+      currentAmount: 0,
+      targetDate: '',
+      icon: this.goalIcons[27], // '🎯'
+      color: this.goalColors[1], // '#4ecdc4'
+      status: 'ACTIVE'
+    };
+  }
+
+  loadSavingsGoals(): void {
+    if (!this.groupId) return;
+    this.loadingSavings = true;
+    this.savingsGoalService.getByGroup(this.groupId).subscribe({
+      next: (data) => { this.savingsGoals = data; this.loadingSavings = false; },
+      error: (err) => { console.error(err); this.loadingSavings = false; }
+    });
+  }
+
+  openCreateGoal(): void {
+    this.editingGoal = null;
+    this.savingsForm = this.emptySavingsForm();
+    this.savingsTargetDate = null;
+    this.showSavingsModal = true;
+  }
+
+  openEditGoal(goal: SavingsGoal): void {
+    this.editingGoal = goal;
+    this.savingsForm = { ...goal };
+    this.savingsTargetDate = goal.targetDate ? new Date(goal.targetDate) : null;
+    this.showSavingsModal = true;
+  }
+
+  closeSavingsModal(): void {
+    this.showSavingsModal = false;
+    this.editingGoal = null;
+  }
+
+  saveGoal(): void {
+    if (!this.savingsForm.name || !this.savingsForm.targetAmount || this.savingsForm.targetAmount <= 0) {
+      this.toastService.showError('Vui lòng nhập tên và số tiền mục tiêu');
+      return;
+    }
+    if (this.savingsTargetDate) {
+      const d = this.savingsTargetDate;
+      this.savingsForm.targetDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    } else {
+      this.savingsForm.targetDate = '';
+    }
+    this.savingsForm.groupId = this.groupId;
+    this.savingGoal = true;
+    const obs = this.editingGoal
+      ? this.savingsGoalService.update(this.editingGoal.id!, this.savingsForm)
+      : this.savingsGoalService.create(this.savingsForm);
+    obs.subscribe({
+      next: () => {
+        this.savingGoal = false;
+        this.closeSavingsModal();
+        this.loadSavingsGoals();
+        this.toastService.showSuccess(this.editingGoal ? 'Đã cập nhật mục tiêu' : 'Đã tạo mục tiêu');
+      },
+      error: (err) => { console.error(err); this.savingGoal = false; this.toastService.showError('Lỗi khi lưu mục tiêu'); }
+    });
+  }
+
+  deleteGoal(goal: SavingsGoal): void {
+    if (!goal.id || !confirm('Xóa mục tiêu này?')) return;
+    this.deletingGoalId = goal.id;
+    this.savingsGoalService.delete(goal.id).subscribe({
+      next: () => { this.deletingGoalId = null; this.loadSavingsGoals(); this.toastService.showSuccess('Đã xóa mục tiêu'); },
+      error: (err) => { console.error(err); this.deletingGoalId = null; this.toastService.showError('Lỗi khi xóa mục tiêu'); }
+    });
+  }
+
+  openContribute(goal: SavingsGoal): void {
+    this.contributeGoal = goal;
+    this.contributeAmount = 0;
+    this.contributeNote = '';
+    this.showContributeModal = true;
+  }
+
+  openContributeFromSurplus(): void {
+    if (!this.surplusGoalId || !this.groupPlanningSummary?.totalRemainingAmount) return;
+    const goal = this.savingsGoals.find(g => g.id === this.surplusGoalId);
+    if (!goal) return;
+    this.contributeGoal = goal;
+    this.contributeAmount = this.groupPlanningSummary.totalRemainingAmount;
+    this.contributeNote = 'Chuyển từ ngân sách dư';
+    this.showContributeModal = true;
+  }
+
+  closeContributeModal(): void {
+    this.showContributeModal = false;
+    this.contributeGoal = null;
+  }
+
+  onSavingsAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value.replace(/,/g, '').replace(/[^0-9]/g, '');
+    this.savingsForm.targetAmount = raw === '' ? 0 : Number(raw);
+    input.value = this.formatNumberWithDots(raw);
+  }
+
+  onContributeAmountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value.replace(/,/g, '').replace(/[^0-9]/g, '');
+    this.contributeAmount = raw === '' ? 0 : Number(raw);
+    input.value = this.formatNumberWithDots(raw);
+  }
+
+  quickFillContribute(amount: number): void {
+    this.contributeAmount = amount;
+  }
+
+  submitContribution(): void {
+    if (!this.contributeGoal?.id || this.contributeAmount <= 0) {
+      this.toastService.showError('Vui lòng nhập số tiền hợp lệ');
+      return;
+    }
+    this.savingContribution = true;
+    this.savingsGoalService.addContribution(this.contributeGoal.id, this.contributeAmount, this.contributeNote).subscribe({
+      next: (updated) => {
+        this.savingContribution = false;
+        const idx = this.savingsGoals.findIndex(g => g.id === updated.id);
+        if (idx !== -1) this.savingsGoals[idx] = updated;
+        this.closeContributeModal();
+        this.toastService.showSuccess('Đã thêm tiết kiệm');
+      },
+      error: (err) => { console.error(err); this.savingContribution = false; this.toastService.showError('Lỗi khi thêm tiết kiệm'); }
+    });
+  }
+
+  toggleContributions(id: string): void {
+    this.expandedGoalId = this.expandedGoalId === id ? null : id;
+  }
+
+  daysLeft(goal: SavingsGoal): number | null {
+    if (!goal.targetDate) return null;
+    const diff = Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / 86400000);
+    return diff > 0 ? diff : 0;
+  }
+
+  goalRemaining(goal: SavingsGoal): number {
+    return Math.max(0, (goal.targetAmount || 0) - (goal.currentAmount || 0));
+  }
+
+  removeContribution(goal: SavingsGoal, contribution: SavingsContribution): void {
+    if (!goal.id || !contribution.id) return;
+    this.savingsGoalService.removeContribution(goal.id, contribution.id).subscribe({
+      next: (updated) => {
+        const idx = this.savingsGoals.findIndex(g => g.id === updated.id);
+        if (idx !== -1) this.savingsGoals[idx] = updated;
+      },
+      error: (err) => { console.error(err); this.toastService.showError('Lỗi khi xóa đóng góp'); }
+    });
+  }
+
+  countGoalsByStatus(status: string): number {
+    return this.savingsGoals.filter(g => g.status === status).length;
+  }
+
+  getSavingsProgress(goal: SavingsGoal): number {
+    if (!goal.targetAmount || goal.targetAmount <= 0) return 0;
+    return parseFloat(Math.min(100, ((goal.currentAmount || 0) / goal.targetAmount) * 100).toFixed(2));
+  }
+
+  formatVnd(amount: number): string {
+    if (amount == null) return '0₫';
+    return amount.toLocaleString('vi-VN') + '₫';
+  }
+
+  // ===== CALENDAR TAB METHODS =====
+
+  get calMonthLabel(): string {
+    return new Date(this.calYear, this.calMonth, 1)
+      .toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
+  }
+
+  get calMonthSummary() {
+    const income = this.calMonthTransactions.reduce((s, t) => s + (t.amountIn || 0), 0);
+    const expense = this.calMonthTransactions.reduce((s, t) => s + (t.amountOut || 0), 0);
+    return { income, expense, net: income - expense };
+  }
+
+  calPrevMonth(): void {
+    if (this.calMonth === 0) { this.calMonth = 11; this.calYear--; }
+    else { this.calMonth--; }
+    this.loadCalendarTransactions();
+  }
+
+  calNextMonth(): void {
+    if (this.calMonth === 11) { this.calMonth = 0; this.calYear++; }
+    else { this.calMonth++; }
+    this.loadCalendarTransactions();
+  }
+
+  loadCalendarTransactions(): void {
+    const bankAccountIds = this.groupBankAccounts
+      .map(a => a.bankAccountId || a.accountId?.toString())
+      .filter(id => id != null && id !== '') as string[];
+
+    if (bankAccountIds.length === 0) {
+      this.calMonthTransactions = [];
+      this.buildGroupCalendar();
+      return;
+    }
+
+    const startDate = this.calDateStr(new Date(this.calYear, this.calMonth, 1));
+    const endDate = this.calDateStr(new Date(this.calYear, this.calMonth + 1, 0));
+
+    this.calLoading = true;
+    this.transactionService.filterTransactions({
+      bankAccountIds,
+      startDate,
+      endDate,
+      page: 0,
+      size: 1000
+    }).subscribe({
+      next: (res: any) => {
+        this.calMonthTransactions = res.content || res || [];
+        this.buildGroupCalendar();
+        this.calLoading = false;
+      },
+      error: () => {
+        this.calMonthTransactions = [];
+        this.buildGroupCalendar();
+        this.calLoading = false;
+      }
+    });
+  }
+
+  private buildGroupCalendar(): void {
+    const today = new Date();
+    const firstDay = new Date(this.calYear, this.calMonth, 1);
+    const lastDay = new Date(this.calYear, this.calMonth + 1, 0);
+    const days: GroupCalendarDay[] = [];
+
+    for (let i = firstDay.getDay() - 1; i >= 0; i--) {
+      const d = new Date(firstDay);
+      d.setDate(d.getDate() - i - 1);
+      days.push(this.createCalDay(d, false, today));
+    }
+    for (let n = 1; n <= lastDay.getDate(); n++) {
+      days.push(this.createCalDay(new Date(this.calYear, this.calMonth, n), true, today));
+    }
+    for (let i = 1; days.length < 42; i++) {
+      days.push(this.createCalDay(new Date(this.calYear, this.calMonth + 1, i), false, today));
+    }
+    this.calDays = days;
+  }
+
+  private createCalDay(date: Date, isCurrentMonth: boolean, today: Date): GroupCalendarDay {
+    const dateStr = this.calDateStr(date);
+    const txs = this.calMonthTransactions.filter(t =>
+      (t.transactionDate || '').substring(0, 10) === dateStr
+    );
+    return {
+      date,
+      dayNumber: date.getDate(),
+      isCurrentMonth,
+      isToday: date.toDateString() === today.toDateString(),
+      totalIncome: txs.reduce((s, t) => s + (t.amountIn || 0), 0),
+      totalExpense: txs.reduce((s, t) => s + (t.amountOut || 0), 0),
+      transactions: txs
+    };
+  }
+
+  selectCalDay(day: GroupCalendarDay): void {
+    if (!day.isCurrentMonth) return;
+    this.calSelectedDay = day;
+    this.calShowPanel = true;
+  }
+
+  closeCalPanel(): void {
+    this.calShowPanel = false;
+    this.calSelectedDay = null;
+  }
+
+  calDateStr(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  calFormatDayLabel(date: Date): string {
+    return date.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   }
 }
 
