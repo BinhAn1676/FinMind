@@ -11,7 +11,7 @@
 [![Kafka](https://img.shields.io/badge/Apache%20Kafka-3.8-black?logo=apachekafka)](https://kafka.apache.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Live Demo](#) · [API Docs](#api-documentation) · [Report Bug](https://github.com/BinhAn1676/FinMind/issues) · [Request Feature](https://github.com/BinhAn1676/FinMind/issues)
+[Live Demo](https://finmind.pro.vn/home) · [API Docs](#api-documentation) · [Report Bug](https://github.com/BinhAn1676/FinMind/issues) · [Request Feature](https://github.com/BinhAn1676/FinMind/issues)
 
 </div>
 
